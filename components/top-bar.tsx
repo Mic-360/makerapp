@@ -6,6 +6,7 @@ import { ChevronDown, Search, MapPin, Languages, X, Menu } from 'lucide-react';
 import Image from 'next/image';
 import { useCityStore } from '@/lib/store';
 import { cities } from '@/lib/constants';
+import { useSession } from "next-auth/react"
 
 export default function TopBar({
   theme = 'dark',
@@ -23,6 +24,10 @@ export default function TopBar({
 
   const isDark = theme === 'dark';
 
+  const { data: session } = useSession()
+
+  console.log(session)
+
   const MobileMenu = () => (
     <div
       className={`absolute top-full right-4 w-1/3 bg-white shadow-lg rounded-xl ${isDark ? 'text-black' : 'text-black'}`}
@@ -31,19 +36,42 @@ export default function TopBar({
         <Link href="/vendor-space" className="block">
           <button
             type="button"
-            className={`w-full py-2 px-4 rounded-xl font-semibold ${
-              isDark
+            className={`w-full py-2 px-4 rounded-xl font-semibold ${isDark
                 ? 'bg-black text-white hover:bg-gray-800'
                 : 'bg-white text-black hover:bg-gray-200'
-            } border border-gray-300`}
+              } border border-gray-300`}
           >
             List your Machines
           </button>
         </Link>
         <div className="flex items-center justify-between px-3">
-          <Link href="/auth" className="block text-center py-2 font-medium">
+          {
+            session && session.user ? (
+              <>
+                <div className="flex gap-x-2 items-center justify-center">
+                  <Link
+                    href="/profile"
+                    className={`${isDark ? 'text-white' : 'text-black'} font-medium text-md`}
+                  >
+                    {session.user.name}
+                  </Link>
+                  <Image
+                    src={session.user.image}
+                    alt="Profile"
+                    width={30}
+                    height={30}
+                    className={`rounded-full border-2 ${isDark ? 'border-gray-400' : 'border-black'}`}
+                  />
+                </div>
+                </>
+            ) : (
+              <Link href="/auth" className="block text-center py-2 font-medium">
+                Login | Sign Up
+              </Link>)
+          }
+          {/* <Link href="/auth" className="block text-center py-2 font-medium">
             Login | Sign Up
-          </Link>
+          </Link> */}
           <Link href="/auth" className="flex items-center justify-center">
             <Languages className="h-4 w-4" />
             <span className="text-sm">EN</span>
@@ -189,16 +217,15 @@ export default function TopBar({
           >
             <button
               type="button"
-              className={`py-2 px-4 rounded-xl font-semibold ${
-                isDark
+              className={`py-2 px-4 rounded-xl font-semibold ${isDark
                   ? 'text-white border-white hover:bg-white hover:text-black'
                   : 'text-black border-black hover:bg-black hover:text-white'
-              } border`}
+                } border`}
             >
               List your Machines
             </button>
           </Link>
-          <div className="flex gap-x-2 items-center justify-center">
+          {/* <div className="flex gap-x-2 items-center justify-center">
             <Link
               href="/auth"
               className={`${isDark ? 'text-white' : 'text-black'} font-medium text-md`}
@@ -212,7 +239,31 @@ export default function TopBar({
               height={30}
               className={`rounded-full border-2 ${isDark ? 'border-gray-400' : 'border-black'}`}
             />
-          </div>
+          </div> */}
+          {
+            session && session.user ? (
+              <>
+                <div className="flex gap-x-2 items-center justify-center">
+                  <Link
+                    href="/profile"
+                    className={`${isDark ? 'text-white' : 'text-black'} font-medium text-md`}
+                  >
+                    {session.user.name.split(' ')[0]}
+                  </Link>
+                  <Image
+                    src={session.user.image}
+                    alt="Profile"
+                    width={30}
+                    height={30}
+                    className={`rounded-full border-2 ${isDark ? 'border-gray-400' : 'border-black'}`}
+                  />
+                </div>
+                </>
+            ) : (
+              <Link href="/auth" className="block text-center py-2 font-medium">
+                Login | Sign Up
+              </Link>)
+          }
         </div>
       </div>
       {isMobileMenuOpen && <MobileMenu />}

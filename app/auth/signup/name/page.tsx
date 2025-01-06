@@ -10,11 +10,12 @@ import { useSignupStore } from '@/lib/store';
 import AuthCard from '@/components/auth-card';
 import Link from 'next/link';
 
+
 export default function NamePage() {
+
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
-  const { firstName, lastName, setFirstName, setLastName, email } =
-    useSignupStore();
+  const { firstName, lastName, setFirstName, setLastName, email,setEmail } = useSignupStore();
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();

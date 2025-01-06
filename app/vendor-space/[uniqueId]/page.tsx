@@ -13,6 +13,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { useRouter } from 'next/router';
 
 interface FormData {
   type: 'independent' | 'institution' | null;
@@ -46,6 +47,7 @@ interface FormData {
 }
 
 export default function SpaceSubmissionFlow() {
+  const router = useRouter();
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<FormData>({
     type: null,
@@ -88,6 +90,9 @@ export default function SpaceSubmissionFlow() {
 
   const handleNext = () => {
     setCurrentStep((prev) => Math.min(prev + 1, 5));
+    if (currentStep === 5) {
+      router.push(`/vendor-space/${currentStep}/dashboard`);
+    }
   };
 
   const handleBack = () => {

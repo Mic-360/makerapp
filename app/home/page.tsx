@@ -21,8 +21,8 @@ export default function Page() {
   const [activeSegment, setActiveSegment] = useState('makerspaces');
 
   return (
-    <div className="relative">
-      <div className="min-h-screen min-w-screen bg-white">
+    <div>
+      <div className="min-h-screen min-w-screen bg-white relative">
         <TopBar theme="dark" />
 
         <div className="relative h-[400px] sm:h-[500px] flex flex-col items-center justify-end text-center">
@@ -69,43 +69,43 @@ export default function Page() {
         {activeSegment === 'makerspaces' && <Makerspace />}
         {activeSegment === 'machine' && <Machine />}
         {activeSegment === 'events' && <Event />}
-        <Footer />
+        <div className="fixed left-1/2 transform -translate-x-1/2 bottom-20 inline-flex rounded-full bg-gray-800 p-1">
+            <Button
+            variant="ghost"
+            className={`rounded-l-full p-6 text-sm font-medium transition-colors ${
+              activeSegment === 'makerspaces'
+              ? 'bg-white text-black shadow'
+              : 'text-white hover:bg-gray-700'
+            }`}
+            onClick={() => setActiveSegment('makerspaces')}
+            >
+            Find Makerspaces
+            </Button>
+            <Button
+            variant="ghost"
+            className={`rounded-none p-6 text-sm font-medium transition-colors ${
+              activeSegment === 'machine'
+              ? 'bg-white text-black shadow'
+              : 'text-white hover:bg-gray-700'
+            }`}
+            onClick={() => setActiveSegment('machine')}
+            >
+            Book a Machine
+            </Button>
+            <Button
+            variant="ghost"
+            className={`rounded-r-full p-6 text-sm font-medium transition-colors ${
+              activeSegment === 'events'
+              ? 'bg-white text-black shadow'
+              : 'text-white hover:bg-gray-700'
+            }`}
+            onClick={() => setActiveSegment('events')}
+            >
+            Explore Events
+            </Button>
+        </div>
       </div>
-      <div className="fixed left-1/2 transform -translate-x-1/2 bottom-20 inline-flex rounded-full bg-gray-800 text-white p-1">
-        <Button
-          variant="ghost"
-          className={`rounded-l-full p-6 text-sm font-medium transition-colors ${
-            activeSegment === 'makerspaces'
-              ? 'bg-gray-400 text-white shadow'
-              : 'text-gray-500 hover:text-gray-500'
-          }`}
-          onClick={() => setActiveSegment('makerspaces')}
-        >
-          Find Makerspaces
-        </Button>
-        <Button
-          variant="ghost"
-          className={`rounded-none p-6 text-sm font-medium transition-colors ${
-            activeSegment === 'machines'
-              ? 'bg-gray-400 text-white shadow'
-              : 'text-gray-500 hover:text-gray-500'
-          }`}
-          onClick={() => setActiveSegment('machine')}
-        >
-          Book a Machine
-        </Button>
-        <Button
-          variant="ghost"
-          className={`rounded-r-full p-6 text-sm font-medium transition-colors ${
-            activeSegment === 'events'
-              ? 'bg-gray-400 text-white shadow'
-              : 'text-gray-500 hover:text-gray-500'
-          }`}
-          onClick={() => setActiveSegment('events')}
-        >
-          Explore Events
-        </Button>
-      </div>
+      <Footer />
     </div>
   );
 }

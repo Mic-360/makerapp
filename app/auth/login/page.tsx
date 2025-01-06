@@ -10,6 +10,7 @@ import { Separator } from '@/components/ui/separator';
 import { Check, Loader2, MessageCircleMore } from 'lucide-react';
 import AuthCard from '@/components/auth-card';
 import { useAuthStore } from '@/lib/store';
+import { signIn } from "next-auth/react"
 
 export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
@@ -62,6 +63,7 @@ export default function LoginPage() {
           <Button
             variant="outline"
             className="w-full border-black rounded-full px-6 py-4 text-xs"
+            onClick={() => signIn("google")}
           >
             <Image
               src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/google/google-original.svg"
@@ -69,6 +71,7 @@ export default function LoginPage() {
               width={20}
               height={20}
               className="mr-2"
+              
             />
             Continue with Google
           </Button>

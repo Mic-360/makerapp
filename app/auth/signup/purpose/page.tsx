@@ -20,16 +20,47 @@ const purposes = [
 export default function PurposePage() {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
-  const { purpose, setPurpose, firstName } = useSignupStore();
+  // const { purpose, setPurpose, firstName } = useSignupStore();
+  const { email, password, firstName, lastName, mobile, userType, industry, purpose, setPurpose } = useSignupStore();
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setIsLoading(true);
 
+
+
+    // try {
+    //   router.push('/home');
+    // } catch (error) {
+    //   console.error('Update error:', error);
+    // } finally {
+    //   setIsLoading(false);
+    // }
     try {
-      router.push('/home/onboarding');
+      const response = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email,
+          password,
+          firstName,
+          lastName,
+          mobile,
+          userType,
+          industry,
+          purpose,
+        }),
+      });
+
+      if (response.ok) {
+        router.push('/auth/login');
+      } else {
+        console.error('Failed to register user:', await response.json());
+      }
     } catch (error) {
-      console.error('Update error:', error);
+      console.error('Error during registration:', error);
     } finally {
       setIsLoading(false);
     }

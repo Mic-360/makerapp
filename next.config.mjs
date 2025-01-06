@@ -2,13 +2,13 @@
 const nextConfig = {
   reactStrictMode: true,
   output: 'standalone',
-  async rewrites() {
-    return [
+  images: {
+    remotePatterns: [
       {
-        source: '/api/:path*',
-        destination: 'http://localhost:3001/api/:path*',
+        protocol: 'https',
+        hostname: '**',
       },
-    ];
+    ],
   },
 };
 
