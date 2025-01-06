@@ -26,6 +26,8 @@ import {
   Clock,
   ThumbsUp,
   MessageCircle,
+  Clock10,
+  Link2,
 } from 'lucide-react';
 import TopBar from '@/components/top-bar';
 import { Separator } from '@radix-ui/react-separator';
@@ -42,7 +44,6 @@ export default function LabSpacePage() {
     'Post Tools',
     'Wood CNC',
     'Laser Machine',
-    'View All',
   ];
 
   const machines = [
@@ -51,21 +52,21 @@ export default function LabSpacePage() {
       description:
         'Max Build Size: 220 x 220 x 250 mm Print Speed: 30-60mm/s Nozzle: 0.4mm Material: PLA, ABS, PETG',
       price: '500/hr',
-      image: '/placeholder.svg',
+      image: '/assetlist.png',
     },
     {
       name: '3D Printer Creality 333XP',
       description:
         'Max Build Size: 220 x 220 x 250 mm Print Speed: 30-60mm/s Nozzle: 0.4mm Material: PLA, ABS, PETG',
       price: '500/hr',
-      image: '/placeholder.svg',
+      image: '/assetlist.png',
     },
     {
       name: '3D Printer Creality 333XP',
       description:
         'Max Build Size: 220 x 220 x 250 mm Print Speed: 30-60mm/s Nozzle: 0.4mm Material: PLA, ABS, PETG',
       price: '500/hr',
-      image: '/placeholder.svg',
+      image: '/assetlist.png',
     },
   ];
 
@@ -89,17 +90,17 @@ export default function LabSpacePage() {
     {
       name: 'Mr. Suresh Nayak',
       role: 'Mentor',
-      image: '/placeholder.svg',
+      image: '/assetlist.png',
     },
     {
       name: 'Mr. Suresh Nayak',
       role: 'Lab Manager',
-      image: '/placeholder.svg',
+      image: '/assetlist.png',
     },
     {
       name: 'Mr. Suresh Nayak',
       role: 'Facilitator',
-      image: '/placeholder.svg',
+      image: '/assetlist.png',
     },
   ];
 
@@ -108,25 +109,25 @@ export default function LabSpacePage() {
       author: 'Pratham Raj',
       rating: 4.5,
       text: 'It was a pleasant experience working at the space. Everything was just great. Machine, staff, service, cleanliness all graded 5/5! Medical kit Single use items were very helpful.',
-      image: '/placeholder.svg',
+      image: '/assetlist.png',
     },
     {
       author: 'Sarit Moranth',
       rating: 4.5,
       text: 'It was a pleasant experience working at the space. Everything was just great. Machine, staff, service, cleanliness all graded 5/5! Medical kit Single use items were very helpful.',
-      image: '/placeholder.svg',
+      image: '/assetlist.png',
     },
     {
       author: 'Pratham Raj',
       rating: 4.5,
       text: 'It was a pleasant experience working at the space. Everything was just great. Machine, staff, service, cleanliness all graded 5/5! Medical kit Single use items were very helpful.',
-      image: '/placeholder.svg',
+      image: '/assetlist.png',
     },
     {
       author: 'Sarit Moranth',
       rating: 4.5,
       text: 'It was a pleasant experience working at the space. Everything was just great. Machine, staff, service, cleanliness all graded 5/5! Medical kit Single use items were very helpful.',
-      image: '/placeholder.svg',
+      image: '/assetlist.png',
     },
   ];
 
@@ -134,7 +135,7 @@ export default function LabSpacePage() {
     <div className="min-h-screen bg-white">
       <TopBar theme="light" />
       <Separator className="py-12" />
-      <div className="mx-auto py-8 px-20">
+      <div className="mx-auto py-8 px-4 md:px-20">
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-3">
             <div className="h-10 w-10 rounded-full bg-red-100 flex items-center justify-center">
@@ -142,45 +143,81 @@ export default function LabSpacePage() {
             </div>
             <h1 className="text-xl font-semibold">SQA FAB Lab</h1>
           </div>
+          <div className="flex items-center gap-2">
+            <Badge variant="secondary" className="gap-1">
+              <Star className="h-4 w-4" />
+              4.5
+            </Badge>
+          </div>
         </div>
 
         <div className="flex justify-end items-end gap-x-4">
           <div className="grid grid-cols-3 gap-4 mb-8 w-10/12">
             <div className="col-span-2">
-              <div className="aspect-[4/3] bg-gray-100 rounded-2xl" />
+              <div className="aspect-[4/3] bg-gray-100 rounded-2xl">
+                <Image
+                  src="/assetlist.png"
+                  alt="Machine"
+                  width={1000}
+                  height={300}
+                  className="rounded-lg h-full"
+                />
+              </div>
             </div>
             <div className="space-y-4">
-              <div className="aspect-[4/3] bg-gray-100 rounded-2xl" />
-              <div className="aspect-[4/3] bg-gray-100 rounded-2xl" />
+              <div className="aspect-[4/3] bg-gray-100 rounded-2xl">
+                <Image
+                  src="/assetlist.png"
+                  alt="Machine"
+                  width={1000}
+                  height={300}
+                  className="rounded-lg h-full"
+                />
+              </div>
+              <div className="aspect-[4/3] bg-gray-100 rounded-2xl">
+                <Image
+                  src="/assetlist.png"
+                  alt="Machine"
+                  width={1000}
+                  height={300}
+                  className="rounded-lg h-full"
+                />
+              </div>
             </div>
           </div>
 
-          <div className="mb-8 w-2/12">
-            <p className="text-sm text-gray-600">SQA University Campus 1</p>
-            <p className="text-sm text-gray-600">Khandagiri, Bhubaneswar</p>
-            <p className="text-sm text-gray-600">Odisha, 751030</p>
-            <Button variant="link" className="text-sm px-0">
-              See more
-            </Button>
+          <div className="mb-8 w-2/12 space-y-2">
+            <div className="flex items-start gap-2">
+              <MapPin className="h-4 w-4 text-orange-500" />
+              <div>
+                <p className="text-sm text-gray-600">SQA University Campus 1</p>
+                <p className="text-sm text-gray-600">Khandagiri, Bhubaneswar</p>
+                <p className="text-sm text-gray-600">Odisha, 751030</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-2">
+              <Clock10 className="h-4 w-4 text-orange-500" />
+              <p className="text-sm text-gray-600">
+                9:00 AM - 6:00 PM (Mon - Sat)
+              </p>
+            </div>
+            <div className="flex items-start gap-2">
+              <Link2 className="h-4 w-4 text-orange-500 -rotate-45" />
+              <p className="text-sm text-gray-600">Visit Website</p>
+            </div>
           </div>
         </div>
         <Tabs defaultValue="machines" className="mb-8">
           <TabsList className="border-b w-full justify-start h-auto p-0 bg-transparent">
             <TabsTrigger
               value="machines"
-              className="rounded-none border-b-2 border-transparent data-[state=active]:border-black data-[state=active]:bg-gray-100"
+              className="rounded-none border-b-2 px-20 py-4 border-transparent data-[state=active]:border-black data-[state=active]:bg-gray-100"
             >
               Machines
             </TabsTrigger>
             <TabsTrigger
-              value="memberships"
-              className="rounded-none border-b-2 border-transparent data-[state=active]:border-black data-[state=active]:bg-gray-100"
-            >
-              Memberships
-            </TabsTrigger>
-            <TabsTrigger
               value="events"
-              className="rounded-none border-b-2 border-transparent data-[state=active]:border-black data-[state=active]:bg-gray-100"
+              className="rounded-none border-b-2 px-20 py-4 border-transparent data-[state=active]:border-black data-[state=active]:bg-gray-100"
             >
               Events
             </TabsTrigger>
@@ -207,8 +244,14 @@ export default function LabSpacePage() {
               <div className="max-w-4xl">
                 <div className="space-y-6 mb-12">
                   {machines.map((machine, index) => (
-                    <div key={index} className="flex gap-4">
-                      <div className="w-32 h-24 bg-gray-100 rounded-lg" />
+                    <div key={index} className="flex gap-4 pr-20">
+                      <Image
+                        src="/assetlist.png"
+                        alt="Machine"
+                        width={100}
+                        height={200}
+                        className="rounded-lg"
+                      />
                       <div className="flex-1">
                         <div className="flex justify-between items-start">
                           <h3 className="font-medium">{machine.name}</h3>
@@ -240,7 +283,7 @@ export default function LabSpacePage() {
                   </p>
                 </div>
               </div>
-              <div className="space-y-6 -mt-8">
+              <div className="space-y-6 -mt-20">
                 <Card className="p-6">
                   <div className="text-center mb-6">
                     <p className="text-2xl font-semibold mb-1">Rs 500 / hr</p>

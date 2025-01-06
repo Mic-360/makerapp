@@ -15,10 +15,12 @@ import { Calendar } from '@/components/ui/calendar';
 import Makerspace from './makerspace';
 import Machine from './machine';
 import Event from './events';
+import { useRouter } from 'next/navigation';
 
 export default function Page() {
-  const [date, setDate] = useState<Date | undefined>(new Date());
+  const [date, setDate] = useState<Date | undefined>(undefined);
   const [activeSegment, setActiveSegment] = useState('makerspaces');
+  const router = useRouter();
 
   return (
     <div>
@@ -51,13 +53,19 @@ export default function Page() {
                   <span>SELECT A DATE</span>
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-auto p-0">
+              <PopoverContent className="w-auto p-0 bg-transparent border-none shadow-2xl space-y-2">
                 <Calendar
                   mode="single"
                   selected={date}
                   onSelect={setDate}
-                  className="rounded-xl border"
+                  className="rounded-xl border bg-white"
                 />
+                <Button
+                  className="w-full rounded-b-xl bg-green-500"
+                  onClick={() => router.push('/home/book')}
+                >
+                  Book Machine
+                </Button>
               </PopoverContent>
             </Popover>
           </div>
@@ -70,39 +78,39 @@ export default function Page() {
         {activeSegment === 'machine' && <Machine />}
         {activeSegment === 'events' && <Event />}
         <div className="fixed left-1/2 transform -translate-x-1/2 bottom-20 inline-flex rounded-full bg-gray-800 p-1">
-            <Button
+          <Button
             variant="ghost"
             className={`rounded-l-full p-6 text-sm font-medium transition-colors ${
               activeSegment === 'makerspaces'
-              ? 'bg-white text-black shadow'
-              : 'text-white hover:bg-gray-700'
+                ? 'bg-white text-black shadow'
+                : 'text-white hover:bg-gray-700'
             }`}
             onClick={() => setActiveSegment('makerspaces')}
-            >
+          >
             Find Makerspaces
-            </Button>
-            <Button
+          </Button>
+          <Button
             variant="ghost"
             className={`rounded-none p-6 text-sm font-medium transition-colors ${
               activeSegment === 'machine'
-              ? 'bg-white text-black shadow'
-              : 'text-white hover:bg-gray-700'
+                ? 'bg-white text-black shadow'
+                : 'text-white hover:bg-gray-700'
             }`}
             onClick={() => setActiveSegment('machine')}
-            >
+          >
             Book a Machine
-            </Button>
-            <Button
+          </Button>
+          <Button
             variant="ghost"
             className={`rounded-r-full p-6 text-sm font-medium transition-colors ${
               activeSegment === 'events'
-              ? 'bg-white text-black shadow'
-              : 'text-white hover:bg-gray-700'
+                ? 'bg-white text-black shadow'
+                : 'text-white hover:bg-gray-700'
             }`}
             onClick={() => setActiveSegment('events')}
-            >
+          >
             Explore Events
-            </Button>
+          </Button>
         </div>
       </div>
       <Footer />
