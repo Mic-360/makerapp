@@ -23,7 +23,7 @@ export default function Footer() {
               className="flex-grow rounded-r-none sm:rounded-r-none px-4 sm:px-6 placeholder:text-white mb-2 sm:mb-0"
             />
             <Button className="rounded-l-none sm:rounded-l-none bg-white text-black hover:bg-gray-800 hover:text-white px-4 sm:px-8 w-full sm:w-auto">
-              Sign Up ---→
+              Sign Up →
             </Button>
           </div>
         </div>

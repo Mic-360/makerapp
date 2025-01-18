@@ -56,7 +56,7 @@ export default function TopBar({
                     {session.user.name}
                   </Link>
                   <Image
-                    src={session.user.image}
+                    src={session.user.image|| ''}
                     alt="Profile"
                     width={30}
                     height={30}
@@ -248,10 +248,10 @@ export default function TopBar({
                     href="/profile"
                     className={`${isDark ? 'text-white' : 'text-black'} font-medium text-md`}
                   >
-                    {session.user.name.split(' ')[0]}
+                    {session?.user?.name?.split(' ')[0] || 'Guest'}
                   </Link>
                   <Image
-                    src={session.user.image}
+                    src={session.user.image || ''}
                     alt="Profile"
                     width={30}
                     height={30}
