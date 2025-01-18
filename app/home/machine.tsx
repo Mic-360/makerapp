@@ -1,6 +1,5 @@
 'use client';
 
-import CategoryScroll from '@/components/category-scroll';
 import { Filters } from '@/components/filters';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -10,22 +9,61 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { Separator } from '@/components/ui/separator';
+import { fetchMachines } from '@/lib/api';
 import { sortOptions } from '@/lib/constants';
 import { ArrowUpDown, SlidersHorizontal, Star } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 export default function Machine() {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [machines, setMachines] = useState([
+    {
+      id: '1',
+      name: '3D Printer XYZ-2000',
+      makerspaceName: 'TechHub',
+      location: 'San Francisco, USA',
+      stars: 4.5,
+      categories: ['3D Printing', 'Rapid Prototyping'],
+      fullDescription:
+        'The XYZ-2000 is a high-precision 3D printer capable of printing complex geometries with various materials including PLA, ABS, and PETG.',
+      image: '/assetlist.png',
+    },
+    {
+      id: '2',
+      name: 'Laser Cutter Pro-500',
+      makerspaceName: 'CreativeLab',
+      location: 'New York, USA',
+      stars: 4.8,
+      categories: ['Laser Cutting', 'Engraving'],
+      fullDescription:
+        'The Pro-500 laser cutter offers precision cutting and engraving on various materials including wood, acrylic, and leather.',
+      image: '/assetlist.png',
+    },
+  ]);
+
+  const [expandedDescriptions, setExpandedDescriptions] = useState<{
+    [key: string]: boolean;
+  }>({});
+
+  // useEffect(() => {
+  //   const loadData = async () => {
+  //     const mach = await fetchMachines();
+  //     setMachines(mach);
+  //   };
+  //   loadData();
+  // }, []);
+
+  const toggleDescription = (id: string) => {
+    setExpandedDescriptions((prev) => ({
+      ...prev,
+      [id]: !prev[id],
+    }));
+  };
 
   return (
-    <main className="container mx-auto px-4 sm:px-6 lg:px-8 my-10">
-      <section className="mt-4">
-        <h2 className="font-semibold text-2xl">Explore Machines</h2>
-        <CategoryScroll />
-      </section>
-
+    <main className="container mx-auto px-4 sm:px-6 lg:px-8">
       <section>
         <div className="flex items-center justify-end gap-x-2 pb-4 p-1">
           <Popover>
@@ -82,14 +120,14 @@ export default function Machine() {
             />
           )}
           <div className="flex-grow grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((item) => (
+            {machines.map((machine) => (
               <div
-                key={item}
+                key={machine.id}
                 className="border rounded-xl overflow-hidden hover:shadow-xl shadow-inner"
               >
                 <Image
-                  src="/assetlist.png"
-                  alt={`Creality 3-D Printer ${item}`}
+                  src={machine.image || '/placeholder.svg'}
+                  alt={machine.name}
                   width={400}
                   height={600}
                   className="w-full object-cover rounded-xl"
@@ -97,28 +135,39 @@ export default function Machine() {
                 <div className="p-4">
                   <div className="flex justify-between w-full">
                     <div>
-                      <h3 className="font-semibold text-lg">
-                        Creality, 3-D Printer
-                      </h3>
+                      <h3 className="font-semibold text-lg">{machine.name}</h3>
                       <p className="text-xs text-gray-600">
-                        SOA Fab Lab, Bhubaneshwar
+                        {machine.makerspaceName}, {machine.location}
                       </p>
                     </div>
                     <div className="flex items-start justify-center gap-x-1.5">
                       <span className="text-gray-600 font-semibold text-md">
-                        2.5
+                        {machine.stars.toFixed(1)}
                       </span>
                       <Star className="w-4 h-4 mt-[3px] text-orange-400 fill-current" />
                     </div>
                   </div>
-                  <div className="flex justify-between items-end">
-                    <div>
-                      <p className="text-sm my-2">PLA, ABS ; Volumes</p>
-                      <Link href={'/'} className="underline text-xs">
-                        Show More
-                      </Link>
-                    </div>
-                    <Link href="/home/book">
+                  <p className="text-sm my-2">
+                    {machine.categories.join(', ')}
+                  </p>
+                  <div>
+                    <button
+                      type="button"
+                      onClick={() => toggleDescription(machine.id)}
+                      className="underline text-xs"
+                    >
+                      {expandedDescriptions[machine.id]
+                        ? 'Show Less'
+                        : 'Show More'}
+                    </button>
+                    {expandedDescriptions[machine.id] && (
+                      <p className="text-sm mt-2">{machine.fullDescription}</p>
+                    )}
+                  </div>
+                  <div className="flex justify-end my-2 items-end">
+                    <Link
+                      href={`/home/${encodeURIComponent(machine.name)}/book`}
+                    >
                       <Button
                         variant="default"
                         className="rounded-lg px-6 hover:bg-green-500 hover:text-black"
@@ -143,13 +192,13 @@ export default function Machine() {
         <div className="md:w-1/3 py-10 flex flex-col items-start justify-between">
           <article>
             <h2 className="text-2xl sm:text-4xl font-bold mb-4">
-              Discover a Global Network of 5000+ Maker Spaces
+              Discover a Wide Range of Advanced Machines
             </h2>
             <p className="text-gray-600 mb-4 max-w-56">
-              Find the Perfect Place to Bring Your Ideas to Life
+              Find the Perfect Tool to Bring Your Ideas to Life
             </p>
           </article>
-          <Button variant="link" className="text-lg">
+          <Button variant="link" className="text-lg -ml-4">
             View More →
           </Button>
         </div>
@@ -158,7 +207,7 @@ export default function Machine() {
           <div className="bg-yellow-100 rounded-2xl py-1 px-4">
             <Image
               src="/world.svg"
-              alt="World Map"
+              alt="Machines Collage"
               width={600}
               height={400}
               className="w-full h-auto"
@@ -171,7 +220,7 @@ export default function Machine() {
               window.open('https://maps.app.goo.gl/qjaRb4rr4dzq64NY7', '_blank')
             }
           >
-            Find on Map →
+            Find Machines Near You →
           </Button>
         </div>
       </section>

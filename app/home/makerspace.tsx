@@ -1,6 +1,5 @@
 'use client';
 
-import CategoryScroll from '@/components/category-scroll';
 import { Filters } from '@/components/filters';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -18,14 +17,54 @@ import { useState } from 'react';
 
 export default function Makerspace() {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [makerSpaces, setMakerSpaces] = useState([
+    {
+      id: '1',
+      name: 'MakerSpace 1',
+      location: 'New York, USA',
+      stars: 4.5,
+      categories: ['3D Printing', 'Woodworking', 'Laser Cutting'],
+      fullDescription:
+        'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed ut lacus nec sapien',
+      image: '/assetlist.png',
+      machines: [
+      ],
+    },
+    {
+      id: '2',
+      name: 'CreativeLab',
+      location: 'New York, USA',
+      stars: 4.8,
+      categories: ['Laser Cutting', 'Engraving'],
+      fullDescription:
+        'The Pro-500 laser cutter offers precision cutting and engraving on various materials including wood, acrylic, and leather.',
+      image: '/assetlist.png',
+    },
+  ]);
+
+  const [expandedDescriptions, setExpandedDescriptions] = useState<{
+    [key: string]: boolean;
+  }>({});
+
+  // useEffect(() => {
+  //   const loadData = async () => {
+  //     const spaces = await fetchMakerSpaces();
+  //     const cats = await fetchCategories();
+  //     setMakerSpaces(spaces);
+  //     setCategories(cats);
+  //   };
+  //   loadData();
+  // }, []);
+
+  const toggleDescription = (id: string) => {
+    setExpandedDescriptions((prev) => ({
+      ...prev,
+      [id]: !prev[id],
+    }));
+  };
 
   return (
-    <main className="container mx-auto px-4 sm:px-6 lg:px-8 my-10">
-      <section className="mt-4">
-        <h2 className="font-semibold text-2xl">Explore MakerSpaces</h2>
-        <CategoryScroll />
-      </section>
-
+    <main className="container mx-auto px-4 sm:px-6 lg:px-8">
       <section>
         <div className="flex items-center justify-end gap-x-2 pb-4 p-1">
           <Popover>
@@ -82,14 +121,14 @@ export default function Makerspace() {
             />
           )}
           <div className="flex-grow grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((item) => (
+            {makerSpaces.map((space) => (
               <div
-                key={item}
+                key={space.id}
                 className="border rounded-xl overflow-hidden hover:shadow-xl shadow-inner"
               >
                 <Image
-                  src="/assetlist.png"
-                  alt={`Creality 3-D Printer ${item}`}
+                  src={space.image}
+                  alt={space.name}
                   width={400}
                   height={600}
                   className="w-full object-cover rounded-xl"
@@ -97,33 +136,38 @@ export default function Makerspace() {
                 <div className="p-4">
                   <div className="flex justify-between w-full">
                     <div>
-                      <h3 className="font-semibold text-lg">
-                        Creality, 3-D Printer
-                      </h3>
-                      <p className="text-xs text-gray-600">
-                        SOA Fab Lab, Bhubaneshwar
-                      </p>
+                      <h3 className="font-semibold text-lg">{space.name}</h3>
+                      <p className="text-xs text-gray-600">{space.location}</p>
                     </div>
                     <div className="flex items-start justify-center gap-x-1.5">
                       <span className="text-gray-600 font-semibold text-md">
-                        2.5
+                        {space.stars.toFixed(1)}
                       </span>
                       <Star className="w-4 h-4 mt-[3px] text-orange-400 fill-current" />
                     </div>
                   </div>
-                  <div className="flex justify-between items-end">
-                    <div>
-                      <p className="text-sm my-2">PLA, ABS ; Volumes</p>
-                      <Link href={'/'} className="underline text-xs">
-                        Show More
-                      </Link>
-                    </div>
-                    <Link href="/home/book">
+                  <p className="text-sm my-2">{space.categories.join(', ')}</p>
+                  <div>
+                    <button
+                      type="button"
+                      onClick={() => toggleDescription(space.id)}
+                      className="underline text-xs"
+                    >
+                      {expandedDescriptions[space.id]
+                        ? 'Show Less'
+                        : 'Show More'}
+                    </button>
+                    {expandedDescriptions[space.id] && (
+                      <p className="text-sm mt-2">{space.fullDescription}</p>
+                    )}
+                  </div>
+                  <div className="flex justify-end my-2">
+                    <Link href={`/home/${encodeURIComponent(space.name)}/book`}>
                       <Button
                         variant="default"
                         className="rounded-lg px-6 hover:bg-green-500 hover:text-black"
                       >
-                        <span className="text-xs">BOOK NOW</span>
+                        <span className="text-xs">EXPLORE</span>
                       </Button>
                     </Link>
                   </div>
@@ -149,7 +193,7 @@ export default function Makerspace() {
               Find the Perfect Place to Bring Your Ideas to Life
             </p>
           </article>
-          <Button variant="link" className="text-lg">
+          <Button variant="link" className="text-lg -ml-4">
             View More →
           </Button>
         </div>

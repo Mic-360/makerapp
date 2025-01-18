@@ -47,3 +47,14 @@ export const sortOptions: SortOption[] = [
   { id: 'rating', label: 'Customer Rating' },
   { id: 'newest', label: 'Whats new' },
 ];
+
+export interface MakerSpace {
+  id: string;
+  name: string;
+  location: string;
+  image: string;
+  stars: number;
+  shortDescription: string;
+  fullDescription: string;
+  categories: string[];
+}
