@@ -1,3 +1,4 @@
+import Image from "next/image";
 import React from "react";
 
 const Wishlist = () => {
@@ -51,10 +52,12 @@ const Wishlist = () => {
             key={machine.id}
             className="bg-white rounded-lg shadow overflow-hidden"
           >
-            <img
+            <Image
               src={machine.image}
               alt={machine.name}
               className="w-full h-48 object-cover"
+              height={100}
+              width={100}
             />
             <div className="p-4">
               <h3 className="text-lg font-bold">{machine.name}</h3>
