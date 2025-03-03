@@ -19,8 +19,7 @@ import { useRouter } from 'next/navigation';
 import CategoryScroll from '@/components/category-scroll';
 
 export default function Page() {
-  const [date, setDate] = useState<Date | undefined>(undefined);
-  const [activeSegment, setActiveSegment] = useState('makerspaces');
+  const [activeSegment, setActiveSegment] = useState('machines');
   const router = useRouter();
 
   return (
@@ -36,7 +35,7 @@ export default function Page() {
             priority
             className="z-0"
           />
-          <div className="relative z-10 max-w-3xl mb-8">
+          <div className="relative z-10 max-w-3xl my-auto">
             <h1 className="text-3xl sm:text-5xl font-bold mb-4 text-white">
               Find the Perfect Machine for Every Job, Every Time
             </h1>
@@ -44,31 +43,6 @@ export default function Page() {
               Book Your Machine Online - Ready for Your Next Big Project When
               You Arrive.
             </p>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  size="lg"
-                  className="mt-14 bg-transparent border text-white hover:text-black hover:bg-white rounded-full"
-                >
-                  <CalendarIcon className="w-4 h-4 mr-2" />
-                  <span>SELECT A DATE</span>
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0 bg-transparent border-none shadow-2xl space-y-2">
-                <Calendar
-                  mode="single"
-                  selected={date}
-                  onSelect={setDate}
-                  className="rounded-xl border bg-white"
-                />
-                <Button
-                  className="w-full rounded-b-xl bg-green-500"
-                  onClick={() => router.push('/home/book')}
-                >
-                  Book Machine
-                </Button>
-              </PopoverContent>
-            </Popover>
           </div>
           <div className="pointer-events-none absolute inset-y-0 left-0 w-full bg-gradient-to-r from-black/40 dark:from-background"></div>
           <div className="pointer-events-none absolute inset-y-0 right-0 w-full bg-gradient-to-l from-black/40 dark:from-background"></div>
@@ -84,19 +58,19 @@ export default function Page() {
         {activeSegment === 'makerspaces' && <Makerspace />}
         {activeSegment === 'machines' && <Machine />}
         {activeSegment === 'events' && <Event />}
-        <div className="sticky bottom-5 left-1/2 transform -translate-x-1/2 mb-10 inline-flex rounded-full bg-gray-800 p-1 shadow-lg shadow-slate-500">
+        <div className="sticky bottom-5 left-1/2 transform -translate-x-1/2 mb-10 inline-flex rounded-full bg-white text-gray-200 shadow-lg shadow-slate-500">
           <Button
             variant="ghost"
             className={`rounded-l-full p-6 text-sm font-medium transition-colors ${
-              activeSegment === 'makerspaces'
-                ? 'bg-white text-black shadow'
-                : 'text-white hover:bg-gray-700'
+              activeSegment === 'machines'
+                ? 'bg-black text-white font-semibold'
+                : 'text-gray-400 hover:bg-gray-100'
             }`}
-            onClick={() => setActiveSegment('makerspaces')}
+            onClick={() => setActiveSegment('machines')}
           >
-            Find Makerspaces
+            Book Machine
           </Button>
-          <Button
+          {/* <Button
             variant="ghost"
             className={`rounded-none p-6 text-sm font-medium transition-colors ${
               activeSegment === 'machine'
@@ -106,13 +80,13 @@ export default function Page() {
             onClick={() => setActiveSegment('machines')}
           >
             Book a Machine
-          </Button>
+          </Button> */}
           <Button
             variant="ghost"
             className={`rounded-r-full p-6 text-sm font-medium transition-colors ${
               activeSegment === 'events'
-                ? 'bg-white text-black shadow'
-                : 'text-white hover:bg-gray-700'
+                ? 'bg-black text-white font-semibold'
+                : 'text-gray-400 hover:bg-gray-100'
             }`}
             onClick={() => setActiveSegment('events')}
           >

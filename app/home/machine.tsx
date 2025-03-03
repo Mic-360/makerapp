@@ -47,13 +47,6 @@ export default function Machine() {
     [key: string]: boolean;
   }>({});
 
-  // useEffect(() => {
-  //   const loadData = async () => {
-  //     const mach = await fetchMachines();
-  //     setMachines(mach);
-  //   };
-  //   loadData();
-  // }, []);
 
   const toggleDescription = (id: string) => {
     setExpandedDescriptions((prev) => ({

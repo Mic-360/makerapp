@@ -224,8 +224,8 @@ export default function Event() {
         <div className="flex flex-col justify-center items-center md:w-1/2 gap-y-2">
           <div className="bg-yellow-100 rounded-2xl py-1 px-4">
             <Image
-              src="/events-collage.svg"
-              alt="Events Collage"
+              src="/world.svg"
+              alt="Machines Collage"
               width={600}
               height={400}
               className="w-full h-auto"
