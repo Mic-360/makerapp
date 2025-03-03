@@ -84,7 +84,7 @@ export default function TopBar({
 
   return (
     <header
-      className={`${isBg ? 'bg-white' : 'bg-transparent'} absolute z-50 top-0 left-0 w-full mx-auto p-4 lg:px-10 xl:px-24 ${isDark ? 'text-white' : 'text-black'}`}
+      className={`${isBg ? 'bg-white' : 'bg-transparent'} absolute z-50 top-0 left-0 w-full mx-auto p-4 lg:px-8 ${isDark ? 'text-white' : 'text-black'}`}
     >
       <div className="flex flex-wrap items-center justify-between">
         <div className="flex items-center space-x-4">
@@ -217,30 +217,31 @@ export default function TopBar({
           >
             <button
               type="button"
-              className={`py-2 px-4 rounded-xl font-semibold ${isDark
+              className={`py-2 px-4 rounded-xl font-semibold ${
+                isDark
                   ? 'text-white border-white hover:bg-white hover:text-black'
                   : 'text-black border-black hover:bg-black hover:text-white'
-                } border`}
+              } border`}
             >
               List your Machines
             </button>
           </Link>
-          {/* <div className="flex gap-x-2 items-center justify-center">
+          <div className="flex gap-x-2 items-center justify-center">
             <Link
-              href="/auth"
+              href="/auth/login"
               className={`${isDark ? 'text-white' : 'text-black'} font-medium text-md`}
             >
-              Login | Sign Up
+              Login
             </Link>
-            <Image
-              src="/favicon.ico"
-              alt="Profile"
-              width={30}
-              height={30}
-              className={`rounded-full border-2 ${isDark ? 'border-gray-400' : 'border-black'}`}
-            />
-          </div> */}
-          {
+            {' | '}
+            <Link
+              href="/auth/signup"
+              className={`${isDark ? 'text-white' : 'text-black'} font-medium text-md`}
+            >
+              Sign Up
+            </Link>
+          </div>
+          {/* {
             session && session.user ? (
               <>
                 <div className="flex gap-x-2 items-center justify-center">
@@ -263,7 +264,7 @@ export default function TopBar({
               <Link href="/auth" className="block text-center py-2 font-medium">
                 Login | Sign Up
               </Link>)
-          }
+          } */}
         </div>
       </div>
       {isMobileMenuOpen && <MobileMenu />}

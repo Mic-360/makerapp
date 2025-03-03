@@ -30,7 +30,7 @@ export default function AuthCard({
   return (
     <Card
       className={cn(
-        'relative w-full max-w-lg z-10 mx-auto rounded-xl py-10',
+        'relative w-full sm:max-w-lg z-10 mx-auto rounded-xl py-2 shadow-md',
         className
       )}
     >

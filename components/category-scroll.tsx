@@ -57,7 +57,7 @@ export default function CategoryScroll() {
           <Button
             key={index}
             variant="outline"
-            className="whitespace-nowrap hover:bg-green-500 hover:shadow-md px-10 py-6 rounded-xl"
+            className="whitespace-nowrap hover:bg-green-500 hover:shadow-md px-10 py-6 rounded-xl font-semibold"
           >
             {category}
           </Button>
