@@ -6,14 +6,16 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
   return (
     <div className="min-h-screen min-w-screen bg-white mx-auto">
       <TopBar theme="light" isBg />
-      <div className="relative h-screen w-screen flex flex-col items-center justify-center text-center">
+      <div className="relative h-screen">
         <Image
           src="/assetlist.png"
           alt="Background"
           fill
-          className="z-0 object-cover opacity-50"
+          className="z-0 object-cover opacity-80"
         />
-        {children}
+        <div className="relative z-10 max-w-3xl h-screen flex justify-center items-center pt-20 mx-auto text-center">
+          {children}
+        </div>
       </div>
       <div className="pointer-events-none absolute inset-y-0 left-0 w-full bg-gradient-to-r from-black/50 backdrop-blur-lg dark:from-background"></div>
       <div className="pointer-events-none absolute inset-y-0 right-0 w-full bg-gradient-to-l from-black/50 backdrop-blur-lg dark:from-background"></div>

@@ -45,7 +45,7 @@ export default function MobilePage() {
     >
       <form
         onSubmit={handleSubmit}
-        className="space-y-4 flex flex-col justify-center px-8 gap-y-12"
+        className="space-y-4 flex flex-col justify-center px-8 gap-y-6"
       >
         <div className="relative">
           <Input

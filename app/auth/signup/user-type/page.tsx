@@ -48,8 +48,10 @@ setting up your Karkhana account`}
             <Button
               key={type}
               type="button"
-              variant={userType === type ? 'default' : 'outline'}
-              className="rounded-xl py-12 text-md"
+              variant="outline"
+              className={`${
+                userType === type ? 'bg-green-500 text-white font-semibold' : 'text-gray-900'
+              } rounded-xl py-12 text-md`}
               onClick={() => setUserType(type)}
             >
               {type}

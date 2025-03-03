@@ -57,8 +57,8 @@ export default function IndustryPage() {
             <Button
               key={type}
               type="button"
-              variant={industry === type ? 'default' : 'outline'}
-              className="rounded-xl py-8 text-xs"
+              variant='outline'
+              className={`${industry === type ? 'bg-green-500 text-white font-semibold' : 'text-gray-900'} rounded-xl py-8 text-xs`}
               onClick={() => setIndustry(type)}
             >
               {type}

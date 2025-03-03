@@ -19,9 +19,9 @@ export default function EmailLoginPage() {
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setIsLoading(true);
-    signIn('credentials', {
-      "credentials-email": loginIdentifier,
-      "credentials-password": password,});
+    // signIn('credentials', {
+    //   "credentials-email": loginIdentifier,
+    //   "credentials-password": password,});
 
     router.push('/home');
 
