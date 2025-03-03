@@ -32,21 +32,18 @@ export default function MySpacePage() {
   return (
     <div>
       <Header />
-      <div className="space-y-4">
-        
-      </div>
+      <div className="space-y-4"></div>
       <Separator className="mt-4" />
       <BasicDetailsContent />
       <Separator className="mt-4" />
       <ProfessionalDetailsContent />
       <Separator className="mt-4" />
       <SocialMediaContent />
-     
     </div>
   );
 }
 
-function Header(){
+function Header() {
   const [currentDateTime, setCurrentDateTime] = React.useState(new Date());
 
   React.useEffect(() => {
@@ -69,32 +66,38 @@ function Header(){
     hour12: true,
   });
 
-  return(
+  return (
     <div className="flex justify-between items-center  bg-gray-100 relative">
-    <div className="flex items-center space-x-4 p-4">
-      <Image
-        src="/path/to/profile-pic.jpg"
-        alt="Profile Picture"
-        width={50}
-        height={50}
-        className="rounded-full"
-      />
-      <div>
-        <div className="text-lg font-semibold">John Doe</div>
-        <div className="text-sm text-gray-500">Software Engineer</div>
-        <div className="flex items-center">
-          <span className="text-yellow-500">★★★★☆</span>
-          <span className="ml-2 text-sm text-gray-500">(4.5)</span>
+      <div className="flex items-center space-x-4 p-4">
+        <Image
+          src="/path/to/profile-pic.jpg"
+          alt="Profile Picture"
+          width={50}
+          height={50}
+          className="rounded-full"
+        />
+        <div>
+          <div className="text-lg font-semibold">John Doe</div>
+          <div className="text-sm text-gray-500">Software Engineer</div>
+          <div className="flex items-center">
+            <span className="text-yellow-500">★★★★☆</span>
+            <span className="ml-2 text-sm text-gray-500">(4.5)</span>
+          </div>
         </div>
       </div>
+      <div className="absolute text-red-500 text-sm top-0 right-0">
+        {formattedDate}, {formattedTime}
+      </div>
     </div>
-    <div className="absolute text-red-500 text-sm top-0 right-0">
-    {formattedDate}, {formattedTime}
-    </div>
-  </div>
-  )
+  );
 }
-const Card = ({ title, children }) => {
+const Card = ({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
+}) => {
   return (
     <div className="bg-white shadow-md rounded-lg p-6 mb-6">
       <h2 className="text-lg font-semibold mb-4 text-blue-800">{title}</h2>
@@ -103,7 +106,7 @@ const Card = ({ title, children }) => {
   );
 };
 
-const DetailRow = ({ label, value }) => {
+const DetailRow = ({ label, value }: { label: string; value: string }) => {
   return (
     <div className="flex flex-col">
       <span className="text-sm text-gray-600 font-small">{label}</span>
@@ -112,53 +115,53 @@ const DetailRow = ({ label, value }) => {
   );
 };
 
-
 function BasicDetailsContent() {
   return (
     <Card title="1. Basic Details">
-    <div className="grid grid-rows-3 grid-cols-3 grid-flow-col gap-6">
-    <DetailRow label="Full Name" value="John Doe" />
-    <DetailRow label="Display Name" value="John" />
-    <DetailRow label="Country/Region" value="🇮🇳 India" />
-    <DetailRow label="State" value="Odisha" />
-    <DetailRow label="Gender" value="Male" />
-    <div></div>
-    <div>
-    <div className="grid place-content-between text-red-500 text-sm top-0 right-0">
-    <div></div>
-    <div> edit</div>
-    </div>
-
-    </div>
-    </div>
-  </Card>
+      <div className="grid grid-rows-3 grid-cols-3 grid-flow-col gap-6">
+        <DetailRow label="Full Name" value="John Doe" />
+        <DetailRow label="Display Name" value="John" />
+        <DetailRow label="Country/Region" value="🇮🇳 India" />
+        <DetailRow label="State" value="Odisha" />
+        <DetailRow label="Gender" value="Male" />
+        <div></div>
+        <div>
+          <div className="grid place-content-between text-red-500 text-sm top-0 right-0">
+            <div></div>
+            <div> edit</div>
+          </div>
+        </div>
+      </div>
+    </Card>
   );
 }
 function ProfessionalDetailsContent() {
   return (
     <Card title="2. Professional Details">
-    <div className="grid grid-rows-2 grid-cols-3 grid-flow-col gap-6">
-    <DetailRow label="University/Company Name" value="Software Engineer" />
-    <DetailRow label="Your Role" value="4 years" />
-    <DetailRow label="Industry" value="React, Node.js, TypeScript" />
-    <DetailRow label="Skills" value="SQA Labs" />
-    <DetailRow label="Website Link" value="Software Engineer" />
-    </div>
-  </Card>
+      <div className="grid grid-rows-2 grid-cols-3 grid-flow-col gap-6">
+        <DetailRow label="University/Company Name" value="Software Engineer" />
+        <DetailRow label="Your Role" value="4 years" />
+        <DetailRow label="Industry" value="React, Node.js, TypeScript" />
+        <DetailRow label="Skills" value="SQA Labs" />
+        <DetailRow label="Website Link" value="Software Engineer" />
+      </div>
+    </Card>
   );
 }
 function SocialMediaContent() {
   return (
     <Card title="3. Social Media Links">
-    <div className="grid grid-rows-2 grid-cols-3 grid-flow-col gap-6">
-    <DetailRow label="LinkedIn" value="https://www.linkedin.com/in/johndoe" />
-    <DetailRow label="GitHub" value="github/johndoe" />
-    <DetailRow label="Twitter" value="@johndoe" />
-    <DetailRow label="Facebook" value="johndoe" />
-    <DetailRow label="Instagram" value="johndoe" />
-    </div>
-
-  </Card>
+      <div className="grid grid-rows-2 grid-cols-3 grid-flow-col gap-6">
+        <DetailRow
+          label="LinkedIn"
+          value="https://www.linkedin.com/in/johndoe"
+        />
+        <DetailRow label="GitHub" value="github/johndoe" />
+        <DetailRow label="Twitter" value="@johndoe" />
+        <DetailRow label="Facebook" value="johndoe" />
+        <DetailRow label="Instagram" value="johndoe" />
+      </div>
+    </Card>
   );
 }
 
