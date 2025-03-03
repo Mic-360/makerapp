@@ -1,12 +1,16 @@
+"use client";
+
 import TopBar from '@/components/top-bar';
 import Link from 'next/link';
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
 const styles = {
   scrollContainer: `
     flex
     overflow-hidden
-    w-full
-    max-w-md
+    w-screen
+    max-w-screen-md
     my-12
     relative
   `,
@@ -21,12 +25,29 @@ const styles = {
 };
 
 export default function LandingPage() {
+  const router = useRouter();
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Enter') {
+        router.push('/home');
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+
+  }, [router]);
+
   return (
     <main className="min-h-screen bg-gray-50">
       <TopBar theme="light" isBg />
 
-      <div className="flex flex-col items-center justify-center min-h-screen px-4 pt-20">
-        <div className="text-center max-w-3xl mx-auto">
+      <div className="flex flex-col w-screen items-center justify-center min-h-screen px-4 pt-20">
+        <div className="text-center max-w-screen-md mx-auto">
           <h1 className="text-4xl mb-4 md:text-6xl font-bold text-[#2C4ABE]">
             Welcome to
             <br />

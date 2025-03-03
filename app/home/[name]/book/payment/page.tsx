@@ -1,7 +1,10 @@
 'use client';
 
+import Footer from '@/components/footer';
+import TopBar from '@/components/top-bar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -11,24 +14,23 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Checkbox } from '@/components/ui/checkbox';
+import { Separator } from '@/components/ui/separator';
+import axios from 'axios';
 import {
-  X,
   Check,
   Clock,
-  MessageCircle,
-  MapPin,
-  Star,
   Link2Icon,
-  Share,
+  MapPin,
+  MessageCircle,
   Printer,
+  Share,
+  Star,
+  X,
 } from 'lucide-react';
 import Image from 'next/image';
-import { useState } from 'react';
-import Footer from '@/components/footer';
-import TopBar from '@/components/top-bar';
-import { Separator } from '@/components/ui/separator';
 import Link from 'next/link';
+import Script from 'next/script';
+import { useState } from 'react';
 
 type BookingState =
   | 'initial'
@@ -40,27 +42,117 @@ type BookingState =
 
 export default function BookingFlow() {
   const [bookingState, setBookingState] = useState<BookingState>('initial');
-  const [selectedDate] = useState('3 June 2024');
-  const [selectedTime] = useState('10:00 a.m. to 12:00 p.m.');
+  const [selectedDate, setSelectedDate] = useState(new Date().toDateString());
+  const [selectedTime, setSelectedTime] = useState('10:00 a.m. to 12:00 p.m.');
   const [quantity, setQuantity] = useState(1);
 
-  const handleProceedToPayment = () => {
-    setBookingState('loading');
-    // Simulate payment processing
-    setTimeout(() => {
-      // Randomly succeed or fail for demo
-      if (Math.random() > 0.5) {
-        setBookingState('success');
-        setTimeout(() => {
-          setBookingState('confirmed');
-        }, 500);
-      } else {
-        setBookingState('failed');
-        setTimeout(() => {
-          setBookingState('initial');
-        }, 500);
-      }
-    }, 2000);
+  const handleProceedToPayment = async () => {
+    try {
+      setBookingState('loading');
+      // Mock backend call to simulate payment processing
+      await new Promise((resolve) => setTimeout(resolve, 2000)); // Simulate network delay
+
+      // Simulate successful payment response
+      setBookingState('success');
+      setTimeout(() => {
+      setBookingState('confirmed');
+      setTimeout(() => setBookingState('approved'), 3000); // Set booking state to approved after 3 seconds
+      }, 500);
+    } catch (error) {
+      console.error('Payment processing error:', error);
+      setBookingState('failed');
+      setTimeout(() => setBookingState('initial'), 500);
+    }
+
+
+      // Call backend to create an order
+    //   const { data } = await axios.post(
+    //     'http://localhost:3001/api/payment/createOrder',
+    //     {
+    //       hour: 10,
+    //       machineId: '678bb5a4ff7fb5bb2220a5bf',
+    //       email: 'khand8914@gmail.com',
+    //     }
+    //   );
+
+    //   if (!data.order) {
+    //     throw new Error('Failed to create order');
+    //   }
+    //   const { id: orderId, amount } = data.order;
+
+    //   const options = {
+    //     key_id: 'rzp_test_puRPV1TmFcFfp2',
+    //     amount,
+    //     currency: 'INR',
+    //     name: 'Booking Payment',
+    //     description: 'Machine Booking',
+    //     order_id: orderId,
+    //     handler: async (response: any) => {
+    //       const { razorpay_order_id, razorpay_payment_id, razorpay_signature } =
+    //         response;
+
+    //       const verificationResponse = await axios.post(
+    //         'http://localhost:3001/api/payment/verifyPayment',
+    //         {
+    //           order_id: razorpay_order_id,
+    //           payment_id: razorpay_payment_id,
+    //           signature: razorpay_signature,
+    //         }
+    //       );
+
+    //       if (verificationResponse.data.message === 'Payment successful') {
+    //         setBookingState('success');
+    //         setTimeout(() => setBookingState('confirmed'), 500);
+    //       } else {
+    //         setBookingState('failed');
+    //       }
+    //     },
+    //     modal: {
+    //       ondismiss: () => {
+    //         setBookingState('initial');
+    //       },
+    //     },
+    //     prefill: {
+    //       name: 'User Name', // Replace with user name
+    //       email: 'user@example.com', // Replace with user email
+    //     },
+    //     notes: {
+    //       address: 'User Address',
+    //     },
+    //     theme: {
+    //       color: '#3399cc',
+    //     },
+    //   };
+    //   //@ts-expect-error
+    //   const razorpay = new window.Razorpay(options);
+    //   //@ts-expect-error
+    //   razorpay.open();
+
+    //   //@ts-expect-error
+    //   razorpay.on('payment.failed', () => {
+    //     setBookingState('failed');
+    //     setTimeout(() => setBookingState('initial'), 500);
+    //   });
+
+    //   razorpay.on('payment.success', () => {
+    //     setBookingState('success');
+    //     setTimeout(() => setBookingState('confirmed'), 500);
+    //   });
+
+    //   razorpay.on('payment.error', () => {
+    //     setBookingState('failed');
+    //     setTimeout(() => setBookingState('initial'), 500);
+    //   });
+
+    //   razorpay.on('payment.cancel', () => {
+    //     setBookingState('failed');
+    //     setTimeout(() => setBookingState('initial'), 500);
+    //   });
+    // } catch (error) {
+    //   console.error('Payment processing error:', error);
+    //   setBookingState('failed');
+    //   setTimeout(() => setBookingState('initial'), 500);
+    // }
   };
 
   const renderPaymentStatus = () => {
@@ -198,18 +290,54 @@ export default function BookingFlow() {
                 >
                   +
                 </Button>
-                <span className="ml-auto font-semibold">₹ 500/hr</span>
+                <span className="ml-auto font-semibold">
+                  ₹ {500 * quantity}/hr
+                </span>
               </div>
             </div>
             <hr className="border-t border-gray-200" />
-            <div className="space-y-4 mb-6">
-              <div className="flex items-center justify-between py-3">
-                <Label className="font-semibold">SELECTED DATE</Label>
-                <p>{selectedDate}</p>
+            <div className="space-y-4 my-6">
+              <div className="grid grid-cols-3 gap-4">
+                <Label className="font-semibold col-span-2">SELECTED DATE</Label>
+                <Select value={selectedDate} onValueChange={setSelectedDate}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select date" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value={new Date().toDateString()}>
+                      {new Date().toDateString()}
+                    </SelectItem>
+                    <SelectItem
+                      value={new Date(Date.now() + 86400000).toDateString()}
+                    >
+                      {new Date(Date.now() + 86400000).toDateString()}
+                    </SelectItem>
+                    <SelectItem
+                      value={new Date(Date.now() + 2 * 86400000).toDateString()}
+                    >
+                      {new Date(Date.now() + 2 * 86400000).toDateString()}
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
-              <div className="flex items-center justify-between py-3">
-                <Label className="font-semibold">SELECTED TIME</Label>
-                <p>{selectedTime}</p>
+              <div className="grid grid-cols-3 gap-4">
+                <Label className="font-semibold col-span-2">SELECTED TIME</Label>
+                <Select value={selectedTime} onValueChange={setSelectedTime}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select time" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="10:00 a.m. to 12:00 p.m.">
+                      10:00 a.m. to 12:00 p.m.
+                    </SelectItem>
+                    <SelectItem value="12:00 p.m. to 2:00 p.m.">
+                      12:00 p.m. to 2:00 p.m.
+                    </SelectItem>
+                    <SelectItem value="2:00 p.m. to 4:00 p.m.">
+                      2:00 p.m. to 4:00 p.m.
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
             <div className="border-t pt-4">
@@ -231,7 +359,9 @@ export default function BookingFlow() {
                   <span className="font-semibold text-xl">
                     Total Cost (INR)
                   </span>
-                  <span className="font-semibold text-lg">₹ 645</span>
+                  <span className="font-semibold text-lg">
+                    ₹ {500 * quantity + 145}
+                  </span>
                 </div>
               </div>
             </div>
@@ -247,13 +377,8 @@ export default function BookingFlow() {
               </SelectContent>
             </Select>
 
-            <Input
-              placeholder="Enter your UPI ID E.g. yourusername@bank"
-              className="my-4"
-            />
-
-            <div className="flex items-start gap-x-2 mb-6">
-              <Checkbox id="terms" />
+            <div className="flex items-start gap-x-2 my-6">
+              <Checkbox id="terms" className="mt-1" />
               <label htmlFor="terms" className="text-sm text-gray-600">
                 By selecting the button below, I agree to the Makerspace rules,
                 Ground rules for guests, Karkhana Reworking and Refund Policy
@@ -659,6 +784,10 @@ export default function BookingFlow() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <Script
+        id="razorpay-checkout-js"
+        src="https://checkout.razorpay.com/v1/checkout.js"
+      />
       <TopBar theme="light" />
       <div className="max-w-7xl mx-auto px-4 pt-20">
         {bookingState === 'initial' && renderInitialForm()}

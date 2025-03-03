@@ -1,44 +1,43 @@
 'use client';
 
-import { useState } from 'react';
+import Footer from '@/components/footer';
+import TopBar from '@/components/top-bar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import { Card } from '@/components/ui/card';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import {
-  Wifi,
-  Monitor,
-  Speaker,
-  Tv,
-  Projector,
-  BellRing,
-  FireExtinguisher,
-  DoorOpen,
-  Camera,
-  Coffee,
-  Car,
-  Building2,
-  Star,
-  MapPin,
-  Clock,
-  ThumbsUp,
-  MessageCircle,
-  Clock10,
-  Link2,
-} from 'lucide-react';
-import TopBar from '@/components/top-bar';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@radix-ui/react-separator';
+import {
+  BellRing,
+  Building2,
+  Camera,
+  Car,
+  Clock,
+  Clock10,
+  Coffee,
+  DoorOpen,
+  FireExtinguisher,
+  Link2,
+  MapPin,
+  MessageCircle,
+  Monitor,
+  Projector,
+  Speaker,
+  Star,
+  ThumbsUp,
+  Tv,
+  Wifi,
+} from 'lucide-react';
 import Image from 'next/image';
-import Footer from '@/components/footer';
 import Link from 'next/link';
+import { useState } from 'react';
 
 export default function LabSpacePage() {
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [showMore, setShowMore] = useState(false);
-  const [quantity, setQuantity] = useState(1);
 
   const filters = [
     '3D Printer',
@@ -56,7 +55,40 @@ export default function LabSpacePage() {
       price: '500/hr',
       image: '/assetlist.png',
     },
+    {
+      name: 'Laser Cutter X500',
+      description:
+        'Cutting Area: 500 x 300 mm Laser Power: 50W Material: Acrylic, Wood, Leather',
+      price: '700/hr',
+      image: '/assetlist.png',
+    },
+    {
+      name: 'CNC Router 4040-XE',
+      description:
+        'Working Area: 400 x 400 x 100 mm Spindle Speed: 8000-24000 RPM Material: Wood, Plastic, Soft Metals',
+      price: '800/hr',
+      image: '/assetlist.png',
+    },
+    {
+      name: 'Vinyl Cutter VC-200',
+      description:
+        'Cutting Width: 200 mm Cutting Speed: 10-800 mm/s Material: Vinyl, Paper, Cardboard',
+      price: '300/hr',
+      image: '/assetlist.png',
+    },
+    {
+      name: 'UV Printer UP-300',
+      description:
+        'Print Area: 300 x 200 mm Print Speed: 50mm/s Material: Plastic, Metal, Glass',
+      price: '900/hr',
+      image: '/assetlist.png',
+    },
   ];
+
+  const [quantities, setQuantities] = useState<number[]>([
+    1,
+    ...new Array(machines.length - 1).fill(0),
+  ]);
 
   const events = [
     {
@@ -95,6 +127,18 @@ export default function LabSpacePage() {
       image: '/assetlist.png',
     },
   ];
+
+  const handleQuantityChange = (index: number, increment: boolean) => {
+    setQuantities((prevQuantities) => {
+      const newQuantities = [...prevQuantities];
+      newQuantities[index] = increment
+        ? newQuantities[index] + 1
+        : index === 0
+          ? Math.max(1, newQuantities[index] - 1)
+          : Math.max(0, newQuantities[index] - 1);
+      return newQuantities;
+    });
+  };
 
   return (
     <div className="min-h-screen bg-white">
@@ -223,18 +267,16 @@ export default function LabSpacePage() {
                             className="hover:bg-orange-500 bg-black text-white aspect-square"
                             variant="outline"
                             size="sm"
-                            onClick={() =>
-                              setQuantity(Math.max(1, quantity - 1))
-                            }
+                            onClick={() => handleQuantityChange(index, false)}
                           >
                             -
                           </Button>
-                          <span>{quantity}</span>
+                          <span>{quantities[index]}</span>
                           <Button
                             className="hover:bg-orange-500 bg-black text-white"
                             variant="outline"
                             size="sm"
-                            onClick={() => setQuantity(quantity + 1)}
+                            onClick={() => handleQuantityChange(index, true)}
                           >
                             +
                           </Button>
@@ -252,8 +294,9 @@ export default function LabSpacePage() {
               </ScrollArea>
               <Card className="p-6">
                 <div className="text-center mb-6">
-                  <p className="text-2xl font-semibold mb-1">Rs 500 / hr</p>
-                  <p className="text-sm text-gray-600">June 2024</p>
+                  <p className="text-2xl font-semibold mb-1">
+                    Rs {500 * quantities.reduce((a, b) => a + b, 0)} / hr
+                  </p>
                 </div>
 
                 <Calendar
@@ -270,7 +313,9 @@ export default function LabSpacePage() {
                 </div>
 
                 <Button className="w-full">
-                  <Link href="/home/MakerSpace%201/book/payment">
+                  <Link
+                    href={`/home/${encodeURIComponent(machines[0].name)}/book/payment`}
+                  >
                     Request to Book
                   </Link>
                 </Button>
@@ -292,7 +337,9 @@ export default function LabSpacePage() {
                     <div className="flex-1">
                       <div className="flex justify-between items-start">
                         <h3 className="font-bold">{event.name}</h3>
-                        <p className="text-sm font-semibold">Rs {event.price}</p>
+                        <p className="text-sm font-semibold">
+                          Rs {event.price}
+                        </p>
                       </div>
                       <p className="text-sm text-gray-600 mt-1">
                         {event.description}
