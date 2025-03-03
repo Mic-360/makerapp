@@ -40,6 +40,7 @@ import { Button } from '@/components/ui/button';
 
 export default function Page() {
   const [activePage, setActivePage] = React.useState('My Space');
+  const [statusOpen, setStatusOpen] = React.useState(true);
 
   const navItems = [
     '',
@@ -180,15 +181,15 @@ export default function Page() {
           </Popover>
         </div>
       </header>
-      <main className="flex gap-x-8 items-start">
-        <aside className="h-[80vh] bg-gray-300 w-52 ml-8 rounded-3xl mb-6 pt-4 pb-4 pl-8 flex flex-col justify-between">
+      <main className="flex gap-x-2 px-4 items-start">
+        <aside className="bg-blue-600 w-52 rounded-3xl mb-6 pt-4 pb-4 pl-8 flex flex-col justify-between">
           <div>
             <div className="flex items-center gap-x-4 pl-4 my-6">
               <Avatar className="h-8 w-8">
                 <AvatarImage src="/placeholder.svg" alt="SQA FAB Lab" />
                 <AvatarFallback>SQ</AvatarFallback>
               </Avatar>
-              <h2 className="text-sm font-medium">SQA FAB Lab</h2>
+              <h2 className="text-sm font-semibold text-white">SQA FAB Lab</h2>
             </div>
             <Separator />
           </div>
@@ -204,22 +205,22 @@ export default function Page() {
                 <div key={item} className="relative">
                   {isPrevious && (
                     <div className="absolute bottom-0 right-0 t-0 h-6 w-6 bg-white">
-                      <div className="absolute bottom-0 right-0 h-6 w-6 bg-gray-300 rounded-br-3xl" />
+                      <div className="absolute bottom-0 right-0 h-6 w-6 bg-blue-600 rounded-br-3xl" />
                     </div>
                   )}
                   {isNext && (
                     <div className="absolute top-0 right-0 h-6 w-6 bg-white">
-                      <div className="absolute top-0 right-0 h-6 w-6 bg-gray-300 rounded-tr-3xl" />
+                      <div className="absolute top-0 right-0 h-6 w-6 bg-blue-600 rounded-tr-3xl" />
                     </div>
                   )}
                   <p
                     onClick={() => !isDisabled && setActivePage(item)}
-                    className={`block p-4 text-sm transition-colors relative ${
+                    className={`block p-4 text-md font-medium transition-colors relative ${
                       isActive
-                        ? 'bg-white rounded-l-3xl'
+                        ? 'bg-white rounded-l-3xl text-black'
                         : isDisabled
                           ? ''
-                          : 'hover:bg-white/50 rounded-l-3xl'
+                          : 'hover:bg-white/50 rounded-l-3xl text-white'
                     } ${isDisabled ? 'cursor-default' : 'cursor-pointer'}`}
                   >
                     {item}
@@ -236,7 +237,7 @@ export default function Page() {
                 <Link
                   key={item}
                   href="#"
-                  className="block py-2 px-4 text-sm rounded-l-3xl hover:bg-white/50 transition-colors"
+                  className="block py-2 px-4 text-sm rounded-l-3xl hover:bg-white/50 transition-colors text-white font-medium"
                 >
                   {item}
                 </Link>
@@ -245,53 +246,54 @@ export default function Page() {
           </div>
         </aside>
 
-        <section className="w-4/5 mt-4 max-w-6xl mx-auto">
-          <header className="mb-2 flex items-center justify-between">
-            <div className="flex w-full max-w-md items-center rounded-xl border bg-white px-4">
-              <Search className="h-4 w-4 text-gray-400" />
-              <Input
-                className="border-0 bg-transparent"
-                placeholder="Search for more"
-              />
-            </div>
-
+        <section className="w-4/5 max-w-6xl mx-auto">
+          <div className="flex items-center justify-end p-4">
             <div className="flex items-center gap-4">
-              <span className="text-sm text-gray-600">
-                {new Date().toLocaleString('en-US', {
-                  weekday: 'short',
-                  day: 'numeric',
-                  month: 'short',
-                  hour: 'numeric',
-                  minute: '2-digit',
-                  hour12: true,
-                })}
-              </span>
-
-              <Select defaultValue="monthly">
-                <SelectTrigger className="w-32">
-                  <SelectValue placeholder="Select view" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="monthly">Monthly</SelectItem>
-                  <SelectItem value="weekly">Weekly</SelectItem>
-                  <SelectItem value="daily">Daily</SelectItem>
-                </SelectContent>
-              </Select>
-              <div className="flex items-center pt-6 flex-col">
-                <Switch className="bg-white border border-white h-8 w-16" />
-                <p>
-                  <span className="text-xs text-gray-600 font-semibold">
-                    Status:{' '}
-                  </span>
-                  <span className="text-xs text-green-600 font-semibold">
-                    Open
-                  </span>
-                </p>
+              <div className="text-orange-500 font-medium">
+                Mon 5 Aug, 4:11 PM
               </div>
+              <div className="relative">
+                <select
+                  aria-label="Select Timeframe"
+                  className="appearance-none bg-white border border-gray-200 rounded-md px-4 py-1.5 pr-8 text-sm focus:outline-none"
+                >
+                  <option>Monthly</option>
+                  <option>Weekly</option>
+                  <option>Daily</option>
+                </select>
+                <div className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+                  <svg
+                    width="12"
+                    height="12"
+                    viewBox="0 0 12 12"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M2.5 4.5L6 8L9.5 4.5"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </div>
+              </div>
+                <div className="flex flex-col items-center gap-1">
+                <Switch
+                  checked={statusOpen}
+                  onCheckedChange={setStatusOpen}
+                />
+                <span className={`text-xs ${statusOpen ? 'text-green-500' : 'text-red-500'} font-medium`}>
+                  Status: {statusOpen ? 'Open' : 'Closed'}
+                </span>
+                </div>
             </div>
-          </header>
+          </div>
 
-          <div className="h-[70vh] overflow-y-scroll">{renderPage()}</div>
+          <div className="h-[90vh] scrollbar-hide overflow-y-scroll">
+            {renderPage()}
+          </div>
         </section>
       </main>
       <Footer />
