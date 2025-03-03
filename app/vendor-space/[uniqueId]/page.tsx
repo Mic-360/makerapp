@@ -1,19 +1,26 @@
 'use client';
 
-import { useState } from 'react';
-import Image from 'next/image';
-import Link from 'next/link';
-import { Check, ArrowRight, Plus, Info } from 'lucide-react';
-import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { useRouter } from 'next/router';
+import { Check, Info, Plus } from 'lucide-react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { ChangeEvent, useState } from 'react';
 
 interface FormData {
   type: 'independent' | 'institution' | null;
@@ -25,8 +32,10 @@ interface FormData {
     inchargeName: string;
     website: string;
     timings: {
-      from: string;
-      to: string;
+      [key: string]: {
+        from: string;
+        to: string;
+      };
     };
     daysOpen: string[];
   };
@@ -47,7 +56,6 @@ interface FormData {
 }
 
 export default function SpaceSubmissionFlow() {
-  const router = useRouter();
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<FormData>({
     type: null,
@@ -58,7 +66,7 @@ export default function SpaceSubmissionFlow() {
       contact: '',
       inchargeName: '',
       website: '',
-      timings: { from: '10:00 a.m.', to: '12:00 p.m.' },
+      timings: {},
       daysOpen: [],
     },
     address: {
@@ -76,6 +84,7 @@ export default function SpaceSubmissionFlow() {
       orgLogo: undefined,
     },
   });
+  const urlPathname = usePathname();
 
   const steps = [1, 2, 3, 4, 5];
   const days = [
@@ -90,13 +99,74 @@ export default function SpaceSubmissionFlow() {
 
   const handleNext = () => {
     setCurrentStep((prev) => Math.min(prev + 1, 5));
-    if (currentStep === 5) {
-      router.push(`/vendor-space/${currentStep}/dashboard`);
+    const uniqueId = urlPathname.split('/');
+    if (currentStep === 5 && uniqueId[2]) {
+      window.location.href = `/vendor-space/${uniqueId[2]}/dashboard`;
     }
   };
 
   const handleBack = () => {
     setCurrentStep((prev) => Math.max(prev - 1, 1));
+  };
+
+  const validateCase3 = () => {
+    const { name, email, contact, inchargeName, website } =
+      formData.spaceDetails;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    return (
+      name.trim() !== '' &&
+      emailRegex.test(email) &&
+      contact.trim() !== '' &&
+      inchargeName.trim() !== '' &&
+      website.trim() !== ''
+    );
+  };
+
+  const validateCase4 = () => {
+    const { city, state, address, zipCode, country } = formData.address;
+
+    return (
+      city.trim() !== '' &&
+      state.trim() !== '' &&
+      address.trim() !== '' &&
+      zipCode.trim() !== '' &&
+      country.trim() !== ''
+    );
+  };
+
+  const handleImageUpload = (
+    e: ChangeEvent<HTMLInputElement>,
+    index: number
+  ) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const newImages = [...formData.media.images];
+      newImages[index] = file;
+      setFormData({
+        ...formData,
+        media: {
+          ...formData.media,
+          images: newImages,
+        },
+      });
+    }
+  };
+
+  const handleLogoUpload = (
+    e: ChangeEvent<HTMLInputElement>,
+    type: 'space' | 'org'
+  ) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setFormData({
+        ...formData,
+        media: {
+          ...formData.media,
+          [type === 'space' ? 'spaceLogo' : 'orgLogo']: file,
+        },
+      });
+    }
   };
 
   const renderStep = () => {
@@ -130,19 +200,27 @@ export default function SpaceSubmissionFlow() {
                       type: option.type as 'independent' | 'institution',
                     })
                   }
-                  className={`flex-1 p-8 rounded-3xl border-2 text-left transition-all relative ${
+                  className={`flex-1 p-8 rounded-3xl border text-left transition-all relative ${
                     formData.type === option.type
                       ? 'border-black'
                       : 'border-gray-200 hover:border-gray-300'
                   }`}
                 >
                   <div
-                    className={`absolute top-4 right-4 w-4 h-4 rounded-full border-2 ${
+                    className={`${
                       formData.type === option.type
-                        ? 'border-black bg-black'
+                        ? 'border-green-500'
                         : 'border-gray-300'
-                    }`}
-                  />
+                    } absolute top-4 right-4 w-4 h-4 rounded-full border-2 flex justify-center items-center`}
+                  >
+                    <div
+                      className={`h-2 w-2 rounded-full ${
+                        formData.type === option.type
+                          ? 'bg-green-500'
+                          : 'border-gray-300'
+                      }`}
+                    />
+                  </div>
                   <h2 className="text-2xl font-bold mb-4">{option.title}</h2>
                   <p className="text-gray-600">{option.description}</p>
                 </button>
@@ -191,7 +269,7 @@ export default function SpaceSubmissionFlow() {
                         ];
                     setFormData({ ...formData, purposes: newPurposes });
                   }}
-                  className={`flex-1 p-8 rounded-3xl border-2 text-left transition-all relative ${
+                  className={`flex-1 p-8 rounded-3xl border text-left transition-all relative ${
                     formData.purposes.includes(
                       option.type as 'rent' | 'membership' | 'events'
                     )
@@ -200,14 +278,24 @@ export default function SpaceSubmissionFlow() {
                   }`}
                 >
                   <div
-                    className={`absolute top-4 right-4 w-4 h-4 rounded-full border-2 ${
+                    className={`${
                       formData.purposes.includes(
                         option.type as 'rent' | 'membership' | 'events'
                       )
-                        ? 'border-black bg-black'
+                        ? 'border-green-500'
                         : 'border-gray-300'
-                    }`}
-                  />
+                    } absolute top-4 right-4 w-4 h-4 rounded-full border-2 flex justify-center items-center`}
+                  >
+                    <div
+                      className={`h-2 w-2 rounded-full ${
+                        formData.purposes.includes(
+                          option.type as 'rent' | 'membership' | 'events'
+                        )
+                          ? 'bg-green-500'
+                          : 'border-gray-300'
+                      }`}
+                    />
+                  </div>
                   <h2 className="text-2xl font-bold mb-4">{option.title}</h2>
                   <p className="text-gray-600">{option.description}</p>
                 </button>
@@ -228,6 +316,7 @@ export default function SpaceSubmissionFlow() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
               <div className="space-y-6">
+                {/* Left column */}
                 <div className="space-y-2">
                   <Label
                     htmlFor="space-name"
@@ -268,16 +357,18 @@ export default function SpaceSubmissionFlow() {
                     <Input
                       id="contact"
                       placeholder="+91"
+                      type="tel"
                       value={formData.spaceDetails.contact}
-                      onChange={(e) =>
+                      onChange={(e) => {
+                        const value = e.target.value.replace(/[^0-9+]/g, '');
                         setFormData({
                           ...formData,
                           spaceDetails: {
                             ...formData.spaceDetails,
-                            contact: e.target.value,
+                            contact: value,
                           },
-                        })
-                      }
+                        });
+                      }}
                       className="h-12 rounded-2xl pr-12 text-base placeholder:text-gray-400 border border-black/20"
                     />
                     {formData.spaceDetails.contact && (
@@ -293,21 +384,73 @@ export default function SpaceSubmissionFlow() {
                   >
                     Website*
                   </Label>
-                  <Input
-                    id="website"
-                    placeholder="Add a website link of you Space"
-                    value={formData.spaceDetails.website}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        spaceDetails: {
-                          ...formData.spaceDetails,
-                          website: e.target.value,
-                        },
-                      })
-                    }
-                    className="h-12 border border-black/20 rounded-2xl text-base placeholder:text-gray-400"
-                  />
+                  <div className="relative">
+                    <Input
+                      id="website"
+                      placeholder="Add a website link of you Space"
+                      value={formData.spaceDetails.website}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          spaceDetails: {
+                            ...formData.spaceDetails,
+                            website: e.target.value,
+                          },
+                        })
+                      }
+                      className="h-12 border border-black/20 rounded-2xl text-base placeholder:text-gray-400"
+                    />
+                    {formData.spaceDetails.website && (
+                      <Check className="w-5 h-5 text-green-500 absolute right-4 top-1/2 -translate-y-1/2" />
+                    )}
+                  </div>
+                </div>
+
+                <div className="space-y-4 mt-8">
+                  <Label className="pl-4 text-base font-normal text-gray-600">
+                    Days Open*
+                  </Label>
+                  <div className="grid grid-cols-3 gap-2">
+                    {days.map((day) => (
+                      <button
+                        key={day}
+                        onClick={() => {
+                          const newDays =
+                            formData.spaceDetails.daysOpen.includes(day)
+                              ? formData.spaceDetails.daysOpen.filter(
+                                  (d) => d !== day
+                                )
+                              : [...formData.spaceDetails.daysOpen, day];
+                          setFormData({
+                            ...formData,
+                            spaceDetails: {
+                              ...formData.spaceDetails,
+                              daysOpen: newDays,
+                              timings: formData.spaceDetails.daysOpen.includes(
+                                day
+                              )
+                                ? Object.fromEntries(
+                                    Object.entries(
+                                      formData.spaceDetails.timings
+                                    ).filter(([key]) => key !== day)
+                                  )
+                                : {
+                                    ...formData.spaceDetails.timings,
+                                    [day]: { from: '', to: '' },
+                                  },
+                            },
+                          });
+                        }}
+                        className={`h-12 px-4 rounded-2xl border transition-colors ${
+                          formData.spaceDetails.daysOpen.includes(day)
+                            ? 'bg-black text-white border-black'
+                            : 'text-gray-900 border-gray-300 hover:border-gray-600'
+                        }`}
+                      >
+                        {day.slice(0, 3)}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
 
@@ -371,81 +514,91 @@ export default function SpaceSubmissionFlow() {
                   </div>
                 </div>
 
-                <div className="space-y-2">
+                <div className="space-y-4">
                   <Label className="pl-4 text-base font-normal text-gray-600">
-                    Select Timings
+                    Timings*
                   </Label>
-                  <div className="flex items-center gap-4">
-                    <Input
-                      value={formData.spaceDetails.timings.from}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          spaceDetails: {
-                            ...formData.spaceDetails,
-                            timings: {
-                              ...formData.spaceDetails.timings,
-                              from: e.target.value,
-                            },
-                          },
-                        })
-                      }
-                      className="h-12 border border-black/20 rounded-2xl text-base"
-                    />
-                    <span className="text-gray-500">to</span>
-                    <Input
-                      value={formData.spaceDetails.timings.to}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          spaceDetails: {
-                            ...formData.spaceDetails,
-                            timings: {
-                              ...formData.spaceDetails.timings,
-                              to: e.target.value,
-                            },
-                          },
-                        })
-                      }
-                      className="h-12 border border-black/20 rounded-2xl text-base"
-                    />
+                  <div className="h-72 overflow-y-scroll space-y-4 scrollbar-hide">
+                    {formData.spaceDetails.daysOpen.map((day) => (
+                      <div
+                        key={day}
+                        className="flex items-center gap-2 border border-gray-400 p-4 rounded-2xl"
+                      >
+                        <span className="w-24 text-gray-600 font-medium">
+                          {day}
+                        </span>
+                        <div className="flex-1 flex items-center gap-2">
+                          <Select
+                            value={
+                              formData.spaceDetails.timings[day]?.from || ''
+                            }
+                            onValueChange={(value) =>
+                              setFormData({
+                                ...formData,
+                                spaceDetails: {
+                                  ...formData.spaceDetails,
+                                  timings: {
+                                    ...formData.spaceDetails.timings,
+                                    [day]: {
+                                      ...formData.spaceDetails.timings[day],
+                                      from: value,
+                                    },
+                                  },
+                                },
+                              })
+                            }
+                          >
+                            <SelectTrigger className="w-full h-12 rounded-xl border-gray-300">
+                              <SelectValue placeholder="Opening time" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {Array.from({ length: 24 }, (_, i) => {
+                                const hour = i.toString().padStart(2, '0');
+                                return (
+                                  <SelectItem key={hour} value={`${hour}:00`}>
+                                    {`${hour}:00`}
+                                  </SelectItem>
+                                );
+                              })}
+                            </SelectContent>
+                          </Select>
+                          <span className="text-gray-400">to</span>
+                          <Select
+                            value={formData.spaceDetails.timings[day]?.to || ''}
+                            onValueChange={(value) =>
+                              setFormData({
+                                ...formData,
+                                spaceDetails: {
+                                  ...formData.spaceDetails,
+                                  timings: {
+                                    ...formData.spaceDetails.timings,
+                                    [day]: {
+                                      ...formData.spaceDetails.timings[day],
+                                      to: value,
+                                    },
+                                  },
+                                },
+                              })
+                            }
+                          >
+                            <SelectTrigger className="w-full h-12 rounded-xl border-gray-300">
+                              <SelectValue placeholder="Closing time" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {Array.from({ length: 24 }, (_, i) => {
+                                const hour = i.toString().padStart(2, '0');
+                                return (
+                                  <SelectItem key={hour} value={`${hour}:00`}>
+                                    {`${hour}:00`}
+                                  </SelectItem>
+                                );
+                              })}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                </div>
-              </div>
-
-              <div className="md:col-span-2 space-y-2">
-                <Label className="pl-4 text-base font-normal text-gray-600">
-                  Days Open
-                </Label>
-                <div className="flex flex-wrap gap-3">
-                  {days.map((day) => (
-                    <button
-                      key={day}
-                      onClick={() => {
-                        const newDays = formData.spaceDetails.daysOpen.includes(
-                          day
-                        )
-                          ? formData.spaceDetails.daysOpen.filter(
-                              (d) => d !== day
-                            )
-                          : [...formData.spaceDetails.daysOpen, day];
-                        setFormData({
-                          ...formData,
-                          spaceDetails: {
-                            ...formData.spaceDetails,
-                            daysOpen: newDays,
-                          },
-                        });
-                      }}
-                      className={`h-14 px-8 rounded-2xl border transition-colors ${
-                        formData.spaceDetails.daysOpen.includes(day)
-                          ? 'bg-black text-white border-black'
-                          : 'text-gray-900 border-gray-300 hover:border-gray-600'
-                      }`}
-                    >
-                      {day}
-                    </button>
-                  ))}
                 </div>
               </div>
             </div>
@@ -500,8 +653,11 @@ export default function SpaceSubmissionFlow() {
                     Complete Address*
                   </Label>
                   <div className="relative">
-                    <Input
+                    <textarea
                       id="address"
+                      placeholder="Enter your complete address"
+                      title="Complete address input field"
+                      aria-label="Complete address"
                       value={formData.address.address}
                       onChange={(e) =>
                         setFormData({
@@ -512,7 +668,7 @@ export default function SpaceSubmissionFlow() {
                           },
                         })
                       }
-                      className="h-36 border border-black/20 mb-8 rounded-2xl pr-12 text-base align-top"
+                      className="h-36 border border-black/20 mb-2 rounded-2xl pr-12 text-base align-top text-start p-4 w-full bg-transparent placeholder:text-gray-400"
                     />
                     {formData.address.address && (
                       <Check className="w-5 h-5 text-green-500 absolute right-4 top-4" />
@@ -697,13 +853,42 @@ export default function SpaceSubmissionFlow() {
                   </TooltipProvider>
                 </div>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  {[1, 2, 3, 4].map((index) => (
-                    <div
+                  {[0, 1, 2, 3].map((index) => (
+                    <label
                       key={index}
-                      className="aspect-[16/9] rounded-2xl border-2 border-dashed border-gray-400 flex items-center justify-center cursor-pointer hover:border-gray-300 transition-colors"
+                      className={`
+                        aspect-[16/9] rounded-2xl border-2 border-dashed
+                        ${formData.media.images[index] ? 'border-none p-0' : 'border-gray-400 p-4'}
+                        flex items-center justify-center cursor-pointer
+                        hover:border-gray-300 transition-colors overflow-hidden relative group
+                      `}
                     >
-                      <Plus className="w-8 h-8 text-gray-300" />
-                    </div>
+                      <input
+                        type="file"
+                        className="hidden"
+                        accept="image/*"
+                        onChange={(e) => handleImageUpload(e, index)}
+                      />
+                      {formData.media.images[index] ? (
+                        <>
+                          <Image
+                            src={URL.createObjectURL(
+                              formData.media.images[index]
+                            )}
+                            alt={`Space image ${index + 1}`}
+                            fill
+                            className="object-cover"
+                          />
+                          <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                            <p className="text-white text-sm">
+                              Click to change
+                            </p>
+                          </div>
+                        </>
+                      ) : (
+                        <Plus className="w-8 h-8 text-gray-300" />
+                      )}
+                    </label>
                   ))}
                 </div>
               </div>
@@ -725,18 +910,72 @@ export default function SpaceSubmissionFlow() {
                       </Tooltip>
                     </TooltipProvider>
                   </div>
-                  <div className="w-32 h-32 rounded-full border-2 border-dashed border-gray-400 flex items-center justify-center cursor-pointer hover:border-gray-300 transition-colors">
-                    <Plus className="w-8 h-8 text-gray-300" />
-                  </div>
+                  <label
+                    className={`
+                      w-32 h-32 rounded-full border-2 border-dashed
+                      ${formData.media.spaceLogo ? 'border-none p-0' : 'border-gray-400 p-4'}
+                      flex items-center justify-center cursor-pointer
+                      hover:border-gray-300 transition-colors overflow-hidden relative group
+                    `}
+                  >
+                    <input
+                      type="file"
+                      className="hidden"
+                      accept="image/*"
+                      onChange={(e) => handleLogoUpload(e, 'space')}
+                    />
+                    {formData.media.spaceLogo ? (
+                      <>
+                        <Image
+                          src={URL.createObjectURL(formData.media.spaceLogo)}
+                          alt="Space logo"
+                          fill
+                          className="object-cover"
+                        />
+                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                          <p className="text-white text-sm">Click to change</p>
+                        </div>
+                      </>
+                    ) : (
+                      <Plus className="w-8 h-8 text-gray-300" />
+                    )}
+                  </label>
                 </div>
 
                 <div className="flex flex-col items-center text-center space-y-4">
                   <Label className="text-base font-normal text-gray-600">
                     Upload organisation&apos;s logo (Optional)
                   </Label>
-                  <div className="w-32 h-32 rounded-full border-2 border-dashed border-gray-400 flex items-center justify-center cursor-pointer hover:border-gray-300 transition-colors">
-                    <Plus className="w-8 h-8 text-gray-300" />
-                  </div>
+                  <label
+                    className={`
+                      w-32 h-32 rounded-full border-2 border-dashed
+                      ${formData.media.orgLogo ? 'border-none p-0' : 'border-gray-400 p-4'}
+                      flex items-center justify-center cursor-pointer
+                      hover:border-gray-300 transition-colors overflow-hidden relative group
+                    `}
+                  >
+                    <input
+                      type="file"
+                      className="hidden"
+                      accept="image/*"
+                      onChange={(e) => handleLogoUpload(e, 'org')}
+                    />
+                    {formData.media.orgLogo ? (
+                      <>
+                        <Image
+                          src={URL.createObjectURL(formData.media.orgLogo)}
+                          alt="Organization logo"
+                          fill
+                          className="object-cover"
+                        />
+                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-full">
+                          <p className="text-white text-sm">Click to change</p>
+                        </div>
+                      </>
+                    ) : (
+                      <Plus className="w-8 h-8 text-gray-300" />
+                    )}
+                  </label>
                 </div>
               </div>
             </div>
@@ -747,6 +986,32 @@ export default function SpaceSubmissionFlow() {
         return null;
     }
   };
+
+  const renderFooter = () => (
+    <footer className="w-full p-6 gap-20 flex justify-center items-center">
+      <Button
+        className="rounded-2xl px-8 border-gray-300 border"
+        variant="outline"
+        onClick={handleBack}
+        disabled={currentStep === 1}
+      >
+        BACK
+      </Button>
+      <Button
+        variant="default"
+        className="flex rounded-3xl items-center gap-2 px-12"
+        onClick={handleNext}
+        disabled={
+          (currentStep === 1 && !formData.type) ||
+          (currentStep === 2 && formData.purposes.length === 0) ||
+          (currentStep === 3 && !validateCase3()) ||
+          (currentStep === 4 && !validateCase4())
+        }
+      >
+        SAVE AND NEXT
+      </Button>
+    </footer>
+  );
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -766,8 +1031,10 @@ export default function SpaceSubmissionFlow() {
               key={step}
               className={`w-10 h-10 rounded-full flex items-center justify-center ${
                 step === currentStep
-                  ? 'bg-black text-white'
-                  : 'bg-gray-100 text-gray-500'
+                  ? 'bg-red-300 text-white'
+                  : step < currentStep
+                    ? 'bg-green-500 text-black'
+                    : 'bg-gray-100 text-gray-500'
               }`}
             >
               {step}
@@ -776,31 +1043,11 @@ export default function SpaceSubmissionFlow() {
         </div>
       </header>
 
-      <main className="flex-1 flex flex-col items-center justify-center px-6 py-12">
+      <main className="flex-1 flex flex-col items-center justify-center p-6">
         {renderStep()}
       </main>
 
-      <footer className="w-full p-6 px-20 flex justify-between items-center border-t">
-        <Button
-          variant="ghost"
-          onClick={handleBack}
-          disabled={currentStep === 1}
-        >
-          BACK
-        </Button>
-        <Button
-          variant="link"
-          className="flex items-center gap-2"
-          onClick={handleNext}
-          disabled={
-            (currentStep === 1 && !formData.type) ||
-            (currentStep === 2 && formData.purposes.length === 0)
-          }
-        >
-          SAVE AND NEXT
-          <ArrowRight className="w-4 h-4" />
-        </Button>
-      </footer>
+      {renderFooter()}
     </div>
   );
 }

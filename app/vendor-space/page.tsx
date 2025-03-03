@@ -74,22 +74,15 @@ export default function footer() {
             <br />
             first maker-movement
           </h2>
-          <div className="bg-white rounded-2xl max-w-5xl w-full mx-auto">
-            <div className="flex items-center justify-between px-12 py-8 border border-gray-100 rounded-2xl hover:bg-gray-400 hover:border-gray-400 text-black hover:shadow-xl shadow-gray-800">
+          <div className="bg-white rounded-2xl max-w-5xl w-full mx-auto border border-red-400">
+            <div className="flex items-center justify-between px-12 py-8 rounded-2xl bg-green-500 text-black shadow-xl shadow-gray-300">
               <h3 className="text-xl font-bold">Rent Machines</h3>
               <p className="max-w-md">
                 Generate revenue by renting out underutilized machines to
                 creators and hobbyists.
               </p>
             </div>
-            <div className="flex items-center justify-between px-12 py-8 border border-gray-100 rounded-2xl hover:bg-gray-400 hover:border-gray-400 text-black hover:shadow-2xl shadow-gray-800">
-              <h3 className="text-xl font-bold">Offer Memberships</h3>
-              <p className="max-w-md">
-                Establish a steady income stream and build community loyalty
-                through membership plans.
-              </p>
-            </div>
-            <div className="flex items-center justify-between px-12 py-8 border border-gray-100 rounded-2xl hover:bg-gray-400 hover:border-gray-400 text-black hover:shadow-xl shadow-gray-800">
+            <div className="flex items-center justify-between px-12 py-8 rounded-2xl text-black shadow-xl shadow-gray-400">
               <h3 className="text-xl font-bold">Host Events</h3>
               <p className="max-w-md">
                 Increase exposure and revenue by organizing workshops, meetups,
@@ -113,10 +106,26 @@ export default function footer() {
               </p>
             </div>
             <div className="md:w-1/2 md:pl-8 grid grid-cols-2 gap-3">
-              <div className="aspect-[5/6] bg-gray-300 rounded-3xl"></div>
+              <div className="aspect-[5/6] rounded-3xl relative overflow-hidden">
+                <Image
+                  src="/vendor-bloc-u.png"
+                  alt="Vendor Bloc U"
+                  layout="fill"
+                  objectFit="cover"
+                  className="rounded-3xl"
+                />
+              </div>
               <div className="aspect-[2] rounded-3xl"></div>
               <div className="aspect-[2] rounded-3xl"></div>
-              <div className="aspect-[5/6] -mt-32 bg-gray-300 rounded-3xl"></div>
+              <div className="aspect-[5/6] -mt-32 relative rounded-3xl overflow-hidden">
+                <Image
+                  src="/vendor-bloc-d.png"
+                  alt="Vendor Bloc D"
+                  layout="fill"
+                  objectFit="cover"
+                  className="rounded-3xl"
+                />
+              </div>
             </div>
           </div>
         </section>
@@ -124,29 +133,64 @@ export default function footer() {
         <section className="py-16 px-4 bg-gray-100">
           <div className="max-w-6xl mx-auto">
             <div className="grid md:grid-cols-4 gap-6 items-center">
-              <h2 className="text-5xl max-w-sm font-bold text-start col-span-2 pl-8">
-                Take a closer look
+              <h2 className="text-5xl font-bold text-start col-span-2 pl-8">
+                Take a closer look →
               </h2>
               {[
-                'Event Listings',
-                '24/7 Customer Support',
-                'Customizable Membership Plans',
-                'Feedback and Rating System',
-                'Integrated Payment Options',
-                'Location-Based Search',
-                'Reservation Screening',
-                'Machine Inventory',
-                'Maker Identity Verification',
-                'Insurance Coverage',
+                {
+                  title: 'Event Listings',
+                  description:
+                    'List your events, workshops to attract more participants and increase community engagement.',
+                },
+                {
+                  title: '24/7 Customer Support',
+                  description:
+                    'Get assistance anytime with our dedicated support team to resolve your queries and issues.',
+                },
+                {
+                  title: 'Customizable Membership Plans',
+                  description:
+                    'Offer flexible membership plans tailored to the needs of different users.',
+                },
+                {
+                  title: 'Feedback and Rating System',
+                  description:
+                    'Receive feedback from users to improve your services and build reputation.',
+                },
+                {
+                  title: 'Integrated Payment Options',
+                  description:
+                    'Secure and seamless payment processing for all transactions.',
+                },
+                {
+                  title: 'Location-Based Search',
+                  description:
+                    'Make it easy for users to find your makerspace based on location.',
+                },
+                {
+                  title: 'Reservation Screening',
+                  description:
+                    'Screen and approve reservations to ensure proper use of your facilities.',
+                },
+                {
+                  title: 'Machine Inventory',
+                  description:
+                    'Manage your equipment inventory and track usage of machines.',
+                },
+                {
+                  title: 'Maker Identity Verification',
+                  description:
+                    "Verify users' identities to build trust and ensure security for all makers.",
+                },
+                {
+                  title: 'Insurance Coverage',
+                  description:
+                    'Provide insurance coverage for your makerspace and its users.',
+                },
               ].map((feature, index) => (
-                <div
-                  key={index}
-                  className="text-start bg-white h-36 p-8 rounded-3xl"
-                >
-                  <h3 className="font-semibold mb-2">{feature}</h3>
-                  <p className="text-sm text-gray-600">
-                    Feature description goes here.
-                  </p>
+                <div key={index} className="rounded-lg bg-white p-4 text-black">
+                  <h3 className="mb-2 font-semibold">{feature.title}</h3>
+                  <p className="text-sm text-gray-600">{feature.description}</p>
                 </div>
               ))}
             </div>
@@ -168,7 +212,7 @@ export default function footer() {
         <section className="my-20 px-4 md:px-6 lg:px-8">
           <div className="max-w-6xl mx-auto bg-gray-50/50 rounded-3xl p-8 md:p-10 flex flex-col justify-between md:flex-row gap-8 md:gap-10">
             <div className="md:w-2/5">
-              <h2 className="text-3xl md:text-5xl font-bold text-start leading-tight">
+              <h2 className="text-3xl md:text-5xl font-bold text-start leading-tight text-blue-700">
                 Some frequently asked questions
               </h2>
             </div>
