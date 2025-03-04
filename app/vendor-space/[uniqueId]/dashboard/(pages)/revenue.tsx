@@ -1,7 +1,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Plus } from 'lucide-react';
+import { EllipsisVertical, Menu, Plus } from 'lucide-react';
 import Image from 'next/image';
+import { Separator } from '@/components/ui/separator';
 
 export default function RevenuePage() {
   return (
@@ -80,7 +81,7 @@ export default function RevenuePage() {
                 {[1, 2, 3].map((_, i) => (
                   <div
                     key={i}
-                    className="flex items-center justify-between border-b pb-4 last:border-0 last:pb-0"
+                    className="flex items-center justify-between border rounded-lg p-4"
                   >
                     <div className="flex-1">
                       <div className="font-medium">Ranbir Singh</div>
@@ -103,7 +104,7 @@ export default function RevenuePage() {
                     </div>
                     <div className="flex-1 text-right font-medium">₹ 1000</div>
                     <Button variant="ghost" size="icon">
-                      <Plus className="h-4 w-4" />
+                      <Plus className="h-4 w-4 text-green-400" />
                     </Button>
                   </div>
                 ))}
@@ -122,10 +123,10 @@ export default function RevenuePage() {
                 <div className="flex flex-col items-center">
                   <div className="h-10 flex items-center">
                     <Image
-                      src="/placeholder.svg"
-                      alt="Event"
-                      width={40}
-                      height={40}
+                      src="/visa.svg"
+                      alt="visa"
+                      width={100}
+                      height={100}
                     />
                   </div>
                   <div className="text-xs text-gray-500 mt-2">
@@ -135,10 +136,10 @@ export default function RevenuePage() {
                 <div className="flex flex-col items-center">
                   <div className="h-10 flex items-center">
                     <Image
-                      src="/placeholder.svg"
-                      alt="Event"
-                      width={40}
-                      height={40}
+                      src="/phonepe.svg"
+                      alt="Phonepe"
+                      width={100}
+                      height={100}
                     />
                   </div>
                   <div className="text-xs text-gray-500 mt-2">
@@ -147,12 +148,7 @@ export default function RevenuePage() {
                 </div>
                 <div className="flex flex-col items-center">
                   <div className="h-10 flex items-center">
-                    <Image
-                      src="/placeholder.svg"
-                      alt="Event"
-                      width={40}
-                      height={40}
-                    />
+                    <Image src="/upi.svg" alt="UPI" width={100} height={100} />
                   </div>
                   <div className="text-xs text-gray-500 mt-2">
                     Add UPI or QR
@@ -161,10 +157,10 @@ export default function RevenuePage() {
                 <div className="flex flex-col items-center">
                   <div className="h-10 flex items-center">
                     <Image
-                      src="/placeholder.svg"
-                      alt="Event"
-                      width={40}
-                      height={40}
+                      src="/paytm.svg"
+                      alt="Paytm"
+                      width={100}
+                      height={100}
                     />
                   </div>
                   <div className="text-xs text-gray-500 mt-2">
@@ -178,80 +174,34 @@ export default function RevenuePage() {
       </div>
       <Card className="w-1/2">
         <CardHeader>
-          <CardTitle className="text-sm font-medium">Revenue Report</CardTitle>
+          <CardTitle className="text-lg font-semibold">
+            Revenue Report
+          </CardTitle>
+          <Separator />
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
-            <div className="flex items-center justify-between border-b pb-2">
-              <div className="font-medium">Total Revenue</div>
-              <div className="flex items-center">
-                <div>₹10000</div>
-                <svg
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="ml-2"
-                >
-                  <path
-                    d="M12 8V16M8 12H16"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </div>
+          <div className="space-y-6">
+            <div className="flex flex-col gap-2 border-b pb-2">
+              <div className="font-semibold">Total Revenue</div>
+              <p>₹10000</p>
             </div>
-            <div className="flex items-center justify-between border-b pb-2">
-              <div className="font-medium">Total Registrations</div>
-              <div className="flex items-center">
-                <div>2000</div>
-                <svg
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="ml-2"
-                >
-                  <path
-                    d="M12 8V16M8 12H16"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </div>
+            <div className="flex flex-col gap-2 border-b pb-2">
+              <div className="font-semibold">Total Registration</div>
+              <p>₹20000</p>
             </div>
-            <div className="flex items-center justify-between border-b pb-2">
-              <div className="font-medium">
+            <div className="flex items-center justify-between pb-2">
+              <div className="font-semibold text-sm">
                 Highest Revenue Generating Event
               </div>
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M12 8V16M8 12H16"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
+              <EllipsisVertical className="h-4 w-4 text-gray-500" />
             </div>
             <div className="text-sm">25 Jun - 28 Jun, 2024</div>
             <div className="flex items-center gap-3">
               <div className="h-10 w-10 rounded bg-gray-200 overflow-hidden">
                 <Image
-                  src="/placeholder.svg"
+                  src="/assetlist.png"
                   alt="Event"
+                  className='object-cover aspect-square'
                   width={40}
                   height={40}
                 />
@@ -263,48 +213,19 @@ export default function RevenuePage() {
                 </div>
               </div>
             </div>
-            <div className="text-sm">25 Jun - 28 Jun, 2024</div>
-            <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded bg-gray-200 overflow-hidden">
-                <Image
-                  src="/placeholder.svg"
-                  alt="Event"
-                  width={40}
-                  height={40}
-                />
-              </div>
-              <div>
-                <div className="text-sm font-medium">3D Printing Workshop</div>
-                <div className="text-xs text-gray-500">
-                  SOA FAB LAB, Bhubaneswar
-                </div>
-              </div>
-            </div>
-            <div className="flex items-center justify-between border-b pb-2 pt-2">
-              <div className="font-medium">
+            <Separator />
+            <div className="flex items-center justify-between">
+              <div className="font-semibold text-sm">
                 Highest Revenue Generating Machine
               </div>
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M12 8V16M8 12H16"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
+              <EllipsisVertical className="h-4 w-4 text-gray-500" />
             </div>
             <div className="flex items-center gap-3">
               <div className="h-10 w-10 rounded bg-gray-200 overflow-hidden">
                 <Image
-                  src="/placeholder.svg"
+                  src="/assetlist.png"
                   alt="Event"
+                  className='object-cover aspect-square'
                   width={40}
                   height={40}
                 />
@@ -318,7 +239,8 @@ export default function RevenuePage() {
                 </div>
               </div>
             </div>
-            <div className="mt-4 h-24 bg-gray-200 rounded-md flex items-center justify-center">
+            <Separator />
+            <div className="mt-auto h-44 bg-gray-200 rounded-md flex items-center justify-center">
               <div className="text-center">
                 <div className="font-medium">TBD</div>
                 <div className="text-xs text-gray-500">
