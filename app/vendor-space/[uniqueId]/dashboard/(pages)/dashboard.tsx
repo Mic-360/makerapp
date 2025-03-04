@@ -120,30 +120,32 @@ export default function DashboardPage() {
             <div className="h-[200px] w-full">
               <div className="flex h-full items-end gap-2">
                 {[
-                  'Jan',
-                  'Feb',
-                  'Mar',
-                  'Apr',
-                  'May',
-                  'Jun',
-                  'Jul',
-                  'Aug',
-                  'Sep',
-                  'Oct',
-                  'Nov',
-                  'Dec',
-                ].map((month, i) => (
+                  { month: 'Jan', value: 65 },
+                  { month: 'Feb', value: 45 },
+                  { month: 'Mar', value: 80 },
+                  { month: 'Apr', value: 55 },
+                  { month: 'May', value: 90 },
+                  { month: 'Jun', value: 70 },
+                  { month: 'Jul', value: 50 },
+                  { month: 'Aug', value: 85 },
+                  { month: 'Sep', value: 95 },
+                  { month: 'Oct', value: 60 },
+                  { month: 'Nov', value: 75 },
+                  { month: 'Dec', value: 65 },
+                ].map((data, i) => (
                   <div
-                    key={month}
+                    key={data.month}
                     className="flex flex-1 flex-col items-center"
                   >
                     <div
-                      className={`w-full rounded-t-sm ${i === 4 || i === 8 ? 'bg-orange-400' : 'bg-gray-200'}`}
+                      className={`w-full rounded-t-sm ${data.value > 80 ? 'bg-orange-400' : 'bg-gray-200'} transition-all duration-300 hover:bg-orange-300`}
                       style={{
-                        height: `${i === 4 || i === 8 ? '70%' : '40%'}`,
+                        height: `${data.value}%`,
                       }}
                     ></div>
-                    <div className="mt-2 text-xs text-gray-500">{month}</div>
+                    <div className="mt-2 text-xs text-gray-500">
+                      {data.month}
+                    </div>
                   </div>
                 ))}
               </div>

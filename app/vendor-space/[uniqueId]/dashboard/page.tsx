@@ -40,7 +40,6 @@ import { Button } from '@/components/ui/button';
 
 export default function Page() {
   const [activePage, setActivePage] = React.useState('My Space');
-  const [statusOpen, setStatusOpen] = React.useState(true);
 
   const navItems = [
     '',
@@ -247,51 +246,7 @@ export default function Page() {
         </aside>
 
         <section className="w-4/5 max-w-6xl mx-auto">
-          <div className="flex items-center justify-end p-4">
-            <div className="flex items-center gap-4">
-              <div className="text-orange-500 font-medium">
-                Mon 5 Aug, 4:11 PM
-              </div>
-              <div className="relative">
-                <select
-                  aria-label="Select Timeframe"
-                  className="appearance-none bg-white border border-gray-200 rounded-md px-4 py-1.5 pr-8 text-sm focus:outline-none"
-                >
-                  <option>Monthly</option>
-                  <option>Weekly</option>
-                  <option>Daily</option>
-                </select>
-                <div className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
-                  <svg
-                    width="12"
-                    height="12"
-                    viewBox="0 0 12 12"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M2.5 4.5L6 8L9.5 4.5"
-                      stroke="currentColor"
-                      strokeWidth="1.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </div>
-              </div>
-                <div className="flex flex-col items-center gap-1">
-                <Switch
-                  checked={statusOpen}
-                  onCheckedChange={setStatusOpen}
-                />
-                <span className={`text-xs ${statusOpen ? 'text-green-500' : 'text-red-500'} font-medium`}>
-                  Status: {statusOpen ? 'Open' : 'Closed'}
-                </span>
-                </div>
-            </div>
-          </div>
-
-          <div className="h-[90vh] scrollbar-hide overflow-y-scroll">
+          <div className="h-[90vh] scrollbar-hide overflow-y-scroll px-8">
             {renderPage()}
           </div>
         </section>

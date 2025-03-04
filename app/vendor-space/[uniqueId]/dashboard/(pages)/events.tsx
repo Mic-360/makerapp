@@ -1,5 +1,6 @@
 'use client';
 
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import {
@@ -10,6 +11,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
@@ -20,11 +22,21 @@ import {
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
-import { ArrowUpDown, Calendar, Check, Edit, Plus, PlusCircle, Power } from 'lucide-react';
+import {
+  ArrowUpDown,
+  Calendar,
+  Check,
+  Edit,
+  ImagePlus,
+  Plus,
+  PlusCircle,
+  Power,
+} from 'lucide-react';
 import { useState } from 'react';
 
 export default function EventsPage() {
-  const [activeTab, setActiveTab] = useState('all');
+  // const [activeTab, setActiveTab] = useState('all');
+  const [statusOpen, setStatusOpen] = useState(true);
   const [showSuccess, setShowSuccess] = useState(false);
   const [events, setEvents] = useState([
     {
@@ -39,17 +51,16 @@ export default function EventsPage() {
   ]);
   const [openDialog, setOpenDialog] = useState(false);
   const [viewMode, setViewMode] = useState('manage');
-  const [eventsStatus, setEventsStatus] = useState(true);
 
-  const handleAddEvent = (e: any) => {
+  const handleAddEvent = (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
     const newEvent = {
       id: events.length + 1,
-      name: formData.get('name') as string,
+      name: formData.get('name'),
       price: `₹ ${formData.get('price')}`,
-      category: formData.get('category') as string,
-      timing: formData.get('timing') as string,
+      category: formData.get('category'),
+      timing: `${formData.get('startDate')} - ${formData.get('endDate')}`,
       status: 'Upcoming',
       isOn: true,
     };
@@ -64,7 +75,7 @@ export default function EventsPage() {
     }, 3000);
   };
 
-  const toggleEventStatus = (id: number) => {
+  const toggleEventStatus = (id) => {
     setEvents(
       events.map((event) =>
         event.id === id
@@ -79,87 +90,115 @@ export default function EventsPage() {
   };
 
   return (
-    <div className="space-y-4">
-      <Tabs
-        value={viewMode}
-        onValueChange={setViewMode}
-        className="w-full mt-1"
-      >
-        <TabsList className="bg-transparent">
-          <TabsTrigger
-            value="manage"
-            className="px-12 py-3 data-[state=active]:bg-black data-[state=active]:text-white"
-          >
-            Manage
-          </TabsTrigger>
-          <TabsTrigger
-            value="monitor"
-            className="px-12 py-3 data-[state=active]:bg-black data-[state=active]:text-white"
-          >
-            Monitor
-          </TabsTrigger>
-        </TabsList>
-      </Tabs>
+    <div className="space-y-4 pt-2">
+      <div className="flex items-center justify-between">
+        <Tabs
+          value={viewMode}
+          onValueChange={setViewMode}
+        >
+          <TabsList className="bg-transparent space-x-2">
+            <TabsTrigger
+              value="manage"
+              className="px-12 py-3 data-[state=active]:bg-black data-[state=active]:text-white border rounded-xl border-black"
+            >
+              Manage
+            </TabsTrigger>
+            <TabsTrigger
+              value="monitor"
+              className="px-12 py-3 data-[state=active]:bg-black data-[state=active]:text-white border rounded-xl border-black"
+            >
+              Monitor
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
+        <div className="flex items-center gap-4">
+          <div className="text-orange-500 font-medium">Mon 5 Aug, 4:11 PM</div>
+          <div className="relative">
+            <select
+              aria-label="Select Timeframe"
+              className="appearance-none bg-white border border-gray-200 rounded-md px-4 py-1.5 pr-8 text-sm focus:outline-none"
+            >
+              <option>Monthly</option>
+              <option>Weekly</option>
+              <option>Daily</option>
+            </select>
+            <div className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+              <svg
+                width="12"
+                height="12"
+                viewBox="0 0 12 12"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M2.5 4.5L6 8L9.5 4.5"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </div>
+          </div>
+          <div className="flex flex-col items-center gap-1">
+            <Switch checked={statusOpen} onCheckedChange={setStatusOpen} />
+            <span
+              className={`text-xs ${statusOpen ? 'text-green-500' : 'text-red-500'} font-medium`}
+            >
+              Status: {statusOpen ? 'Open' : 'Closed'}
+            </span>
+          </div>
+        </div>
+      </div>
 
       {viewMode === 'manage' && (
         <Tabs defaultValue="all" className="w-full">
-          <TabsList className="bg-transparent mb-4">
-            <TabsTrigger
-              value="all"
-              className="data-[state=active]:bg-black data-[state=active]:text-white"
-            >
-              All Events
-            </TabsTrigger>
-            <TabsTrigger
-              value="active"
-              className="data-[state=active]:bg-black data-[state=active]:text-white"
-            >
-              Active
-            </TabsTrigger>
-            <TabsTrigger
-              value="upcoming"
-              className="data-[state=active]:bg-black data-[state=active]:text-white"
-            >
-              Upcoming
-            </TabsTrigger>
-            <TabsTrigger
-              value="past"
-              className="data-[state=active]:bg-black data-[state=active]:text-white"
-            >
-              Past
-            </TabsTrigger>
+          <div className="flex items-center mb-4">
+            <TabsList className="bg-transparent">
+              <TabsTrigger
+                value="all"
+                className="data-[state=active]:bg-black data-[state=active]:text-white"
+              >
+                All Events
+              </TabsTrigger>
+              <TabsTrigger
+                value="active"
+                className="data-[state=active]:bg-black data-[state=active]:text-white"
+              >
+                Active
+              </TabsTrigger>
+              <TabsTrigger
+                value="upcoming"
+                className="data-[state=active]:bg-black data-[state=active]:text-white"
+              >
+                Upcoming
+              </TabsTrigger>
+              <TabsTrigger
+                value="past"
+                className="data-[state=active]:bg-black data-[state=active]:text-white"
+              >
+                Past
+              </TabsTrigger>
+            </TabsList>
+
             <Dialog open={openDialog} onOpenChange={setOpenDialog}>
               <DialogTrigger asChild>
                 <Button
                   variant="ghost"
                   className="rounded-full bg-transparent text-black"
                 >
-                  <PlusCircle className="mr-2 h-4 w-4" />
                   Add
+                  <PlusCircle className="ml-2 h-4 w-4" />
                 </Button>
               </DialogTrigger>
-              <DialogContent className="bg-white">
+              <DialogContent className="bg-white max-w-xl max-h-[85vh] overflow-y-auto fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 scrollbar-hide">
                 <DialogHeader>
                   <DialogTitle>Add an event</DialogTitle>
                 </DialogHeader>
                 <form onSubmit={handleAddEvent} className="space-y-4">
                   <div className="space-y-2">
-                    <label htmlFor="name" className="text-sm font-medium">
-                      Event Name
-                    </label>
-                    <Input
-                      id="name"
-                      name="name"
-                      placeholder="e.g. 3D Printing Workshop"
-                      required
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <label htmlFor="category" className="text-sm font-medium">
-                      Category
-                    </label>
-                    <Select name="category" defaultValue="Workshop">
+                    <Label htmlFor="category">Category</Label>
+                    <Select name="category" defaultValue="Hackathon">
                       <SelectTrigger>
                         <SelectValue placeholder="Select category" />
                       </SelectTrigger>
@@ -174,50 +213,258 @@ export default function EventsPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <label htmlFor="price" className="text-sm font-medium">
-                      Price
-                    </label>
+                    <Label htmlFor="name">Event Name</Label>
                     <Input
-                      id="price"
-                      name="price"
-                      placeholder="e.g. 1000"
+                      id="name"
+                      name="name"
+                      placeholder="Enter event name"
                       required
                     />
                   </div>
 
-                  <div className="space-y-2">
-                    <label htmlFor="timing" className="text-sm font-medium">
-                      Timing
-                    </label>
-                    <Input
-                      id="timing"
-                      name="timing"
-                      placeholder="e.g. 25 Jun - 28 Jun, 2024"
-                      required
-                    />
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="startDate">Start Date</Label>
+                      <div className="relative">
+                        <Input
+                          id="startDate"
+                          name="startDate"
+                          placeholder="Select date"
+                          required
+                        />
+                        <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                          <svg
+                            width="12"
+                            height="12"
+                            viewBox="0 0 12 12"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path
+                              d="M2.5 4.5L6 8L9.5 4.5"
+                              stroke="currentColor"
+                              strokeWidth="1.5"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            />
+                          </svg>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="endDate">End Date</Label>
+                      <div className="relative">
+                        <Input
+                          id="endDate"
+                          name="endDate"
+                          placeholder="Select date"
+                          required
+                        />
+                        <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                          <svg
+                            width="12"
+                            height="12"
+                            viewBox="0 0 12 12"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path
+                              d="M2.5 4.5L6 8L9.5 4.5"
+                              stroke="currentColor"
+                              strokeWidth="1.5"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            />
+                          </svg>
+                        </div>
+                      </div>
+                    </div>
                   </div>
 
                   <div className="space-y-2">
-                    <label
-                      htmlFor="description"
-                      className="text-sm font-medium"
-                    >
-                      Description
-                    </label>
+                    <Label>Select Timings</Label>
+                    <div className="flex items-center gap-2">
+                      <Input
+                        id="startTime"
+                        name="startTime"
+                        placeholder="10:00 a.m."
+                        className="flex-1"
+                      />
+                      <span className="text-sm">to</span>
+                      <Input
+                        id="endTime"
+                        name="endTime"
+                        placeholder="12:00 p.m."
+                        className="flex-1"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Ticket Type and Price</Label>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <div className="flex items-center">
+                          <span className="text-sm mr-2">1.</span>
+                          <Input
+                            name="ticketType1"
+                            placeholder="Ticket type"
+                            className="flex-1"
+                          />
+                        </div>
+                        <div className="flex items-center">
+                          <span className="text-sm mr-2">2.</span>
+                          <Input
+                            name="ticketType2"
+                            placeholder="Ticket type"
+                            className="flex-1"
+                          />
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <div className="relative">
+                          <span className="absolute left-3 top-1/2 -translate-y-1/2">
+                            ₹
+                          </span>
+                          <Input
+                            name="price1"
+                            placeholder="Price"
+                            className="pl-7"
+                          />
+                        </div>
+                        <div className="relative">
+                          <span className="absolute left-3 top-1/2 -translate-y-1/2">
+                            ₹
+                          </span>
+                          <Input
+                            name="price2"
+                            placeholder="Price"
+                            className="pl-7"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="totalTickets">
+                      Total Tickets to be sold in single purchase
+                    </Label>
+                    <Input
+                      id="totalTickets"
+                      name="totalTickets"
+                      placeholder="Enter number"
+                    />
+                    <p className="text-xs text-gray-500">
+                      You can add up to 4 tickets only
+                    </p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Add event posters/images</Label>
+                    <div className="grid grid-cols-4 gap-2">
+                      {[1, 2, 3, 4].map((i) => (
+                        <div
+                          key={i}
+                          className="border rounded-md aspect-square flex items-center justify-center cursor-pointer hover:bg-gray-50"
+                        >
+                          <ImagePlus className="h-6 w-6 text-gray-400" />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="about">About</Label>
                     <Textarea
-                      id="description"
-                      name="description"
+                      id="about"
+                      name="about"
                       placeholder="Event description"
+                      rows={3}
                     />
                   </div>
 
-                  <Button type="submit" className="w-full">
+                  <div className="space-y-2">
+                    <Label htmlFor="agenda">Agenda</Label>
+                    <Textarea
+                      id="agenda"
+                      name="agenda"
+                      placeholder="Event agenda"
+                      rows={3}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="terms">Terms and Conditions</Label>
+                    <Textarea
+                      id="terms"
+                      name="terms"
+                      placeholder="Terms and conditions"
+                      rows={3}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="location">
+                      Event's room, number and building
+                    </Label>
+                    <Input
+                      id="location"
+                      name="location"
+                      placeholder="Enter location details"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Workshop Experts</Label>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="expertName" className="text-xs">
+                          Name
+                        </Label>
+                        <Input
+                          id="expertName"
+                          name="expertName"
+                          placeholder="Expert name"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="expertNumber" className="text-xs">
+                          Number
+                        </Label>
+                        <Input
+                          id="expertNumber"
+                          name="expertNumber"
+                          placeholder="Contact number"
+                        />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4 mt-2">
+                      <div>
+                        <Input name="expertName2" placeholder="Expert name" />
+                      </div>
+                      <div>
+                        <Input
+                          name="expertNumber2"
+                          placeholder="Contact number"
+                        />
+                      </div>
+                    </div>
+                    <Button variant="link" className="text-xs p-0 h-auto">
+                      + Add people
+                    </Button>
+                  </div>
+
+                  <Button
+                    type="submit"
+                    className="w-full bg-black hover:bg-gray-800"
+                  >
                     Save and Submit
                   </Button>
                 </form>
               </DialogContent>
             </Dialog>
-          </TabsList>
+          </div>
 
           <div>
             <TabsContent value="all" className="mt-0">
@@ -280,15 +527,16 @@ export default function EventsPage() {
                           {event.timing}
                         </div>
                         <div className="col-span-1 flex items-center">
-                          <span
-                            className={`px-2 py-1 rounded-full text-xs ${
+                          <Badge
+                            variant="outline"
+                            className={`${
                               event.isOn
-                                ? 'bg-green-100 text-green-800'
-                                : 'bg-gray-100 text-gray-800'
+                                ? 'bg-green-100 text-green-800 hover:bg-green-100'
+                                : 'bg-gray-100 text-gray-800 hover:bg-gray-100'
                             }`}
                           >
                             {event.status}
-                          </span>
+                          </Badge>
                         </div>
                         <div className="col-span-1 flex items-center justify-around">
                           <Button
@@ -368,9 +616,12 @@ export default function EventsPage() {
                           {event.timing}
                         </div>
                         <div className="col-span-1 flex items-center">
-                          <span className="px-2 py-1 rounded-full text-xs bg-green-100 text-green-800">
+                          <Badge
+                            variant="outline"
+                            className="bg-green-100 text-green-800 hover:bg-green-100"
+                          >
                             {event.status}
-                          </span>
+                          </Badge>
                         </div>
                         <div className="col-span-1 flex items-center justify-around">
                           <Button

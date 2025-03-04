@@ -1,4 +1,3 @@
-import * as React from 'react';
 import { ChevronDown, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -20,8 +19,11 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from '@/components/ui/collapsible';
+import { Switch } from '@/components/ui/switch';
+import { useState } from 'react';
 
 export default function MySpacePage() {
+  const [statusOpen, setStatusOpen] = useState(true);
   const sections = [
     { id: 1, title: 'Basic Details', content: <BasicDetailsContent /> },
     { id: 2, title: 'Rooms and Seats', content: <RoomsAndSeatsContent /> },
@@ -30,8 +32,48 @@ export default function MySpacePage() {
     { id: 5, title: 'How to reach your space', content: <LocationContent /> },
   ];
   return (
-    <div>
-      <div className="space-y-4">
+    <div className="space-y-6">
+      <div className="flex items-center justify-end">
+        <div className="flex items-center gap-4">
+          <div className="text-orange-500 font-medium">Mon 5 Aug, 4:11 PM</div>
+          <div className="relative">
+            <select
+              aria-label="Select Timeframe"
+              className="appearance-none bg-white border border-gray-200 rounded-md px-4 py-1.5 pr-8 text-sm focus:outline-none"
+            >
+              <option>Monthly</option>
+              <option>Weekly</option>
+              <option>Daily</option>
+            </select>
+            <div className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+              <svg
+                width="12"
+                height="12"
+                viewBox="0 0 12 12"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M2.5 4.5L6 8L9.5 4.5"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </div>
+          </div>
+          <div className="flex flex-col items-center gap-1">
+            <Switch checked={statusOpen} onCheckedChange={setStatusOpen} />
+            <span
+              className={`text-xs ${statusOpen ? 'text-green-500' : 'text-red-500'} font-medium`}
+            >
+              Status: {statusOpen ? 'Open' : 'Closed'}
+            </span>
+          </div>
+        </div>
+      </div>
+      <div className="space-y-6 mr-8">
         {sections.map((section) => (
           <Collapsible key={section.id}>
             <CollapsibleTrigger className="flex w-full items-center justify-between border-t bg-white p-4">
@@ -45,8 +87,8 @@ export default function MySpacePage() {
             </CollapsibleContent>
           </Collapsible>
         ))}
+        <Separator />
       </div>
-      <Separator className="mt-4" />
       <div className="my-8 flex justify-center">
         <Button variant="default" className="rounded-full px-10 py-6 text-md">
           Save and Preview

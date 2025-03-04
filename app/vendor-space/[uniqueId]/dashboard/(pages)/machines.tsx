@@ -1,5 +1,6 @@
 'use client';
 
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import {
@@ -10,6 +11,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
@@ -19,19 +21,21 @@ import {
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Textarea } from '@/components/ui/textarea';
 import {
   ArrowUpDown,
   Check,
   Edit,
+  ImagePlus,
   Plus,
   PlusCircle,
   Power,
 } from 'lucide-react';
-import Image from 'next/image';
 import { useState } from 'react';
 
 export default function MachinesPage() {
-  const [activeTab, setActiveTab] = useState('all');
+  // const [activeTab, setActiveTab] = useState('all');
+  const [statusOpen, setStatusOpen] = useState(true);
   const [showSuccess, setShowSuccess] = useState(false);
   const [machines, setMachines] = useState([
     {
@@ -46,16 +50,15 @@ export default function MachinesPage() {
   ]);
   const [openDialog, setOpenDialog] = useState(false);
   const [viewMode, setViewMode] = useState('manage');
-  const [machinesStatus, setMachinesStatus] = useState(true);
 
-  const handleAddMachine = (e: any) => {
+  const handleAddMachine = (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
     const newMachine = {
       id: machines.length + 1,
-      name: formData.get('name') as string,
+      name: formData.get('name'),
       price: `₹ ${formData.get('price')}/hr`,
-      category: formData.get('category') as string,
+      category: formData.get('category'),
       timing: `${formData.get('startTime')} - ${formData.get('endTime')}`,
       status: 'OFF',
       isOn: false,
@@ -71,7 +74,7 @@ export default function MachinesPage() {
     }, 3000);
   };
 
-  const toggleMachineStatus = (id: number) => {
+  const toggleMachineStatus = (id) => {
     setMachines(
       machines.map((machine) =>
         machine.id === id
@@ -86,70 +89,111 @@ export default function MachinesPage() {
   };
 
   return (
-    <div className="space-y-4">
-      <Tabs
-        value={viewMode}
-        onValueChange={setViewMode}
-        className="w-full mt-1"
-      >
-        <TabsList className="bg-transparent">
-          <TabsTrigger
-            value="manage"
-            className="px-12 py-3 rounded-xl data-[state=active]:bg-black data-[state=active]:text-white"
-          >
-            Manage
-          </TabsTrigger>
-          <TabsTrigger
-            value="monitor"
-            className="px-12 py-3 rounded-xl data-[state=active]:bg-black data-[state=active]:text-white"
-          >
-            Monitor
-          </TabsTrigger>
-        </TabsList>
-      </Tabs>
+    <div className="space-y-4 pt-2">
+      <div className="flex items-center justify-between">
+        <Tabs value={viewMode} onValueChange={setViewMode}>
+          <TabsList className="bg-transparent space-x-2">
+            <TabsTrigger
+              value="manage"
+              className="px-12 py-3 data-[state=active]:bg-black data-[state=active]:text-white border rounded-xl border-black"
+            >
+              Manage
+            </TabsTrigger>
+            <TabsTrigger
+              value="monitor"
+              className="px-12 py-3 data-[state=active]:bg-black data-[state=active]:text-white border rounded-xl border-black"
+            >
+              Monitor
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
+        <div className="flex items-center gap-4">
+          <div className="text-orange-500 font-medium">Mon 5 Aug, 4:11 PM</div>
+          <div className="relative">
+            <select
+              aria-label="Select Timeframe"
+              className="appearance-none bg-white border border-gray-200 rounded-md px-4 py-1.5 pr-8 text-sm focus:outline-none"
+            >
+              <option>Monthly</option>
+              <option>Weekly</option>
+              <option>Daily</option>
+            </select>
+            <div className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+              <svg
+                width="12"
+                height="12"
+                viewBox="0 0 12 12"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M2.5 4.5L6 8L9.5 4.5"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </div>
+          </div>
+          <div className="flex flex-col items-center gap-1">
+            <Switch checked={statusOpen} onCheckedChange={setStatusOpen} />
+            <span
+              className={`text-xs ${statusOpen ? 'text-green-500' : 'text-red-500'} font-medium`}
+            >
+              Status: {statusOpen ? 'Open' : 'Closed'}
+            </span>
+          </div>
+        </div>
+      </div>
+
       {viewMode === 'manage' && (
         <Tabs defaultValue="all" className="w-full">
-          <TabsList className="bg-transparent mb-4">
-            <TabsTrigger
-              value="all"
-              className="data-[state=active]:bg-black data-[state=active]:text-white"
-            >
-              All Machines
-            </TabsTrigger>
-            <TabsTrigger
-              value="active"
-              className="data-[state=active]:bg-black data-[state=active]:text-white"
-            >
-              Active
-            </TabsTrigger>
-            <TabsTrigger
-              value="draft"
-              className="data-[state=active]:bg-black data-[state=active]:text-white"
-            >
-              Draft
-            </TabsTrigger>
-            <TabsTrigger
-              value="trash"
-              className="data-[state=active]:bg-black data-[state=active]:text-white"
-            >
-              Trash
-            </TabsTrigger>
+          <div className="flex items-center mb-4">
+            <TabsList className="bg-transparent">
+              <TabsTrigger
+                value="all"
+                className="data-[state=active]:bg-black data-[state=active]:text-white"
+              >
+                All Machines
+              </TabsTrigger>
+              <TabsTrigger
+                value="active"
+                className="data-[state=active]:bg-black data-[state=active]:text-white"
+              >
+                Active
+              </TabsTrigger>
+              <TabsTrigger
+                value="draft"
+                className="data-[state=active]:bg-black data-[state=active]:text-white"
+              >
+                Draft
+              </TabsTrigger>
+              <TabsTrigger
+                value="trash"
+                className="data-[state=active]:bg-black data-[state=active]:text-white"
+              >
+                Trash
+              </TabsTrigger>
+            </TabsList>
+
             <Dialog open={openDialog} onOpenChange={setOpenDialog}>
               <DialogTrigger asChild>
-                <Button variant="ghost" className="rounded-full bg-transparent text-black">
-                  <PlusCircle className="mr-2 h-4 w-4" />
+                <Button
+                  variant="ghost"
+                  className="rounded-full bg-transparent text-black"
+                >
                   Add
+                  <PlusCircle className="ml-2 h-4 w-4" />
                 </Button>
               </DialogTrigger>
-              <DialogContent className="bg-white">
+              <DialogContent className="bg-white max-w-xl max-h-[85vh] overflow-y-auto fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 scrollbar-hide">
                 <DialogHeader>
                   <DialogTitle>Add a machine</DialogTitle>
                 </DialogHeader>
                 <form onSubmit={handleAddMachine} className="space-y-4">
                   <div className="space-y-2">
-                    <label htmlFor="name" className="text-sm font-medium">
-                      Machine Name
-                    </label>
+                    <Label htmlFor="name">Machine Name</Label>
                     <Input
                       id="name"
                       name="name"
@@ -159,9 +203,7 @@ export default function MachinesPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <label htmlFor="category" className="text-sm font-medium">
-                      Category
-                    </label>
+                    <Label htmlFor="category">Category</Label>
                     <Select name="category" defaultValue="3D Printer">
                       <SelectTrigger>
                         <SelectValue placeholder="Select category" />
@@ -189,25 +231,24 @@ export default function MachinesPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <label htmlFor="price" className="text-sm font-medium">
-                      Price per hour
-                    </label>
-                    <Input
-                      id="price"
-                      name="price"
-                      placeholder="e.g. 500"
-                      required
-                    />
+                    <Label htmlFor="price">Price per hour</Label>
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2">
+                        ₹
+                      </span>
+                      <Input
+                        id="price"
+                        name="price"
+                        placeholder="e.g. 500"
+                        className="pl-7"
+                        required
+                      />
+                    </div>
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <label
-                        htmlFor="startTime"
-                        className="text-sm font-medium"
-                      >
-                        Start Time
-                      </label>
+                      <Label htmlFor="startTime">Start Time</Label>
                       <Input
                         id="startTime"
                         name="startTime"
@@ -216,9 +257,7 @@ export default function MachinesPage() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <label htmlFor="endTime" className="text-sm font-medium">
-                        End Time
-                      </label>
+                      <Label htmlFor="endTime">End Time</Label>
                       <Input
                         id="endTime"
                         name="endTime"
@@ -228,13 +267,40 @@ export default function MachinesPage() {
                     </div>
                   </div>
 
-                  <Button type="submit" className="w-full">
+                  <div className="space-y-2">
+                    <Label>Machine Images</Label>
+                    <div className="grid grid-cols-4 gap-2">
+                      {[1, 2, 3, 4].map((i) => (
+                        <div
+                          key={i}
+                          className="border rounded-md aspect-square flex items-center justify-center cursor-pointer hover:bg-gray-50"
+                        >
+                          <ImagePlus className="h-6 w-6 text-gray-400" />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="description">Description</Label>
+                    <Textarea
+                      id="description"
+                      name="description"
+                      placeholder="Describe the machine, its specifications, and usage instructions"
+                      rows={4}
+                    />
+                  </div>
+
+                  <Button
+                    type="submit"
+                    className="w-full bg-black hover:bg-gray-800"
+                  >
                     Save and Submit
                   </Button>
                 </form>
               </DialogContent>
             </Dialog>
-          </TabsList>
+          </div>
 
           <div>
             <TabsContent value="all" className="mt-0">
@@ -271,7 +337,7 @@ export default function MachinesPage() {
                     Status
                     <ArrowUpDown className="ml-1 h-4 w-4" />
                   </div>
-                  <div className="col-span-1 text-center">Actions</div>
+                  <div className="col-span-1 text-center">Edit</div>
                 </div>
 
                 {machines.length > 0 ? (
@@ -282,12 +348,10 @@ export default function MachinesPage() {
                         className="grid grid-cols-12 p-3 text-sm border-t"
                       >
                         <div className="col-span-3 flex items-center gap-2">
-                          <div className="h-10 w-10 rounded bg-gray-200 overflow-hidden">
-                            <Image
+                          <div className="h-10 w-10 rounded bg-gray-200 overflow-hidden flex items-center justify-center">
+                            <img
                               src="/placeholder.svg?height=40&width=40"
                               alt={machine.name}
-                              height={40}
-                              width={40}
                             />
                           </div>
                           <span>{machine.name}</span>
@@ -302,15 +366,16 @@ export default function MachinesPage() {
                           {machine.timing}
                         </div>
                         <div className="col-span-1 flex items-center">
-                          <span
-                            className={`px-2 py-1 rounded-full text-xs ${
+                          <Badge
+                            variant="outline"
+                            className={`${
                               machine.isOn
-                                ? 'bg-green-100 text-green-800'
-                                : 'bg-gray-100 text-gray-800'
+                                ? 'bg-green-100 text-green-800 hover:bg-green-100'
+                                : 'bg-gray-100 text-gray-800 hover:bg-gray-100'
                             }`}
                           >
                             {machine.status}
-                          </span>
+                          </Badge>
                         </div>
                         <div className="col-span-1 flex items-center justify-around">
                           <Button
@@ -363,7 +428,7 @@ export default function MachinesPage() {
                     Status
                     <ArrowUpDown className="ml-1 h-4 w-4" />
                   </div>
-                  <div className="col-span-1 text-center">Actions</div>
+                  <div className="col-span-1 text-center">Edit</div>
                 </div>
 
                 <div>
@@ -375,12 +440,10 @@ export default function MachinesPage() {
                         className="grid grid-cols-12 p-3 text-sm border-t"
                       >
                         <div className="col-span-3 flex items-center gap-2">
-                          <div className="h-10 w-10 rounded bg-gray-200 overflow-hidden">
-                            <Image
+                          <div className="h-10 w-10 rounded bg-gray-200 overflow-hidden flex items-center justify-center">
+                            <img
                               src="/placeholder.svg?height=40&width=40"
                               alt={machine.name}
-                              height={40}
-                              width={40}
                             />
                           </div>
                           <span>{machine.name}</span>
@@ -395,9 +458,12 @@ export default function MachinesPage() {
                           {machine.timing}
                         </div>
                         <div className="col-span-1 flex items-center">
-                          <span className="px-2 py-1 rounded-full text-xs bg-green-100 text-green-800">
+                          <Badge
+                            variant="outline"
+                            className="bg-green-100 text-green-800 hover:bg-green-100"
+                          >
                             {machine.status}
-                          </span>
+                          </Badge>
                         </div>
                         <div className="col-span-1 flex items-center justify-around">
                           <Button
@@ -494,12 +560,10 @@ export default function MachinesPage() {
                     className="grid grid-cols-11 p-3 text-sm border-t"
                   >
                     <div className="col-span-3 flex items-center gap-2">
-                      <div className="h-10 w-10 rounded bg-gray-200 overflow-hidden">
-                        <Image
+                      <div className="h-10 w-10 rounded bg-gray-200 overflow-hidden flex items-center justify-center">
+                        <img
                           src="/placeholder.svg?height=40&width=40"
                           alt={machine.name}
-                          height={40}
-                          width={40}
                         />
                       </div>
                       <span>{machine.name}</span>
