@@ -1,12 +1,14 @@
 'use client';
 
-import { useState } from 'react';
-import Link from 'next/link';
-import { ChevronDown, Search, MapPin, Languages, X, Menu } from 'lucide-react';
-import Image from 'next/image';
-import { useCityStore } from '@/lib/store';
+import { fetchCityData } from '@/lib/api';
 import { cities } from '@/lib/constants';
-import { useSession } from "next-auth/react"
+import { useCityDataStore, useCityStore } from '@/lib/store';
+import { ChevronDown, Languages, MapPin, Menu, Search, X } from 'lucide-react';
+import { useSession } from 'next-auth/react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 
 export default function TopBar({
   theme = 'dark',
@@ -20,13 +22,29 @@ export default function TopBar({
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { selectedCity, setSelectedCity } = useCityStore();
+  const { setMachines, setEvents } = useCityDataStore();
   const [searchTerm, setSearchTerm] = useState('');
 
   const isDark = theme === 'dark';
 
-  const { data: session } = useSession()
+  const { data: session } = useSession();
+  const router = useRouter();
 
-  console.log(session)
+  console.log(session);
+
+  const handleCityChange = async (city: string) => {
+    setSelectedCity(city);
+    setIsDropdownOpen(false);
+    if (city === 'Location') return;
+    try {
+      const cityData = await fetchCityData(city);
+      setMachines(cityData.machines);
+      setEvents(cityData.events);
+      router.push('/home');
+    } catch (error) {
+      console.error('Failed to fetch city data:', error);
+    }
+  };
 
   const MobileMenu = () => (
     <div
@@ -36,39 +54,39 @@ export default function TopBar({
         <Link href="/vendor-space" className="block">
           <button
             type="button"
-            className={`w-full py-2 px-4 rounded-xl font-semibold ${isDark
+            className={`w-full py-2 px-4 rounded-xl font-semibold ${
+              isDark
                 ? 'bg-black text-white hover:bg-gray-800'
                 : 'bg-white text-black hover:bg-gray-200'
-              } border border-gray-300`}
+            } border border-gray-300`}
           >
             List your Machines
           </button>
         </Link>
         <div className="flex items-center justify-between px-3">
-          {
-            session && session.user ? (
-              <>
-                <div className="flex gap-x-2 items-center justify-center">
-                  <Link
-                    href="/profile"
-                    className={`${isDark ? 'text-white' : 'text-black'} font-medium text-md`}
-                  >
-                    {session.user.name}
-                  </Link>
-                  <Image
-                    src={session.user.image|| ''}
-                    alt="Profile"
-                    width={30}
-                    height={30}
-                    className={`rounded-full border-2 ${isDark ? 'border-gray-400' : 'border-black'}`}
-                  />
-                </div>
-                </>
-            ) : (
-              <Link href="/auth" className="block text-center py-2 font-medium">
-                Login | Sign Up
-              </Link>)
-          }
+          {session && session.user ? (
+            <>
+              <div className="flex gap-x-2 items-center justify-center">
+                <Link
+                  href="/profile"
+                  className={`${isDark ? 'text-white' : 'text-black'} font-medium text-md`}
+                >
+                  {session.user.name}
+                </Link>
+                <Image
+                  src={session.user.image || ''}
+                  alt="Profile"
+                  width={30}
+                  height={30}
+                  className={`rounded-full border-2 ${isDark ? 'border-gray-400' : 'border-black'}`}
+                />
+              </div>
+            </>
+          ) : (
+            <Link href="/auth" className="block text-center py-2 font-medium">
+              Login | Sign Up
+            </Link>
+          )}
           {/* <Link href="/auth" className="block text-center py-2 font-medium">
             Login | Sign Up
           </Link> */}
@@ -157,10 +175,7 @@ export default function TopBar({
                     <div
                       key={loc}
                       className="px-4 py-2 hover:bg-black hover:text-white cursor-pointer"
-                      onClick={() => {
-                        setSelectedCity(loc);
-                        setIsDropdownOpen(false);
-                      }}
+                      onClick={() => handleCityChange(loc)}
                     >
                       {loc}
                     </div>

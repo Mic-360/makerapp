@@ -2,14 +2,32 @@
 
 import TopBar from '@/components/top-bar';
 import { Button } from '@/components/ui/button';
+import { fetchCityData } from '@/lib/api';
 import { cities } from '@/lib/constants';
-import { useCityStore } from '@/lib/store';
+import { useCityDataStore, useCityStore } from '@/lib/store';
 import { X } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 export default function Home() {
+  const router = useRouter();
   const { selectedCity, setSelectedCity } = useCityStore();
+  const { setMachines, setEvents } = useCityDataStore();
+
+  const handleCityConfirm = async () => {
+    if (selectedCity === 'Location') return;
+
+    try {
+      const cityData = await fetchCityData(selectedCity);
+      setMachines(cityData.machines);
+      setEvents(cityData.events);
+      router.push('/home');
+    } catch (error) {
+      console.error('Failed to fetch city data:', error);
+    }
+  };
+
   return (
     <div className="min-h-screen min-w-screen bg-white mx-auto">
       <TopBar theme="light" />
@@ -44,22 +62,22 @@ export default function Home() {
               </Button>
             ))}
           </div>
-          <Link
-            href="/home"
+          <Button
+            onClick={handleCityConfirm}
             className={
-              selectedCity === 'Select Location'
-                ? 'pointer-events-none bg-black text-white py-3 font-medium transition-colors px-16 rounded-full'
-                : 'bg-emerald-500 text-black py-3 font-medium hover:bg-emerald-600 transition-colors px-16 rounded-full'
+              selectedCity === 'Location'
+                ? 'pointer-events-none bg-black text-white py-3 font-medium transition-colors px-16 rounded-full w-auto'
+                : 'bg-emerald-500 text-black py-3 font-medium hover:bg-emerald-600 transition-colors px-16 rounded-full w-auto'
             }
           >
             Confirm
-          </Link>
+          </Button>
           <Button
             variant="link"
             className="w-full text-xs text-gray-500 mt-4 hover:text-gray-700 underline underline-offset-1"
             onClick={() => {
-              setSelectedCity('Select Location');
-              window.location.href = '/home';
+              setSelectedCity('Location');
+              router.push('/home');
             }}
           >
             SKIP

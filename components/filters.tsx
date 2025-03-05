@@ -61,7 +61,7 @@ export function Filters({
       </div>
       <div className="bg-white backdrop-blur-sm border rounded-xl">
         <div className="rounded-t-xl bg-background">
-          <div className="max-h-[80vh] overflow-y-auto">
+          <div className=" overflow-y-auto scrollbar-hide">
             <div className="space-y-6 p-4">
               {/* Brands */}
               <div className="space-y-4">

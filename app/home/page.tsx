@@ -3,30 +3,19 @@
 import Footer from '@/components/footer';
 import TopBar from '@/components/top-bar';
 import { Button } from '@/components/ui/button';
-import { CalendarIcon } from 'lucide-react';
 import Image from 'next/image';
 import { useState } from 'react';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
-import { Calendar } from '@/components/ui/calendar';
-import Makerspace from './makerspace';
 import Machine from './machine';
 import Event from './events';
-import { useRouter } from 'next/navigation';
 import CategoryScroll from '@/components/category-scroll';
 
 export default function Page() {
   const [activeSegment, setActiveSegment] = useState('machines');
-  const router = useRouter();
 
   return (
     <div>
       <div className="min-h-screen min-w-screen bg-white relative">
         <TopBar theme="dark" />
-
         <div className="relative h-[400px] sm:h-[500px] flex flex-col items-center justify-end text-center">
           <Image
             src="/placeholder-top.png"
@@ -55,7 +44,6 @@ export default function Page() {
           </h2>
           <CategoryScroll />
         </section>
-        {activeSegment === 'makerspaces' && <Makerspace />}
         {activeSegment === 'machines' && <Machine />}
         {activeSegment === 'events' && <Event />}
         <div className="sticky bottom-5 left-1/2 transform -translate-x-1/2 mb-10 inline-flex rounded-full bg-white text-gray-200 shadow-lg shadow-slate-500">
@@ -70,17 +58,6 @@ export default function Page() {
           >
             Book Machine
           </Button>
-          {/* <Button
-            variant="ghost"
-            className={`rounded-none p-6 text-sm font-medium transition-colors ${
-              activeSegment === 'machine'
-                ? 'bg-white text-black shadow'
-                : 'text-white hover:bg-gray-700'
-            }`}
-            onClick={() => setActiveSegment('machines')}
-          >
-            Book a Machine
-          </Button> */}
           <Button
             variant="ghost"
             className={`rounded-r-full p-6 text-sm font-medium transition-colors ${

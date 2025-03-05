@@ -9,44 +9,20 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { Separator } from '@/components/ui/separator';
-import { fetchMachines } from '@/lib/api';
 import { sortOptions } from '@/lib/constants';
+import { useCategoryStore, useCityDataStore } from '@/lib/store';
 import { ArrowUpDown, SlidersHorizontal, Star } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useMemo, useState } from 'react';
 
 export default function Machine() {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [machines, setMachines] = useState([
-    {
-      id: '1',
-      name: '3D Printer XYZ-2000',
-      makerspaceName: 'TechHub',
-      location: 'San Francisco, USA',
-      stars: 4.5,
-      categories: ['3D Printing', 'Rapid Prototyping'],
-      fullDescription:
-        'The XYZ-2000 is a high-precision 3D printer capable of printing complex geometries with various materials including PLA, ABS, and PETG.',
-      image: '/assetlist.png',
-    },
-    {
-      id: '2',
-      name: 'Laser Cutter Pro-500',
-      makerspaceName: 'CreativeLab',
-      location: 'New York, USA',
-      stars: 4.8,
-      categories: ['Laser Cutting', 'Engraving'],
-      fullDescription:
-        'The Pro-500 laser cutter offers precision cutting and engraving on various materials including wood, acrylic, and leather.',
-      image: '/assetlist.png',
-    },
-  ]);
-
+  const { machines } = useCityDataStore();
+  const { selectedCategory } = useCategoryStore();
   const [expandedDescriptions, setExpandedDescriptions] = useState<{
     [key: string]: boolean;
   }>({});
-
 
   const toggleDescription = (id: string) => {
     setExpandedDescriptions((prev) => ({
@@ -54,6 +30,19 @@ export default function Machine() {
       [id]: !prev[id],
     }));
   };
+
+  // Filter machines based on selected category
+  const filteredMachines = useMemo(() => {
+    if (!selectedCategory) return machines;
+
+    return machines.filter(
+      (machine) =>
+        machine.categories &&
+        machine.categories.some((category: string) =>
+          category.toLowerCase().includes(selectedCategory.toLowerCase())
+        )
+    );
+  }, [machines, selectedCategory]);
 
   return (
     <main className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -105,73 +94,92 @@ export default function Machine() {
             </Button>
           )}
         </div>
-        <div className="flex gap-x-4">
+        <div className="grid grid-cols-12 gap-4">
           {isFilterOpen && (
-            <Filters
-              isOpen={isFilterOpen}
-              onClose={() => setIsFilterOpen(false)}
-            />
+            <aside className="col-span-3">
+              <Filters
+                isOpen={isFilterOpen}
+                onClose={() => setIsFilterOpen(false)}
+              />
+            </aside>
           )}
-          <div className="flex-grow grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {machines.map((machine) => (
-              <div
-                key={machine.id}
-                className="border rounded-xl overflow-hidden hover:shadow-xl shadow-inner"
-              >
-                <Image
-                  src={machine.image || '/placeholder.svg'}
-                  alt={machine.name}
-                  width={400}
-                  height={600}
-                  className="w-full object-cover rounded-xl"
-                />
-                <div className="p-4">
-                  <div className="flex justify-between w-full">
-                    <div>
-                      <h3 className="font-semibold text-lg">{machine.name}</h3>
-                      <p className="text-xs text-gray-600">
-                        {machine.makerspaceName}, {machine.location}
-                      </p>
-                    </div>
-                    <div className="flex items-start justify-center gap-x-1.5">
-                      <span className="text-gray-600 font-semibold text-md">
-                        {machine.stars.toFixed(1)}
-                      </span>
-                      <Star className="w-4 h-4 mt-[3px] text-orange-400 fill-current" />
-                    </div>
-                  </div>
-                  <p className="text-sm my-2">
-                    {machine.categories.join(', ')}
-                  </p>
-                  <div>
-                    <button
-                      type="button"
-                      onClick={() => toggleDescription(machine.id)}
-                      className="underline text-xs"
-                    >
-                      {expandedDescriptions[machine.id]
-                        ? 'Show Less'
-                        : 'Show More'}
-                    </button>
-                    {expandedDescriptions[machine.id] && (
-                      <p className="text-sm mt-2">{machine.fullDescription}</p>
-                    )}
-                  </div>
-                  <div className="flex justify-end my-2 items-end">
-                    <Link
-                      href={`/home/${encodeURIComponent(machine.name)}/book`}
-                    >
-                      <Button
-                        variant="default"
-                        className="rounded-lg px-6 hover:bg-green-500 hover:text-black"
-                      >
-                        <span className="text-xs">BOOK NOW</span>
-                      </Button>
-                    </Link>
-                  </div>
-                </div>
+          <div className={`${isFilterOpen ? 'col-span-9' : 'col-span-12'}`}>
+            {filteredMachines.length === 0 ? (
+              <div className="text-center py-10">
+                <h3 className="text-lg font-medium">No machines found</h3>
+                <p className="text-gray-500">
+                  Try changing your filter criteria
+                </p>
               </div>
-            ))}
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-min">
+                {filteredMachines.map((machine) => (
+                  <div
+                    key={machine.id}
+                    className="border rounded-xl overflow-hidden hover:shadow-xl shadow-inner h-fit"
+                  >
+                    <Image
+                      src={machine.image || '/placeholder.svg'}
+                      alt={machine.name}
+                      width={400}
+                      height={600}
+                      className="w-full object-cover rounded-xl"
+                    />
+                    <div className="p-4">
+                      <div className="flex justify-between w-full">
+                        <div>
+                          <h3 className="font-semibold text-lg">
+                            {machine.name}
+                          </h3>
+                          <p className="text-xs text-gray-600">
+                            {machine.makerspaceName}, {machine.location}
+                          </p>
+                        </div>
+                        <div className="flex items-start justify-center gap-x-1.5">
+                          <span className="text-gray-600 font-semibold text-md">
+                            {machine.rating ? machine.rating.toFixed(1) : '4.5'}
+                          </span>
+                          <Star className="w-4 h-4 mt-[3px] text-orange-400 fill-current" />
+                        </div>
+                      </div>
+                      <p className="text-sm my-2">
+                        {machine.categories
+                          ? machine.categories.join(', ')
+                          : machine.category}
+                      </p>
+                      <div>
+                        <button
+                          type="button"
+                          onClick={() => toggleDescription(machine.id)}
+                          className="underline text-xs"
+                        >
+                          {expandedDescriptions[machine.id]
+                            ? 'Show Less'
+                            : 'Show More'}
+                        </button>
+                        {expandedDescriptions[machine.id] && (
+                          <p className="text-sm mt-2">
+                            {machine.description || machine.fullDescription}
+                          </p>
+                        )}
+                      </div>
+                      <div className="flex justify-end my-2 items-end">
+                        <Link
+                          href={`/home/${encodeURIComponent(machine.name)}/book`}
+                        >
+                          <Button
+                            variant="default"
+                            className="rounded-lg px-6 hover:bg-green-500 hover:text-black"
+                          >
+                            <span className="text-xs">BOOK NOW</span>
+                          </Button>
+                        </Link>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
         <div className="text-center mt-8">

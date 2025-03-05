@@ -10,6 +10,16 @@ export const useCityStore = create<CityState>((set) => ({
   setSelectedCity: (city) => set({ selectedCity: city }),
 }));
 
+interface CategoryFilterState {
+  selectedCategory: string | null;
+  setSelectedCategory: (category: string | null) => void;
+}
+
+export const useCategoryStore = create<CategoryFilterState>((set) => ({
+  selectedCategory: null,
+  setSelectedCategory: (category) => set({ selectedCategory: category }),
+}));
+
 interface AuthState {
   loginIdentifier: string;
   isValidEmail: boolean;
@@ -72,4 +82,18 @@ export const useSignupStore = create<SignupStore>((set) => ({
   setUserType: (userType) => set({ userType }),
   setIndustry: (industry) => set({ industry }),
   setPurpose: (purpose) => set({ purpose }),
+}));
+
+interface CityDataState {
+  machines: any[];
+  events: any[];
+  setMachines: (machines: any[]) => void;
+  setEvents: (events: any[]) => void;
+}
+
+export const useCityDataStore = create<CityDataState>((set) => ({
+  machines: [],
+  events: [],
+  setMachines: (machines) => set({ machines }),
+  setEvents: (events) => set({ events }),
 }));

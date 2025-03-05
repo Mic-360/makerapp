@@ -1,14 +1,16 @@
 'use client';
 
-import { useRef, useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { categories } from '@/lib/constants';
+import { useCategoryStore } from '@/lib/store';
+import { ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 
 export default function CategoryScroll() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [showLeftButton, setShowLeftButton] = useState(false);
   const [showRightButton, setShowRightButton] = useState(true);
+  const { selectedCategory, setSelectedCategory } = useCategoryStore();
 
   const checkScroll = () => {
     if (scrollRef.current) {
@@ -34,8 +36,27 @@ export default function CategoryScroll() {
     }
   };
 
+  const handleCategoryClick = (category: string) => {
+    setSelectedCategory(selectedCategory === category ? null : category);
+  };
+
+  const clearCategory = () => {
+    setSelectedCategory(null);
+  };
+
   return (
     <div className="relative max-w-full mb-8">
+      {/* {selectedCategory && (
+        <div className="mb-4 flex items-center">
+          <span className="text-sm mr-2">Filtered by:</span>
+          <div className="bg-black text-white rounded-full py-1 px-3 text-xs flex items-center">
+            {selectedCategory}
+            <button onClick={clearCategory} className="ml-2 focus:outline-none">
+              <X size={14} />
+            </button>
+          </div>
+        </div>
+      )} */}
       {showLeftButton && (
         <div className="absolute left-0 top-0 bottom-0 w-16 bg-gradient-to-r from-white to-transparent z-10">
           <Button
@@ -56,8 +77,13 @@ export default function CategoryScroll() {
         {categories.map((category, index) => (
           <Button
             key={index}
-            variant="outline"
-            className="whitespace-nowrap hover:bg-green-500 hover:shadow-md px-10 py-6 rounded-xl font-semibold"
+            variant={selectedCategory === category ? 'default' : 'outline'}
+            className={`whitespace-nowrap px-10 py-6 rounded-xl font-semibold ${
+              selectedCategory === category
+                ? 'bg-green-500 text-white hover:bg-green-400'
+                : 'hover:bg-green-500 hover:text-white'
+            }`}
+            onClick={() => handleCategoryClick(category)}
           >
             {category}
           </Button>

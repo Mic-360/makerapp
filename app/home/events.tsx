@@ -1,9 +1,6 @@
 'use client';
 
-import { useState } from 'react';
-import Image from 'next/image';
-import Link from 'next/link';
-import { ArrowUpDown, SlidersHorizontal, Star, Calendar } from 'lucide-react';
+import { Filters } from '@/components/filters';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
@@ -12,63 +9,20 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { Separator } from '@/components/ui/separator';
-import { Filters } from '@/components/filters';
 import { sortOptions } from '@/lib/constants';
+import { useCategoryStore, useCityDataStore } from '@/lib/store';
+import { ArrowUpDown, Calendar, SlidersHorizontal, Star } from 'lucide-react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { useMemo, useState } from 'react';
 
 export default function Event() {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [events, setEvents] = useState([
-    {
-      id: '1',
-      name: '3D Printing Workshop',
-      location: 'TechHub, San Francisco, USA',
-      date: '2023-08-15',
-      time: '14:00 - 17:00',
-      categories: ['Workshop', '3D Printing'],
-      rating: 4.8,
-      image: '/assetlist.png',
-      description:
-        'Learn the basics of 3D printing in this hands-on workshop. Perfect for beginners and intermediate makers.',
-    },
-    {
-      id: '2',
-      name: 'Robotics Hackathon',
-      location: 'Innovation Lab, New York, USA',
-      date: '2023-09-01',
-      time: '09:00 - 18:00',
-      categories: ['Hackathon', 'Robotics'],
-      rating: 4.9,
-      image: '/assetlist.png',
-      description:
-        'Join teams of innovators to build and program robots in this exciting 24-hour hackathon event.',
-    },
-    {
-      id: '3',
-      name: 'Design Seminar',
-      location: 'Green Tech Center, Berlin, Germany',
-      date: '2023-08-20',
-      time: '10:00 - 12:00',
-      categories: ['Seminar', 'Sustainability'],
-      rating: 4.7,
-      image: '/assetlist.png',
-      description:
-        'Explore sustainable design practices and their impact on product development and manufacturing.',
-    },
-  ]);
-
+  const { events } = useCityDataStore();
+  const { selectedCategory } = useCategoryStore();
   const [expandedDescriptions, setExpandedDescriptions] = useState<{
     [key: string]: boolean;
   }>({});
-
-  // useEffect(() => {
-  //   const loadData = async () => {
-  //     const spaces = await fetchMakerSpaces();
-  //     const cats = await fetchCategories();
-  //     setMakerSpaces(spaces);
-  //     setCategories(cats);
-  //   };
-  //   loadData();
-  // }, []);
 
   const toggleDescription = (id: string) => {
     setExpandedDescriptions((prev) => ({
@@ -76,6 +30,19 @@ export default function Event() {
       [id]: !prev[id],
     }));
   };
+
+  // Filter events based on selected category
+  const filteredEvents = useMemo(() => {
+    if (!selectedCategory) return events;
+
+    return events.filter(
+      (event) =>
+        event.categories &&
+        event.categories.some((category: string) =>
+          category.toLowerCase().includes(selectedCategory.toLowerCase())
+        )
+    );
+  }, [events, selectedCategory]);
 
   return (
     <main className="container mx-auto px-4 sm:px-6 lg:px-8 my-10">
@@ -127,75 +94,96 @@ export default function Event() {
             </Button>
           )}
         </div>
-        <div className="flex gap-x-4">
+        <div className="grid grid-cols-12 gap-4">
           {isFilterOpen && (
-            <Filters
-              isOpen={isFilterOpen}
-              onClose={() => setIsFilterOpen(false)}
-            />
+            <aside className="col-span-3">
+              <Filters
+                isOpen={isFilterOpen}
+                onClose={() => setIsFilterOpen(false)}
+              />
+            </aside>
           )}
-          <div className="flex-grow grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {events.map((event) => (
-              <div
-                key={event.id}
-                className="border rounded-xl overflow-hidden hover:shadow-xl shadow-inner"
-              >
-                <Image
-                  src={event.image || '/placeholder.svg'}
-                  alt={event.name}
-                  width={400}
-                  height={600}
-                  className="w-full object-cover rounded-xl"
-                />
-                <div className="p-4">
-                  <div className="flex justify-between w-full">
-                    <div>
-                      <h3 className="font-semibold text-lg">{event.name}</h3>
-                      <p className="text-xs text-gray-600">{event.location}</p>
-                    </div>
-                    <div className="flex items-start justify-center gap-x-1.5">
-                      <span className="text-gray-600 font-semibold text-md">
-                        {event.rating.toFixed(1)}
-                      </span>
-                      <Star className="w-4 h-4 mt-[3px] text-orange-400 fill-current" />
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-x-2 mt-2">
-                    <Calendar className="w-4 h-4 text-gray-500" />
-                    <p className="text-sm text-gray-600">
-                      {event.date} | {event.time}
-                    </p>
-                  </div>
-                  <p className="text-sm my-2">{event.categories.join(', ')}</p>
-                  <div>
-                    <button
-                      type="button"
-                      onClick={() => toggleDescription(event.id)}
-                      className="underline text-xs"
-                    >
-                      {expandedDescriptions[event.id]
-                        ? 'Show Less'
-                        : 'Show More'}
-                    </button>
-                    {expandedDescriptions[event.id] && (
-                      <p className="text-sm mt-2">{event.description}</p>
-                    )}
-                  </div>
-                  <div className="flex justify-end mt-4">
-                    <Link
-                      href={`/events/${encodeURIComponent(event.name)}/register`}
-                    >
-                      <Button
-                        variant="default"
-                        className="rounded-lg px-6 hover:bg-green-500 hover:text-black"
-                      >
-                        <span className="text-xs">REGISTER</span>
-                      </Button>
-                    </Link>
-                  </div>
-                </div>
+          <div className={`${isFilterOpen ? 'col-span-9' : 'col-span-12'}`}>
+            {filteredEvents.length === 0 ? (
+              <div className="text-center py-10">
+                <h3 className="text-lg font-medium">No events found</h3>
+                <p className="text-gray-500">
+                  Try changing your filter criteria
+                </p>
               </div>
-            ))}
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-min">
+                {filteredEvents.map((event) => (
+                  <div
+                    key={event.id}
+                    className="border rounded-xl overflow-hidden hover:shadow-xl shadow-inner h-fit"
+                  >
+                    <Image
+                      src={event.image || '/placeholder.svg'}
+                      alt={event.name}
+                      width={400}
+                      height={600}
+                      className="w-full object-cover rounded-xl"
+                    />
+                    <div className="p-4">
+                      <div className="flex justify-between w-full">
+                        <div>
+                          <h3 className="font-semibold text-lg">
+                            {event.name}
+                          </h3>
+                          <p className="text-xs text-gray-600">
+                            {event.location}
+                          </p>
+                        </div>
+                        <div className="flex items-start justify-center gap-x-1.5">
+                          <span className="text-gray-600 font-semibold text-md">
+                            {event.rating ? event.rating.toFixed(1) : '4.5'}
+                          </span>
+                          <Star className="w-4 h-4 mt-[3px] text-orange-400 fill-current" />
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-x-2 mt-2">
+                        <Calendar className="w-4 h-4 text-gray-500" />
+                        <p className="text-sm text-gray-600">
+                          {event.date || event.timing} | {event.time}
+                        </p>
+                      </div>
+                      <p className="text-sm my-2">
+                        {event.categories
+                          ? event.categories.join(', ')
+                          : event.category}
+                      </p>
+                      <div>
+                        <button
+                          type="button"
+                          onClick={() => toggleDescription(event.id)}
+                          className="underline text-xs"
+                        >
+                          {expandedDescriptions[event.id]
+                            ? 'Show Less'
+                            : 'Show More'}
+                        </button>
+                        {expandedDescriptions[event.id] && (
+                          <p className="text-sm mt-2">{event.description}</p>
+                        )}
+                      </div>
+                      <div className="flex justify-end mt-4">
+                        <Link
+                          href={`/events/${encodeURIComponent(event.name)}/register`}
+                        >
+                          <Button
+                            variant="default"
+                            className="rounded-lg px-6 hover:bg-green-500 hover:text-black"
+                          >
+                            <span className="text-xs">REGISTER</span>
+                          </Button>
+                        </Link>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
         <div className="text-center mt-8">
