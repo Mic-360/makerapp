@@ -33,32 +33,31 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 
-export default function MachinesPage() {
-  // const [activeTab, setActiveTab] = useState('all');
-  const [statusOpen, setStatusOpen] = useState(true);
-  const [showSuccess, setShowSuccess] = useState(false);
-  const [machines, setMachines] = useState([
-    {
-      id: 1,
-      name: '3D Printer Creality 333XP',
-      price: '₹ 500/hr',
-      category: '3D Printer',
-      timing: '10 AM - 3 AM',
-      status: 'OFF',
-      isOn: false,
-    },
-  ]);
-  const [openDialog, setOpenDialog] = useState(false);
-  const [viewMode, setViewMode] = useState('manage');
+interface Machine {
+  id: number;
+  name: string;
+  price: string;
+  category: string;
+  timing: string;
+  status: string;
+  isOn: boolean;
+}
 
-  const handleAddMachine = (e) => {
+export default function MachinesPage() {
+  const [statusOpen, setStatusOpen] = useState<boolean>(true);
+  const [showSuccess, setShowSuccess] = useState<boolean>(false);
+  const [machines, setMachines] = useState<Machine[]>([]);
+  const [openDialog, setOpenDialog] = useState<boolean>(false);
+  const [viewMode, setViewMode] = useState<string>('manage');
+
+  const handleAddMachine = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const formData = new FormData(e.target);
-    const newMachine = {
+    const formData = new FormData(e.target as HTMLFormElement);
+    const newMachine: Machine = {
       id: machines.length + 1,
-      name: formData.get('name'),
+      name: formData.get('name') as string,
       price: `₹ ${formData.get('price')}/hr`,
-      category: formData.get('category'),
+      category: formData.get('category') as string,
       timing: `${formData.get('startTime')} - ${formData.get('endTime')}`,
       status: 'OFF',
       isOn: false,
@@ -68,13 +67,12 @@ export default function MachinesPage() {
     setOpenDialog(false);
     setShowSuccess(true);
 
-    // Hide success message after 3 seconds
     setTimeout(() => {
       setShowSuccess(false);
     }, 3000);
   };
 
-  const toggleMachineStatus = (id) => {
+  const toggleMachineStatus = (id: number) => {
     setMachines(
       machines.map((machine) =>
         machine.id === id
@@ -87,11 +85,10 @@ export default function MachinesPage() {
       )
     );
   };
-
   return (
     <div className="space-y-4 pt-2">
       <div className="flex items-center justify-between">
-        <Tabs value={viewMode} onValueChange={setViewMode}>
+        <Tabs value={viewMode} onValueChange={(value) => setViewMode(value)}>
           <TabsList className="bg-transparent space-x-2">
             <TabsTrigger
               value="manage"
@@ -315,8 +312,8 @@ export default function MachinesPage() {
                 </Card>
               )}
 
-              <div className="rounded-md border">
-                <div className="grid grid-cols-12 bg-orange-100 p-3 text-sm font-medium">
+              <div className="rounded-lg overflow-hidden border">
+                <div className="grid grid-cols-12 bg-red-300 p-3 text-sm font-medium">
                   <div className="col-span-3 flex items-center">
                     Name
                     <ArrowUpDown className="ml-1 h-4 w-4" />

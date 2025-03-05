@@ -63,18 +63,15 @@ export default function MembershipPage() {
   const [openDialog, setOpenDialog] = useState<boolean>(false);
   const [viewMode, setViewMode] = useState<string>('manage');
 
-  const handleAddMembership = (e: {
-    preventDefault: () => void;
-    target: HTMLFormElement | undefined;
-  }) => {
+  const handleAddMembership = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const formData = new FormData(e.target);
+    const formData = new FormData(e.target as HTMLFormElement);
     const newMembership = {
       id: memberships.length + 1,
-      name: formData.get('name'),
-      price: `₹ ${formData.get('price')}`,
-      duration: formData.get('duration'),
-      benefits: formData.get('benefits'),
+      name: formData.get('name') as string,
+      price: `₹ ${formData.get('price')}` as string,
+      duration: formData.get('duration') as string,
+      benefits: formData.get('benefits') as string,
       status: 'Active',
       isOn: true,
     };

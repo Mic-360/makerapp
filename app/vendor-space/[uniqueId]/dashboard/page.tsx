@@ -180,8 +180,8 @@ export default function Page() {
           </Popover>
         </div>
       </header>
-      <main className="flex gap-x-2 px-4 items-start">
-        <aside className="bg-blue-600 w-52 rounded-3xl mb-6 pt-4 pb-4 pl-8 flex flex-col justify-between">
+      <main className="flex gap-x-2 p-4 items-start">
+        <aside className="bg-blue-600 w-52 rounded-3xl pt-4 pb-4 pl-8 flex flex-col justify-between">
           <div>
             <div className="flex items-center gap-x-4 pl-4 my-6">
               <Avatar className="h-8 w-8">
@@ -246,7 +246,7 @@ export default function Page() {
         </aside>
 
         <section className="w-4/5 max-w-6xl mx-auto">
-          <div className="h-[90vh] scrollbar-hide overflow-y-scroll px-8">
+          <div className="h-full scrollbar-hide overflow-y-scroll px-8">
             {renderPage()}
           </div>
         </section>

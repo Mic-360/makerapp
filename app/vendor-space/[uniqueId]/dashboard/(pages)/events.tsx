@@ -34,11 +34,21 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 
+interface Event {
+  id: number;
+  name: string;
+  price: string;
+  category: string;
+  timing: string;
+  status: string;
+  isOn: boolean;
+}
+
 export default function EventsPage() {
   // const [activeTab, setActiveTab] = useState('all');
-  const [statusOpen, setStatusOpen] = useState(true);
-  const [showSuccess, setShowSuccess] = useState(false);
-  const [events, setEvents] = useState([
+  const [statusOpen, setStatusOpen] = useState<boolean>(true);
+  const [showSuccess, setShowSuccess] = useState<boolean>(false);
+  const [events, setEvents] = useState<Event[]>([
     {
       id: 1,
       name: '3D Printing Workshop',
@@ -49,17 +59,17 @@ export default function EventsPage() {
       isOn: true,
     },
   ]);
-  const [openDialog, setOpenDialog] = useState(false);
-  const [viewMode, setViewMode] = useState('manage');
+  const [openDialog, setOpenDialog] = useState<boolean>(false);
+  const [viewMode, setViewMode] = useState<string>('manage');
 
-  const handleAddEvent = (e) => {
+  const handleAddEvent = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const formData = new FormData(e.target);
-    const newEvent = {
+    const formData = new FormData(e.target as HTMLFormElement);
+    const newEvent: Event = {
       id: events.length + 1,
-      name: formData.get('name'),
+      name: formData.get('name') as string,
       price: `₹ ${formData.get('price')}`,
-      category: formData.get('category'),
+      category: formData.get('category') as string,
       timing: `${formData.get('startDate')} - ${formData.get('endDate')}`,
       status: 'Upcoming',
       isOn: true,
@@ -75,7 +85,7 @@ export default function EventsPage() {
     }, 3000);
   };
 
-  const toggleEventStatus = (id) => {
+  const toggleEventStatus = (id: number) => {
     setEvents(
       events.map((event) =>
         event.id === id
@@ -92,10 +102,7 @@ export default function EventsPage() {
   return (
     <div className="space-y-4 pt-2">
       <div className="flex items-center justify-between">
-        <Tabs
-          value={viewMode}
-          onValueChange={setViewMode}
-        >
+        <Tabs value={viewMode} onValueChange={(value) => setViewMode(value)}>
           <TabsList className="bg-transparent space-x-2">
             <TabsTrigger
               value="manage"
