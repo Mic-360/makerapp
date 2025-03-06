@@ -19,7 +19,7 @@ import {
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from './ui/button';
 import { Tooltip, TooltipProvider } from './ui/tooltip';
 
@@ -39,7 +39,8 @@ export default function TopBar({
   const { user, token, logout } = useAuthenticationStore();
   const [searchTerm, setSearchTerm] = useState('');
 
-  const isDark = theme === 'dark';
+  const [isScrolled, setIsScrolled] = useState(false);
+  const isDark = isScrolled ? false : theme === 'dark';
   const router = useRouter();
 
   const handleCityChange = async (city: string) => {
@@ -64,6 +65,18 @@ export default function TopBar({
   const getFirstName = (fullName: string) => {
     return fullName.split(' ')[0];
   };
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 200);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
 
   const MobileMenu = () => (
     <div
@@ -122,8 +135,8 @@ export default function TopBar({
   return (
     <header
       className={`${
-        isBg ? 'bg-white' : 'bg-transparent'
-      } fixed z-50 top-0 left-0 w-full p-4 lg:px-8 ${isDark ? 'text-white' : 'text-black'}`}
+        isScrolled || isBg ? 'bg-white' : 'bg-transparent'
+      } fixed z-50 top-0 left-0 w-full p-4 lg:px-8 transition-colors duration-300 ${isDark ? 'text-white' : 'text-black'}`}
     >
       <div className="flex items-center justify-between gap-4">
         <div className="flex-shrink-0">

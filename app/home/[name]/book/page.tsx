@@ -2,7 +2,6 @@
 
 import Footer from '@/components/footer';
 import TopBar from '@/components/top-bar';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
@@ -49,60 +48,41 @@ export default function LabSpacePage() {
 
   const machines = [
     {
-      name: '3D Printer Creality 333XP',
-      description:
-        'Max Build Size: 220 x 220 x 250 mm Print Speed: 30-60mm/s Nozzle: 0.4mm Material: PLA, ABS, PETG',
-      price: '500/hr',
+      id: '1',
+      name: '3D Printer XYZ-2000',
+      makerspaceName: 'TechHub',
+      location: 'Delhi',
+      rating: 4.5,
+      categories: ['3D Printing', 'Rapid Prototyping'],
+      description: 'High-precision 3D printer with multi-material support.',
       image: '/assetlist.png',
+      price: '500',
     },
     {
-      name: 'Laser Cutter X500',
+      id: '2',
+      name: 'Laser Cutter ABC-1000',
+      makerspaceName: 'InnoSpace',
+      location: 'Bengaluru',
+      rating: 4.7,
+      categories: ['Laser Cutting', 'Engraving'],
       description:
-        'Cutting Area: 500 x 300 mm Laser Power: 50W Material: Acrylic, Wood, Leather',
-      price: '700/hr',
+        'Versatile laser cutter for precision cutting and engraving.',
       image: '/assetlist.png',
+      price: '700',
     },
     {
-      name: 'Laser Cutter X500',
+      id: '3',
+      name: 'CNC Router DEF-3000',
+      makerspaceName: 'CreateLab',
+      location: 'Bengaluru',
+      rating: 4.6,
+      categories: ['CNC Router', 'Woodworking'],
       description:
-        'Cutting Area: 500 x 300 mm Laser Power: 50W Material: Acrylic, Wood, Leather',
-      price: '700/hr',
+        'High-performance CNC router for detailed woodworking projects.',
       image: '/assetlist.png',
-    },
-    {
-      name: 'CNC Router 4040-XE',
-      description:
-        'Working Area: 400 x 400 x 100 mm Spindle Speed: 8000-24000 RPM Material: Wood, Plastic, Soft Metals',
-      price: '800/hr',
-      image: '/assetlist.png',
-    },
-    {
-      name: 'Vinyl Cutter VC-200',
-      description:
-        'Cutting Width: 200 mm Cutting Speed: 10-800 mm/s Material: Vinyl, Paper, Cardboard',
-      price: '300/hr',
-      image: '/assetlist.png',
-    },
-    {
-      name: 'Vinyl Cutter VC-200',
-      description:
-        'Cutting Width: 200 mm Cutting Speed: 10-800 mm/s Material: Vinyl, Paper, Cardboard',
-      price: '300/hr',
-      image: '/assetlist.png',
-    },
-    {
-      name: 'UV Printer UP-300',
-      description:
-        'Print Area: 300 x 200 mm Print Speed: 50mm/s Material: Plastic, Metal, Glass',
-      price: '900/hr',
-      image: '/assetlist.png',
+      price: '300',
     },
   ];
-
-  const [quantities, setQuantities] = useState<number[]>([
-    1,
-    ...new Array(machines.length - 1).fill(0),
-  ]);
 
   const events = [
     {
@@ -117,6 +97,15 @@ export default function LabSpacePage() {
         'Explore sustainable design practices and their impact on product development and manufacturing.',
     },
   ];
+
+  const [machineQuantities, setMachineQuantities] = useState<number[]>([
+    1,
+    ...new Array(machines.length - 1).fill(0),
+  ]);
+  const [eventQuantities, setEventQuantities] = useState<number[]>([
+    1,
+    ...new Array(events.length).fill(0),
+  ]);
 
   const amenities = [
     { icon: Wifi, label: 'WiFi' },
@@ -142,8 +131,8 @@ export default function LabSpacePage() {
     },
   ];
 
-  const handleQuantityChange = (index: number, increment: boolean) => {
-    setQuantities((prevQuantities) => {
+  const handleMachineQuantityChange = (index: number, increment: boolean) => {
+    setMachineQuantities((prevQuantities) => {
       const newQuantities = [...prevQuantities];
       newQuantities[index] = increment
         ? newQuantities[index] + 1
@@ -152,6 +141,30 @@ export default function LabSpacePage() {
           : Math.max(0, newQuantities[index] - 1);
       return newQuantities;
     });
+  };
+
+  const handleEventQuantityChange = (index: number, increment: boolean) => {
+    setEventQuantities((prevQuantities) => {
+      const newQuantities = [...prevQuantities];
+      newQuantities[index] = increment
+        ? newQuantities[index] + 1
+        : index === 0
+          ? Math.max(1, newQuantities[index] - 1)
+          : Math.max(0, newQuantities[index] - 1);
+      return newQuantities;
+    });
+  };
+
+  const calculateMachineTotalPrice = () => {
+    return machines.reduce((total, machine, index) => {
+      return total + parseInt(machine.price) * machineQuantities[index];
+    }, 0);
+  };
+
+  const calculateEventsTotalPrice = () => {
+    return events.reduce((total, event, index) => {
+      return total + parseInt(event.price) * eventQuantities[index];
+    }, 0);
   };
 
   return (
@@ -281,26 +294,29 @@ export default function LabSpacePage() {
                             className="hover:bg-orange-500 bg-black text-white aspect-square"
                             variant="outline"
                             size="sm"
-                            onClick={() => handleQuantityChange(index, false)}
+                            onClick={() => handleMachineQuantityChange(index, false)}
                           >
                             -
                           </Button>
-                          <span>{quantities[index]}</span>
+                          <span>{machineQuantities[index]}</span>
                           <Button
                             className="hover:bg-orange-500 bg-black text-white"
                             variant="outline"
                             size="sm"
-                            onClick={() => handleQuantityChange(index, true)}
+                            onClick={() => handleMachineQuantityChange(index, true)}
                           >
                             +
                           </Button>
                           <p className="text-sm font-semibold">
-                            Rs {machine.price}
+                            ₹ {machine.price}
                           </p>
                         </div>
                       </div>
                       <p className="text-sm text-gray-600 mt-1 max-w-sm">
                         {machine.description}
+                      </p>
+                      <p className="text-sm text-gray-600 mt-1 max-w-sm flex items-center gap-x-1">
+                        {machine.rating} <Star className="h-2.5 w-2.5 inline-block text-orange-500 fill-orange-500" /> | {machine.categories.join(', ')}
                       </p>
                     </div>
                   </div>
@@ -309,7 +325,7 @@ export default function LabSpacePage() {
               <Card className="p-6">
                 <div className="text-center mb-6">
                   <p className="text-2xl font-semibold mb-1">
-                    Rs {500 * quantities.reduce((a, b) => a + b, 0)} / hr
+                    ₹ {calculateMachineTotalPrice()}/hr
                   </p>
                 </div>
 
@@ -351,11 +367,34 @@ export default function LabSpacePage() {
                     <div className="flex-1">
                       <div className="flex justify-between items-start">
                         <h3 className="font-bold">{event.name}</h3>
-                        <p className="text-sm font-semibold">
-                          Rs {event.price}
-                        </p>
+                        <div className="flex gap-x-4 items-center justify-center">
+                          <Button
+                            className="hover:bg-orange-500 bg-black text-white aspect-square"
+                            variant="outline"
+                            size="sm"
+                            onClick={() =>
+                              handleEventQuantityChange(index, false)
+                            }
+                          >
+                            -
+                          </Button>
+                          <span>{eventQuantities[index]}</span>
+                          <Button
+                            className="hover:bg-orange-500 bg-black text-white"
+                            variant="outline"
+                            size="sm"
+                            onClick={() =>
+                              handleEventQuantityChange(index, true)
+                            }
+                          >
+                            +
+                          </Button>
+                          <p className="text-sm font-semibold">
+                            ₹ {event.price}
+                          </p>
+                        </div>
                       </div>
-                      <p className="text-sm text-gray-600 mt-1">
+                      <p className="text-sm text-gray-600 mt-1 max-w-sm">
                         {event.description}
                       </p>
                       <p className="text-sm text-gray-600 mt-1">
@@ -382,7 +421,7 @@ export default function LabSpacePage() {
               <Card className="p-6">
                 <div className="text-center mb-6">
                   <p className="text-2xl font-semibold mb-1">
-                    Rs {500 * quantities.reduce((a, b) => a + b, 0)} / hr
+                    ₹ {calculateEventsTotalPrice()}
                   </p>
                 </div>
 
@@ -433,46 +472,8 @@ export default function LabSpacePage() {
             <div className="grid grid-cols-3 gap-y-4 ml-4">
               {amenities.slice(0, 4).map((amenity, index) => (
                 <div key={index} className="flex items-center gap-2">
-                  <amenity.icon className="h-4 w-4 text-gray-600" />
+                  <amenity.icon className="h-4 w-4 text-orange-500" />
                   <span className="text-sm">{amenity.label}</span>
-                </div>
-              ))}
-              {amenities.length > 4 && (
-                <div className="col-span-3">
-                  <Button
-                    variant="link"
-                    className="text-sm text-blue-600 -ml-4"
-                    onClick={() => setShowMore(!showMore)}
-                  >
-                    {showMore ? 'Show Less' : 'Show More'}
-                  </Button>
-                </div>
-              )}
-              {showMore &&
-                amenities.slice(4).map((amenity, index) => (
-                  <div key={index} className="flex items-center gap-2">
-                    <amenity.icon className="h-4 w-4 text-gray-600" />
-                    <span className="text-sm">{amenity.label}</span>
-                  </div>
-                ))}
-            </div>
-          </div>
-
-          <hr className="mb-4" />
-          <div className="mb-12 ml-4">
-            <h2 className="text-lg font-medium mb-4">Lab Facilitators</h2>
-            <div className="flex gap-8 ml-4">
-              {facilitators.map((facilitator, index) => (
-                <div
-                  key={index}
-                  className="text-center flex flex-col items-center justify-center"
-                >
-                  <Avatar className="h-20 w-20 mb-2">
-                    <AvatarImage src={facilitator.image} />
-                    <AvatarFallback>SN</AvatarFallback>
-                  </Avatar>
-                  <p className="font-semibold text-sm">{facilitator.name}</p>
-                  <p className="text-sm text-gray-600">{facilitator.role}</p>
                 </div>
               ))}
             </div>

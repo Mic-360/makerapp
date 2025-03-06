@@ -18,6 +18,7 @@ export async function GET(
                     categories: ['3D Printing', 'Rapid Prototyping'],
                     description: 'High-precision 3D printer with multi-material support.',
                     image: '/assetlist.png',
+                    price: '500'
                 },
                 {
                     id: '2',
@@ -28,6 +29,7 @@ export async function GET(
                     categories: ['Laser Cutting', 'Engraving'],
                     description: 'Versatile laser cutter for precision cutting and engraving.',
                     image: '/assetlist.png',
+                    price: '500'
                 },
                 {
                     id: '3',
@@ -38,6 +40,7 @@ export async function GET(
                     categories: ['CNC Router', 'Woodworking'],
                     description: 'High-performance CNC router for detailed woodworking projects.',
                     image: '/assetlist.png',
+                    price: '500'
                 },
             ],
             events: [

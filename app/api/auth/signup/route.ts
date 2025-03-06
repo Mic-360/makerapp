@@ -18,7 +18,7 @@ export async function POST(request: Request) {
         return NextResponse.json({
             success: true,
             user: {
-                id: Math.random().toString(36).substr(2, 9),
+                id: Math.random().toString(16),
                 email,
                 name: `${firstName} ${lastName}`,
                 mobile,
