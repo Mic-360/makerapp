@@ -63,10 +63,24 @@ export default function LabSpacePage() {
       image: '/assetlist.png',
     },
     {
+      name: 'Laser Cutter X500',
+      description:
+        'Cutting Area: 500 x 300 mm Laser Power: 50W Material: Acrylic, Wood, Leather',
+      price: '700/hr',
+      image: '/assetlist.png',
+    },
+    {
       name: 'CNC Router 4040-XE',
       description:
         'Working Area: 400 x 400 x 100 mm Spindle Speed: 8000-24000 RPM Material: Wood, Plastic, Soft Metals',
       price: '800/hr',
+      image: '/assetlist.png',
+    },
+    {
+      name: 'Vinyl Cutter VC-200',
+      description:
+        'Cutting Width: 200 mm Cutting Speed: 10-800 mm/s Material: Vinyl, Paper, Cardboard',
+      price: '300/hr',
       image: '/assetlist.png',
     },
     {
@@ -249,7 +263,7 @@ export default function LabSpacePage() {
 
           <TabsContent value="machines">
             <div className="flex justify-between gap-x-10 my-4">
-              <ScrollArea className="h-[30rem] w-full my-4">
+              <ScrollArea className="h-[32rem] w-full my-4">
                 {machines.map((machine, index) => (
                   <div key={index} className="flex gap-4 my-4">
                     <Image
@@ -314,7 +328,7 @@ export default function LabSpacePage() {
 
                 <Button className="w-full">
                   <Link
-                    href={`/home/${encodeURIComponent(machines[0].name)}/book/payment`}
+                    href={`/home/${encodeURIComponent(machines[0].makerspaceName)}/book/payment`}
                   >
                     Request to Book
                   </Link>
@@ -324,7 +338,7 @@ export default function LabSpacePage() {
           </TabsContent>
           <TabsContent value="events">
             <div className="flex justify-between gap-x-10 my-4">
-              <ScrollArea className="h-[30rem] w-2/3 my-4">
+              <ScrollArea className="h-[32rem] w-2/3 my-4">
                 {events.map((event, index) => (
                   <div key={index} className="flex gap-4 my-4">
                     <Image
@@ -365,6 +379,34 @@ export default function LabSpacePage() {
                   </div>
                 ))}
               </ScrollArea>
+              <Card className="p-6">
+                <div className="text-center mb-6">
+                  <p className="text-2xl font-semibold mb-1">
+                    Rs {500 * quantities.reduce((a, b) => a + b, 0)} / hr
+                  </p>
+                </div>
+
+                <Calendar
+                  mode="single"
+                  selected={date}
+                  onSelect={setDate}
+                  className="mb-6"
+                />
+
+                <div className="flex justify-between text-sm text-gray-600 mb-6 px-10">
+                  <span>9:00 am</span>
+                  <span>to</span>
+                  <span>6:00 pm</span>
+                </div>
+
+                <Button className="w-full">
+                  <Link
+                    href={`/home/${encodeURIComponent(machines[0].makerspaceName)}/book/payment`}
+                  >
+                    Request to Book
+                  </Link>
+                </Button>
+              </Card>
             </div>
           </TabsContent>
         </Tabs>

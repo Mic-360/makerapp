@@ -165,7 +165,7 @@ export default function Machine() {
                       </div>
                       <div className="flex justify-end my-2 items-end">
                         <Link
-                          href={`/home/${encodeURIComponent(machine.name)}/book`}
+                          href={`/home/${encodeURIComponent(machine.makerspaceName)}/book`}
                         >
                           <Button
                             variant="default"
