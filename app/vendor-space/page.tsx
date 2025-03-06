@@ -1,5 +1,3 @@
-'use client';
-
 import Footer from '@/components/footer';
 import { Button } from '@/components/ui/button';
 import {
@@ -37,7 +35,6 @@ export default function footer() {
   return (
     <div className="min-h-screen flex flex-col">
       <TopBar button={false} theme="light" />
-
       <main className="flex-grow">
         <section className="relative h-[600px] bg-gray-900 text-white flex items-center justify-center m-20 rounded-xl overflow-hidden">
           <div className="flex flex-col items-center justify-center border w-full h-full text-center relative">

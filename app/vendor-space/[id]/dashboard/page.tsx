@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { Bell, Search } from 'lucide-react';
+import { Bell, Search, Star } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Input } from '@/components/ui/input';
 import {
@@ -181,16 +181,23 @@ export default function Page() {
         </div>
       </header>
       <main className="flex gap-x-2 p-4 items-start">
-        <aside className="bg-blue-600 w-52 rounded-3xl pt-4 pb-4 pl-8 flex flex-col justify-between">
+        <aside className="bg-blue-600 w-52 rounded-3xl py-4 pl-8 flex flex-col justify-between">
           <div>
-            <div className="flex items-center gap-x-4 pl-4 my-6">
-              <Avatar className="h-8 w-8">
+            <div className="flex items-center gap-x-4 my-6">
+              <Avatar className="h-10 w-10">
                 <AvatarImage src="/placeholder.svg" alt="SQA FAB Lab" />
                 <AvatarFallback>SQ</AvatarFallback>
               </Avatar>
-              <h2 className="text-sm font-semibold text-white">SQA FAB Lab</h2>
+              <div>
+                <h2 className="text-sm font-semibold text-white">
+                  SQA FAB Lab
+                </h2>
+                <p className='text-white'>
+                  4.2{' '}
+                  <Star className="h-2.5 w-2.5 text-orange-500 fill-orange-500 inline-block" />
+                </p>
+              </div>
             </div>
-            <Separator />
           </div>
 
           <nav className="flex-1 space-y-0 -my-4 relative">
@@ -229,9 +236,9 @@ export default function Page() {
             })}
           </nav>
 
-          <div>
+          <div className="mt-16 px-2">
             <Separator />
-            <div className="space-y-0 pt-4">
+            <div className="space-y-1">
               {utilityItems.map((item) => (
                 <Link
                   key={item}
