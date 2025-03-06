@@ -1,28 +1,25 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import AuthCard from '@/components/auth-card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
-import { Loader2, Check } from 'lucide-react';
+import { useSignupStore } from '@/lib/store';
+import { Check, Loader2 } from 'lucide-react';
+import { signIn } from 'next-auth/react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useSignupStore } from '@/lib/store';
-import AuthCard from '@/components/auth-card';
-import { signIn } from 'next-auth/react';
-import { useSearchParams } from 'next/navigation'
-
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useState } from 'react';
 
 export default function SignupPage() {
-
   const [isLoading, setIsLoading] = useState(false);
   const [isValidEmail, setIsValidEmail] = useState(false);
   const [isValidPassword, setIsValidPassword] = useState(false);
-  const { email, password, setEmail, setPassword, setFirstName, setLastName, } = useSignupStore();
+  const { email, password, setEmail, setPassword, setFirstName, setLastName } =
+    useSignupStore();
   const router = useRouter();
 
-  
   const oauthemail = useSearchParams().get('email');
   const oauthfname = useSearchParams().get('firstName');
   const oauthlname = useSearchParams().get('lastName');
@@ -37,10 +34,9 @@ export default function SignupPage() {
     setLastName(oauthlname);
   }
 
-  if(oauthemail && oauthfname && oauthlname){
+  if (oauthemail && oauthfname && oauthlname) {
     router.push('/auth/signup/name');
   }
-  
 
   const validateEmail = (input: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -56,9 +52,19 @@ export default function SignupPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    await new Promise((resolve) => setTimeout(resolve, 2000 ));
-    setIsLoading(false);
-    router.push('/auth/signup/name');
+
+    try {
+      // Store credentials in signup store
+      if (email && password) {
+        setEmail(email);
+        setPassword(password);
+        router.push('/auth/signup/name');
+      }
+    } catch (error) {
+      console.error('Signup error:', error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (

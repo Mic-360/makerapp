@@ -1,28 +1,31 @@
 // app/auth/signup/name.tsx
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import AuthCard from '@/components/auth-card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Check, Loader2 } from 'lucide-react';
 import { useSignupStore } from '@/lib/store';
-import AuthCard from '@/components/auth-card';
+import { Check, Loader2 } from 'lucide-react';
 import Link from 'next/link';
-
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 
 export default function NamePage() {
-
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
-  const { firstName, lastName, setFirstName, setLastName, email,setEmail } = useSignupStore();
+  const { firstName, lastName, setFirstName, setLastName, email, setEmail } =
+    useSignupStore();
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setIsLoading(true);
 
     try {
-      router.push('/auth/signup/mobile');
+      if (firstName && lastName) {
+        setFirstName(firstName);
+        setLastName(lastName);
+        router.push('/auth/signup/mobile');
+      }
     } catch (error) {
       console.error('Update error:', error);
     } finally {
@@ -45,12 +48,12 @@ export default function NamePage() {
       onClose={() => router.push('/auth/signup')}
     >
       <div className="px-8">
-        <div className="relative">
+        <div className="relative mb-6">
           <Input
             type="email"
-            placeholder="Enter your Email Address"
             value={email}
-            className="rounded-xl text-start p-6"
+            disabled
+            className="rounded-xl text-start p-6 bg-gray-100"
           />
           <Check className="absolute right-3 top-1/2 transform -translate-y-1/2 text-green-500" />
         </div>

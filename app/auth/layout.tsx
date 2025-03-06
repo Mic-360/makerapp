@@ -1,8 +1,25 @@
+'use client';
+
 import TopBar from '@/components/top-bar';
+import { useAuthenticationStore } from '@/lib/store';
 import Image from 'next/image';
-import { ReactNode } from 'react';
-import { Suspense } from 'react';
+import { useRouter } from 'next/navigation';
+import { ReactNode, Suspense, useEffect } from 'react';
+
 export default function AuthLayout({ children }: { children: ReactNode }) {
+  const { user } = useAuthenticationStore();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (user) {
+      router.replace('/home');
+    }
+  }, [user, router]);
+
+  if (user) {
+    return null; // Or a loading spinner
+  }
+
   return (
     <Suspense fallback={<div>Loading ...</div>}>
       <div className="min-h-screen min-w-screen bg-white mx-auto">

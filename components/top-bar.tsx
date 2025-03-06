@@ -2,13 +2,26 @@
 
 import { fetchCityData } from '@/lib/api';
 import { cities } from '@/lib/constants';
-import { useCityDataStore, useCityStore } from '@/lib/store';
-import { ChevronDown, Languages, MapPin, Menu, Search, X } from 'lucide-react';
-import { useSession } from 'next-auth/react';
+import {
+  useAuthenticationStore,
+  useCityDataStore,
+  useCityStore,
+} from '@/lib/store';
+import {
+  ChevronDown,
+  Languages,
+  LogOut,
+  MapPin,
+  Menu,
+  Search,
+  X,
+} from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { Button } from './ui/button';
+import { Tooltip, TooltipProvider } from './ui/tooltip';
 
 export default function TopBar({
   theme = 'dark',
@@ -23,14 +36,11 @@ export default function TopBar({
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { selectedCity, setSelectedCity } = useCityStore();
   const { setMachines, setEvents } = useCityDataStore();
+  const { user, token, logout } = useAuthenticationStore();
   const [searchTerm, setSearchTerm] = useState('');
 
   const isDark = theme === 'dark';
-
-  const { data: session } = useSession();
   const router = useRouter();
-
-  console.log(session);
 
   const handleCityChange = async (city: string) => {
     setSelectedCity(city);
@@ -46,55 +56,64 @@ export default function TopBar({
     }
   };
 
+  const handleLogout = () => {
+    logout();
+    router.push('/home');
+  };
+
+  const getFirstName = (fullName: string) => {
+    return fullName.split(' ')[0];
+  };
+
   const MobileMenu = () => (
     <div
-      className={`absolute top-full right-4 w-1/3 bg-white shadow-lg rounded-xl ${isDark ? 'text-black' : 'text-black'}`}
+      className={`absolute top-full right-4 w-56 bg-white shadow-lg rounded-xl ${
+        isDark ? 'text-black' : 'text-black'
+      }`}
     >
       <div className="p-4 space-y-4">
         <Link href="/vendor-space" className="block">
-          <button
-            type="button"
-            className={`w-full py-2 px-4 rounded-xl font-semibold ${
-              isDark
-                ? 'bg-black text-white hover:bg-gray-800'
-                : 'bg-white text-black hover:bg-gray-200'
-            } border border-gray-300`}
+          <Button
+            variant="outline"
+            className="w-full py-2 px-4 rounded-xl font-semibold border border-gray-300"
           >
             List your Machines
-          </button>
+          </Button>
         </Link>
         <div className="flex items-center justify-between px-3">
-          {session && session.user ? (
+          {user ? (
             <>
-              <div className="flex gap-x-2 items-center justify-center">
-                <Link
-                  href="/profile"
-                  className={`${isDark ? 'text-white' : 'text-black'} font-medium text-md`}
-                >
-                  {session.user.name}
+              <div className="flex gap-x-2 items-center">
+                <Link href="/profile" className="font-medium text-md">
+                  {getFirstName(user.name)}
                 </Link>
-                <Image
-                  src={session.user.image || ''}
-                  alt="Profile"
-                  width={30}
-                  height={30}
-                  className={`rounded-full border-2 ${isDark ? 'border-gray-400' : 'border-black'}`}
-                />
+                {user.image && (
+                  <Image
+                    src={user.image}
+                    alt="Profile"
+                    width={30}
+                    height={30}
+                    className="rounded-full border-2 border-black"
+                  />
+                )}
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={handleLogout}
+                  className="ml-2"
+                >
+                  <LogOut className="h-4 w-4" />
+                </Button>
               </div>
             </>
           ) : (
-            <Link href="/auth" className="block text-center py-2 font-medium">
+            <Link
+              href="/auth/login"
+              className="block text-center py-2 font-medium"
+            >
               Login | Sign Up
             </Link>
           )}
-          {/* <Link href="/auth" className="block text-center py-2 font-medium">
-            Login | Sign Up
-          </Link> */}
-          <Link href="/auth" className="flex items-center justify-center">
-            <Languages className="h-4 w-4" />
-            <span className="text-sm">EN</span>
-            <ChevronDown className="w-4 h-4 cursor-pointer" />
-          </Link>
         </div>
       </div>
     </div>
@@ -102,10 +121,12 @@ export default function TopBar({
 
   return (
     <header
-      className={`${isBg ? 'bg-white' : 'bg-transparent'} absolute z-50 top-0 left-0 w-full mx-auto p-4 lg:px-8 ${isDark ? 'text-white' : 'text-black'}`}
+      className={`${
+        isBg ? 'bg-white' : 'bg-transparent'
+      } fixed z-50 top-0 left-0 w-full p-4 lg:px-8 ${isDark ? 'text-white' : 'text-black'}`}
     >
-      <div className="flex flex-wrap items-center justify-between">
-        <div className="flex items-center space-x-4">
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex-shrink-0">
           <Link href="/home" className="font-bold -mt-3">
             <svg
               width="116"
@@ -158,19 +179,19 @@ export default function TopBar({
           </Link>
         </div>
 
-        <div className="flex-grow max-w-2xl mx-4 lg:mx-0 border rounded-xl">
-          <div className="flex items-center bg-white rounded-xl">
+        <div className="flex-1 max-w-2xl hidden sm:block">
+          <div className="flex items-center bg-white rounded-xl border">
             <div
-              className="relative p-3 cursor-pointer flex items-center text-black rounded-xl"
+              className="relative p-3 cursor-pointer flex items-center text-black rounded-xl shrink-0"
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
             >
               <MapPin className="w-4 h-4 mr-2" />
-              <span className="mr-8 text-sm hidden sm:inline">
+              <span className="mr-2 text-sm truncate max-w-[100px]">
                 {selectedCity}
               </span>
               <ChevronDown className="w-4 h-4" />
               {isDropdownOpen && (
-                <div className="absolute top-full left-0 mt-2 w-48 bg-white rounded-xl shadow-lg overflow-hidden">
+                <div className="absolute top-full left-0 mt-2 w-48 bg-white rounded-xl shadow-lg overflow-hidden z-50">
                   {cities.map((loc) => (
                     <div
                       key={loc}
@@ -184,104 +205,171 @@ export default function TopBar({
               )}
             </div>
             <div className="h-6 w-px bg-gray-300 mx-2" />
-            <button type="button">
-              <Search className="h-4 w-4 text-black" />
-              <span className="sr-only">Search</span>
-            </button>
-            <div className="h-6 w-px mx-2" />
+            <div className="flex items-center flex-1 min-w-0">
+              <Search className="h-4 w-4 text-black shrink-0 mx-2" />
+              <input
+                type="text"
+                placeholder="Search"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="flex-1 bg-transparent border-none focus:outline-none text-black w-full min-w-0"
+              />
+              {searchTerm && (
+                <X
+                  size={24}
+                  className="text-black shrink-0 cursor-pointer mx-2"
+                  onClick={() => setSearchTerm('')}
+                />
+              )}
+            </div>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-4">
+          <div className="hidden lg:flex items-center gap-4">
+            {button && (
+              <>
+                <div className="flex items-center">
+                  <Languages
+                    className={`h-4 w-4 ${isDark ? 'text-white' : 'text-black'}`}
+                  />
+                  <span
+                    className={`${isDark ? 'text-white' : 'text-black'} text-sm mx-1`}
+                  >
+                    EN
+                  </span>
+                  <ChevronDown
+                    className={`w-4 h-4 ${isDark ? 'text-white' : 'text-black'}`}
+                  />
+                </div>
+                <Link href="/vendor-space">
+                  <Button
+                    variant="outline"
+                    className={`py-2 px-4 rounded-xl font-semibold ${
+                      isDark
+                        ? 'text-white border-white hover:bg-white hover:text-black'
+                        : 'text-black border-black hover:bg-black hover:text-white'
+                    }`}
+                  >
+                    List your Machines
+                  </Button>
+                </Link>
+              </>
+            )}
+          </div>
+
+          {user ? (
+            <div className="hidden md:flex items-center gap-3">
+              <Link
+                href="/profile"
+                className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+              >
+                <span
+                  className={`${isDark ? 'text-white' : 'text-black'} font-medium`}
+                >
+                  {getFirstName(user.name)}
+                </span>
+                {user.image && (
+                  <Image
+                    src={user.image}
+                    alt="Profile"
+                    width={30}
+                    height={30}
+                    className={`rounded-full border-2 ${
+                      isDark ? 'border-gray-400' : 'border-black'
+                    }`}
+                  />
+                )}
+              </Link>
+              <TooltipProvider>
+                <Tooltip>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={handleLogout}
+                    className={`${isDark ? 'text-white' : 'text-black'} hover:opacity-80`}
+                  >
+                    <LogOut className="h-4 w-4" />
+                  </Button>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
+          ) : (
+            <div className="hidden md:flex items-center gap-2">
+              <Link
+                href="/auth/login"
+                className={`${isDark ? 'text-white' : 'text-black'} font-medium`}
+              >
+                Login
+              </Link>
+              {' | '}
+              <Link
+                href="/auth/signup"
+                className={`${isDark ? 'text-white' : 'text-black'} font-medium`}
+              >
+                Sign Up
+              </Link>
+            </div>
+          )}
+
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className="md:hidden"
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          >
+            <Menu
+              className={`h-6 w-6 ${isDark ? 'text-white' : 'text-black'}`}
+            />
+          </Button>
+        </div>
+      </div>
+
+      {/* Mobile search bar */}
+      <div className="sm:hidden mt-4">
+        <div className="flex items-center bg-white rounded-xl border">
+          <div
+            className="relative p-3 cursor-pointer flex items-center text-black rounded-xl shrink-0"
+            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+          >
+            <MapPin className="w-4 h-4" />
+            <ChevronDown className="w-4 h-4 ml-1" />
+            {isDropdownOpen && (
+              <div className="absolute top-full left-0 mt-2 w-48 bg-white rounded-xl shadow-lg overflow-hidden z-50">
+                {cities.map((loc) => (
+                  <div
+                    key={loc}
+                    className="px-4 py-2 hover:bg-black hover:text-white cursor-pointer"
+                    onClick={() => handleCityChange(loc)}
+                  >
+                    {loc}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+          <div className="h-6 w-px bg-gray-300 mx-2" />
+          <div className="flex items-center flex-1 min-w-0">
+            <Search className="h-4 w-4 text-black shrink-0 mx-2" />
             <input
               type="text"
               placeholder="Search"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="flex-grow bg-transparent border-none focus:outline-none cursor-text text-black w-full"
+              className="flex-1 bg-transparent border-none focus:outline-none text-black w-full min-w-0"
             />
             {searchTerm && (
               <X
-                size={34}
-                className="text-black font-light pr-2 cursor-pointer"
+                size={24}
+                className="text-black shrink-0 cursor-pointer mx-2"
                 onClick={() => setSearchTerm('')}
               />
             )}
           </div>
         </div>
-        <button
-          type="button"
-          className="lg:hidden"
-          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-        >
-          <Menu className={`h-6 w-6 ${isDark ? 'text-white' : 'text-black'}`} />
-        </button>
-        <div className="hidden lg:flex items-center space-x-4">
-          <div
-            className={`flex items-center justify-center ${button ? 'block' : 'hidden'}`}
-          >
-            <Languages
-              className={`h-4 w-4 ${isDark ? 'text-white' : 'text-black'}`}
-            />
-            <span className={`${isDark ? 'text-white' : 'text-black'} text-sm`}>
-              EN
-            </span>
-            <ChevronDown
-              className={`w-4 h-4 ${isDark ? 'text-white' : 'text-black'} cursor-pointer`}
-            />
-          </div>
-          <Link
-            href="/vendor-space"
-            className={`${button ? 'block' : 'hidden'}`}
-          >
-            <button
-              type="button"
-              className={`py-2 px-4 rounded-xl font-semibold ${
-                isDark
-                  ? 'text-white border-white hover:bg-white hover:text-black'
-                  : 'text-black border-black hover:bg-black hover:text-white'
-              } border`}
-            >
-              List your Machines
-            </button>
-          </Link>
-          <div className="flex gap-x-2 items-center justify-center">
-            <Link
-              href="/auth/login"
-              className={`${isDark ? 'text-white' : 'text-black'} font-medium text-md`}
-            >
-              Login
-            </Link>
-            {' | '}
-            <Link
-              href="/auth/signup"
-              className={`${isDark ? 'text-white' : 'text-black'} font-medium text-md`}
-            >
-              Sign Up
-            </Link>
-          </div>
-          {/* {
-            session && session.user ? (
-              <>
-                <div className="flex gap-x-2 items-center justify-center">
-                  <Link
-                    href="/profile"
-                    className={`${isDark ? 'text-white' : 'text-black'} font-medium text-md`}
-                  >
-                    {session?.user?.name?.split(' ')[0] || 'Guest'}
-                  </Link>
-                  <Image
-                    src={session.user.image || ''}
-                    alt="Profile"
-                    width={30}
-                    height={30}
-                    className={`rounded-full border-2 ${isDark ? 'border-gray-400' : 'border-black'}`}
-                  />
-                </div>
-                </>
-            ) : (
-              <Link href="/auth" className="block text-center py-2 font-medium">
-                Login | Sign Up
-              </Link>)
-          } */}
-        </div>
       </div>
+
       {isMobileMenuOpen && <MobileMenu />}
     </header>
   );

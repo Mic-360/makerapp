@@ -1,38 +1,46 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import AuthCard from '@/components/auth-card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Loader2, Check } from 'lucide-react';
-import AuthCard from '@/components/auth-card';
 import { useSignupStore } from '@/lib/store';
+import { Check, Loader2 } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 
 export default function MobilePage() {
   const [isLoading, setIsLoading] = useState(false);
   const [isValidPhone, setIsValidPhone] = useState(false);
   const router = useRouter();
-  const { mobile, setMobile, firstName } = useSignupStore();
+  const { mobile, setMobile, firstName, email } = useSignupStore();
 
   const validatePhone = (phone: string) => {
     const re = /^\d{10}$/;
-    setIsValidPhone(re.test(phone));
+    const isValid = re.test(phone);
+    setIsValidPhone(isValid);
+    return isValid;
   };
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (!validatePhone(mobile)) return;
+
     setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
+    try {
+      setMobile(mobile);
       router.push('/auth/signup/user-type');
-    }, 1500);
+    } catch (error) {
+      console.error('Update error:', error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
     <AuthCard
-      title={`Hi ${firstName}`}
-      description="Welcome to Karkhana your seamless machine booking platform"
+      title={`Add your mobile number`}
+      description="We'll send you an OTP to verify your number"
       footerContent={
         <p className="text-sm text-center">
           Already have an account?{' '}

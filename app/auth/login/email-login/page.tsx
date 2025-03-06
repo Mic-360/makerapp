@@ -1,31 +1,41 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import AuthCard from '@/components/auth-card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { loginUser } from '@/lib/api';
+import { useAuthenticationStore } from '@/lib/store';
 import { Check, Loader2 } from 'lucide-react';
-import AuthCard from '@/components/auth-card';
-import { useAuthStore } from '@/lib/store';
 import Link from 'next/link';
-import { signIn } from "next-auth/react"
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 
 export default function EmailLoginPage() {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const { loginIdentifier } = useAuthStore();
+  const [error, setError] = useState('');
+  const { loginIdentifier, setUser, setToken } = useAuthenticationStore();
   const router = useRouter();
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setIsLoading(true);
-    // signIn('credentials', {
-    //   "credentials-email": loginIdentifier,
-    //   "credentials-password": password,});
+    setError('');
 
-    router.push('/home');
-
-    setIsLoading(false);
+    try {
+      const result = await loginUser(loginIdentifier, password);
+      if (result) {
+        setUser(result.user);
+        setToken(result.token);
+        router.push('/home');
+      } else {
+        setError('Invalid credentials');
+      }
+    } catch (error) {
+      setError('An error occurred. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -69,6 +79,7 @@ export default function EmailLoginPage() {
             onChange={(e) => setPassword(e.target.value)}
             className="rounded-xl p-6"
           />
+          {error && <p className="text-sm text-red-500 pl-3">{error}</p>}
         </div>
         <div className="space-y-2 text-start">
           <Link
@@ -81,7 +92,7 @@ export default function EmailLoginPage() {
         <Button
           type="submit"
           className="rounded-full px-10 py-4"
-          disabled={isLoading}
+          disabled={isLoading || !password}
         >
           {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
           Login

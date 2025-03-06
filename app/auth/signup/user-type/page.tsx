@@ -1,26 +1,29 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/button';
-import { Loader2 } from 'lucide-react';
 import AuthCard from '@/components/auth-card';
-import { useSignupStore } from '@/lib/store';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
+import { useSignupStore } from '@/lib/store';
+import { Check, Loader2 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 
 const userTypes = ['Student', 'Entrepreneur', 'Employee', 'Freelancer'];
 
 export default function UserTypePage() {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
-  const { userType, setUserType, firstName } = useSignupStore();
+  const { userType, setUserType, firstName, email } = useSignupStore();
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setIsLoading(true);
 
     try {
-      router.push('/auth/signup/industry');
+      if (userType) {
+        router.push('/auth/signup/industry');
+      }
     } catch (error) {
       console.error('Update error:', error);
     } finally {

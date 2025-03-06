@@ -1,19 +1,20 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import Image from 'next/image';
-import Link from 'next/link';
+import AuthCard from '@/components/auth-card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
-import { Check, Loader2, MessageCircleMore } from 'lucide-react';
-import AuthCard from '@/components/auth-card';
-import { useAuthStore } from '@/lib/store';
-import { signIn } from "next-auth/react"
+import { verifyEmailOrPhone } from '@/lib/api';
+import { useAuthenticationStore } from '@/lib/store';
+import { Check, Loader2, MessageCircleMore, X } from 'lucide-react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 
 export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
   const router = useRouter();
   const {
     loginIdentifier,
@@ -22,18 +23,33 @@ export default function LoginPage() {
     setLoginIdentifier,
     setIsValidEmail,
     setIsValidPhone,
-  } = useAuthStore();
+  } = useAuthenticationStore();
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setIsLoading(true);
-    if (isValidEmail || isValidPhone) {
-      router.push('/auth/login/email-login');
+    setError('');
+
+    try {
+      const { email, isValid } = await verifyEmailOrPhone(loginIdentifier);
+
+      if (isValid) {
+        setLoginIdentifier(email); // Set the email for the next page
+        router.push('/auth/login/email-login');
+      } else {
+        setError('No account found with these credentials');
+        setIsValidEmail(false);
+        setIsValidPhone(false);
+      }
+    } catch (error) {
+      setError('An error occurred. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
-    setIsLoading(false);
   };
 
   const handleIdentifierChange = (value: string) => {
+    setError('');
     setLoginIdentifier(value);
     if (isNaN(Number(value))) {
       setIsValidEmail(/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value));
@@ -63,7 +79,7 @@ export default function LoginPage() {
           <Button
             variant="outline"
             className="w-full border-black rounded-full px-6 py-4 text-xs"
-            onClick={() => signIn("google")}
+            onClick={() => {}}
           >
             <Image
               src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/google/google-original.svg"
@@ -71,7 +87,6 @@ export default function LoginPage() {
               width={20}
               height={20}
               className="mr-2"
-              
             />
             Continue with Google
           </Button>
@@ -105,10 +120,14 @@ export default function LoginPage() {
               onChange={(e) => handleIdentifierChange(e.target.value)}
               className="rounded-xl mb-4 p-6"
             />
-            {(isValidEmail || isValidPhone) && (
+            {(isValidEmail || isValidPhone) && !error && (
               <Check className="absolute right-3 top-6 transform -translate-y-1/2 text-green-500" />
             )}
+            {error && (
+              <X className="absolute right-3 top-6 transform -translate-y-1/2 text-red-500" />
+            )}
           </div>
+          {error && <p className="text-sm text-red-500 mb-4">{error}</p>}
           <p className="text-[9px] w-60 text-muted-foreground text-center mb-4">
             We&apos;ll text you to confirm your number. Standard message and
             data rates apply. Privacy Policy and T&C.
@@ -121,7 +140,7 @@ export default function LoginPage() {
             {isLoading ? (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             ) : null}
-            {isValidPhone ? 'Send OTP' : 'Continue'}
+            Continue
           </Button>
           {isValidPhone && (
             <Button

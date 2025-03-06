@@ -24,22 +24,15 @@ const styles = {
   `,
 };
 
-export default function LandingPage() {
+export default function OnboardingPage() {
   const router = useRouter();
 
   useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Enter') {
-        router.push('/home');
-      }
-    };
+    const timer = setTimeout(() => {
+      router.push('/home');
+    }, 2500);
 
-    window.addEventListener('keydown', handleKeyDown);
-
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-    };
-
+    return () => clearTimeout(timer);
   }, [router]);
 
   return (

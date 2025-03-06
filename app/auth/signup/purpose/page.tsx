@@ -1,12 +1,13 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/button';
-import { Loader2 } from 'lucide-react';
 import AuthCard from '@/components/auth-card';
-import { useSignupStore } from '@/lib/store';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
+import { useSignupStore } from '@/lib/store';
+import { Check, Loader2 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 
 const purposes = [
   'Learning',
@@ -20,7 +21,6 @@ const purposes = [
 export default function PurposePage() {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
-  // const { purpose, setPurpose, firstName } = useSignupStore();
   const {
     email,
     password,
@@ -37,37 +37,34 @@ export default function PurposePage() {
     event.preventDefault();
     setIsLoading(true);
 
-    // try {
-    //   router.push('/home');
-    // } catch (error) {
-    //   console.error('Update error:', error);
-    // } finally {
-    //   setIsLoading(false);
-    // }
     try {
-      // const response = await fetch('/api/auth/signup', {
-      //   method: 'POST',
-      //   headers: {
-      //     'Content-Type': 'application/json',
-      //   },
-      //   body: JSON.stringify({
-      //     email,
-      //     password,
-      //     firstName,
-      //     lastName,
-      //     mobile,
-      //     userType,
-      //     industry,
-      //     purpose,
-      //   }),
-      // });
+      const response = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email,
+          password,
+          firstName,
+          lastName,
+          mobile,
+          userType,
+          industry,
+          purpose,
+        }),
+      });
 
-      // if (response.ok) {
-      //   router.push('/auth/login');
-      // } else {
-      //   console.error('Failed to register user:', await response.json());
-      // }
+      if (!response.ok) {
+        throw new Error('Failed to create account');
+      }
+
+      const data = await response.json();
+      if (data.success) {
         router.push('/home/onboarding');
+      } else {
+        throw new Error(data.error || 'Failed to create account');
+      }
     } catch (error) {
       console.error('Error during registration:', error);
     } finally {

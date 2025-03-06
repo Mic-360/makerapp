@@ -1,12 +1,13 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/button';
-import { Loader2 } from 'lucide-react';
 import AuthCard from '@/components/auth-card';
-import { useSignupStore } from '@/lib/store';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
+import { useSignupStore } from '@/lib/store';
+import { Check, Loader2 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 
 const industries = [
   'Energy',
@@ -23,14 +24,16 @@ const industries = [
 export default function IndustryPage() {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
-  const { industry, setIndustry, firstName } = useSignupStore();
+  const { industry, setIndustry, firstName, email } = useSignupStore();
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setIsLoading(true);
 
     try {
-      router.push('/auth/signup/purpose');
+      if (industry) {
+        router.push('/auth/signup/purpose');
+      }
     } catch (error) {
       console.error('Update error:', error);
     } finally {
