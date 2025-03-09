@@ -8,6 +8,11 @@ import { Calendar } from '@/components/ui/calendar';
 import { Card } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  fetchEventsByMakerspace,
+  fetchMachinesByMakerspace,
+  fetchMakerspaceByName,
+} from '@/lib/api';
 import { Separator } from '@radix-ui/react-separator';
 import {
   BellRing,
@@ -32,11 +37,40 @@ import {
 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
-export default function LabSpacePage() {
+export default function LabSpacePage({ params }: { params: { name: string } }) {
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [showMore, setShowMore] = useState(false);
+  const [machines, setMachines] = useState<any[]>([]);
+  const [events, setEvents] = useState<any[]>([]);
+  const [makerspace, setMakerspace] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const decodedName = decodeURIComponent(params.name);
+        const [makerspaceData, machinesData, eventsData] = await Promise.all([
+          fetchMakerspaceByName(decodedName),
+          fetchMachinesByMakerspace(decodedName),
+          fetchEventsByMakerspace(decodedName),
+        ]);
+
+        setMakerspace(makerspaceData);
+        setMachines(machinesData || []);
+        setEvents(eventsData || []);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [params.name]);
+
+  console.log('makerspace', makerspace);
 
   const filters = [
     '3D Printer',
@@ -46,65 +80,13 @@ export default function LabSpacePage() {
     'Laser Machine',
   ];
 
-  const machines = [
-    {
-      id: '1',
-      name: '3D Printer XYZ-2000',
-      makerspaceName: 'TechHub',
-      location: 'Delhi',
-      rating: 4.5,
-      categories: ['3D Printing', 'Rapid Prototyping'],
-      description: 'High-precision 3D printer with multi-material support.',
-      image: '/assetlist.png',
-      price: '500',
-    },
-    {
-      id: '2',
-      name: 'Laser Cutter ABC-1000',
-      makerspaceName: 'InnoSpace',
-      location: 'Bengaluru',
-      rating: 4.7,
-      categories: ['Laser Cutting', 'Engraving'],
-      description:
-        'Versatile laser cutter for precision cutting and engraving.',
-      image: '/assetlist.png',
-      price: '700',
-    },
-    {
-      id: '3',
-      name: 'CNC Router DEF-3000',
-      makerspaceName: 'CreateLab',
-      location: 'Bengaluru',
-      rating: 4.6,
-      categories: ['CNC Router', 'Woodworking'],
-      description:
-        'High-performance CNC router for detailed woodworking projects.',
-      image: '/assetlist.png',
-      price: '300',
-    },
-  ];
-
-  const events = [
-    {
-      price: '500',
-      name: 'Design Seminar',
-      location: 'Green Tech Center, Berlin, Germany',
-      date: '2023-08-20',
-      time: '10:00 - 12:00',
-      categories: ['Seminar', 'Sustainability'],
-      image: '/assetlist.png',
-      description:
-        'Explore sustainable design practices and their impact on product development and manufacturing.',
-    },
-  ];
-
   const [machineQuantities, setMachineQuantities] = useState<number[]>([
     1,
-    ...new Array(machines.length - 1).fill(0),
+    ...new Array(Math.max(0, machines.length - 1)).fill(0),
   ]);
   const [eventQuantities, setEventQuantities] = useState<number[]>([
     1,
-    ...new Array(events.length).fill(0),
+    ...new Array(Math.max(0, events.length)).fill(0),
   ]);
 
   const amenities = [
@@ -177,12 +159,12 @@ export default function LabSpacePage() {
             <div className="h-10 w-10 rounded-full bg-red-100 flex items-center justify-center">
               <span className="text-red-600 font-semibold">S</span>
             </div>
-            <h1 className="text-xl font-semibold">SQA FAB Lab</h1>
+            <h1 className="text-xl font-semibold">{makerspace?.name}</h1>
           </div>
           <div className="flex items-center gap-2">
             <Badge variant="secondary" className="gap-1 p-2">
               <Star className="h-4 w-4 text-orange-500" />
-              4.5
+              {makerspace?.rating}
             </Badge>
           </div>
         </div>
@@ -192,7 +174,7 @@ export default function LabSpacePage() {
             <div className="col-span-2">
               <div className="aspect-[4/3] bg-gray-100 rounded-2xl">
                 <Image
-                  src="/assetlist.png"
+                  src={makerspace?.image || '/assetlist.png'}
                   alt="Machine"
                   width={1000}
                   height={300}
@@ -203,7 +185,7 @@ export default function LabSpacePage() {
             <div className="space-y-4">
               <div className="aspect-[4/3] bg-gray-100 rounded-2xl">
                 <Image
-                  src="/assetlist.png"
+                  src={makerspace?.image || '/assetlist.png'}
                   alt="Machine"
                   width={1000}
                   height={300}
@@ -212,7 +194,7 @@ export default function LabSpacePage() {
               </div>
               <div className="aspect-[4/3] bg-gray-100 rounded-2xl">
                 <Image
-                  src="/assetlist.png"
+                  src={makerspace?.image || '/assetlist.png'}
                   alt="Machine"
                   width={1000}
                   height={300}
@@ -226,21 +208,24 @@ export default function LabSpacePage() {
             <div className="flex items-start gap-2">
               <MapPin className="h-4 w-4 text-orange-500" />
               <div>
-                <p className="text-sm text-gray-600">SQA University Campus</p>
-                <p className="text-sm text-gray-600">Khandagiri, Bhubaneswar</p>
-                <p className="text-sm text-gray-600">Odisha, 751030</p>
+                <p className="text-sm text-gray-600">{makerspace?.address}</p>
               </div>
             </div>
             <div className="flex items-start gap-2">
               <Clock10 className="h-4 w-4 text-orange-500" />
               <p className="text-sm text-gray-600">
-                9:00 AM - 6:00 PM <br />
+                {makerspace?.timing.monday} <br />
                 (Mon - Sat)
               </p>
             </div>
             <div className="flex items-start gap-2">
               <Link2 className="h-4 w-4 text-orange-500 -rotate-45" />
-              <p className="text-sm text-gray-600">Visit Website</p>
+              <Link
+                href={'makerspace?.websitelink'}
+                className="text-sm text-gray-600"
+              >
+                Visit Website
+              </Link>
             </div>
           </div>
         </div>
@@ -294,7 +279,9 @@ export default function LabSpacePage() {
                             className="hover:bg-orange-500 bg-black text-white aspect-square"
                             variant="outline"
                             size="sm"
-                            onClick={() => handleMachineQuantityChange(index, false)}
+                            onClick={() =>
+                              handleMachineQuantityChange(index, false)
+                            }
                           >
                             -
                           </Button>
@@ -303,7 +290,9 @@ export default function LabSpacePage() {
                             className="hover:bg-orange-500 bg-black text-white"
                             variant="outline"
                             size="sm"
-                            onClick={() => handleMachineQuantityChange(index, true)}
+                            onClick={() =>
+                              handleMachineQuantityChange(index, true)
+                            }
                           >
                             +
                           </Button>
@@ -316,7 +305,9 @@ export default function LabSpacePage() {
                         {machine.description}
                       </p>
                       <p className="text-sm text-gray-600 mt-1 max-w-sm flex items-center gap-x-1">
-                        {machine.rating} <Star className="h-2.5 w-2.5 inline-block text-orange-500 fill-orange-500" /> | {machine.categories.join(', ')}
+                        {machine.rating}{' '}
+                        <Star className="h-2.5 w-2.5 inline-block text-orange-500 fill-orange-500" />{' '}
+                        | {machine.categories.join(', ')}
                       </p>
                     </div>
                   </div>
@@ -344,7 +335,7 @@ export default function LabSpacePage() {
 
                 <Button className="w-full">
                   <Link
-                    href={`/home/${encodeURIComponent(machines[0].makerspaceName)}/book/payment`}
+                    href={`/home/${encodeURIComponent(makerspace?.name)}/book/payment`}
                   >
                     Request to Book
                   </Link>
@@ -404,15 +395,9 @@ export default function LabSpacePage() {
                         {event.date} | {event.time}
                       </p>
                       <div className="flex gap-2 mt-2">
-                        {event.categories.map((category, idx) => (
-                          <Badge
-                            key={idx}
-                            variant="outline"
-                            className="text-xs"
-                          >
-                            {category}
-                          </Badge>
-                        ))}
+                        <Badge variant="outline" className="text-xs">
+                          {event.category}
+                        </Badge>
                       </div>
                     </div>
                   </div>
@@ -440,7 +425,7 @@ export default function LabSpacePage() {
 
                 <Button className="w-full">
                   <Link
-                    href={`/home/${encodeURIComponent(machines[0].makerspaceName)}/book/payment`}
+                    href={`/home/${encodeURIComponent(makerspace?.name)}/book/payment`}
                   >
                     Request to Book
                   </Link>
@@ -453,16 +438,11 @@ export default function LabSpacePage() {
         <div className="max-w-3xl">
           <hr className="mb-4" />
           <div className="mb-4 ml-4">
-            <h2 className="text-lg font-medium mb-4">About SQA FAB Lab</h2>
+            <h2 className="text-lg font-medium mb-4">
+              About {makerspace?.name}
+            </h2>
             <p className="text-sm text-gray-600 mb-4 ml-4">
-              We work together to build an impactful learning community where
-              students are given the opportunity to engage in new experiences,
-              develop their skills, and ignite curiosity. We welcome the diverse
-              community into a FAB lab inclusive of culture and perspectives. We
-              are committed to providing a safe and inclusive environment and
-              continue to foster this community through access to peer support,
-              training, diverse entrepreneurship, networking opportunities, and
-              resources to turn ideas into reality.
+              {makerspace?.description}
             </p>
           </div>
 
@@ -483,7 +463,7 @@ export default function LabSpacePage() {
         <div className="mb-4">
           <div className="flex items-center gap-2 mb-4 ml-4 ">
             <Star className="h-4 w-4" />
-            <h2 className="text-lg font-semibold">4.5</h2>
+            <h2 className="text-lg font-semibold">{makerspace?.rating}</h2>
             <span className="text-sm font-bold">Ratings and Reviews</span>
           </div>
 
@@ -491,22 +471,30 @@ export default function LabSpacePage() {
             <div className="flex items-center gap-2">
               <MapPin className="h-4 w-4 text-orange-500" />
               <span className="text-sm">Location</span>
-              <span className="text-sm text-gray-600">4.5</span>
+              <span className="text-sm text-gray-600">
+                {makerspace?.locationRating}
+              </span>
             </div>
             <div className="flex items-center gap-2">
               <Clock className="h-4 w-4 text-orange-500" />
               <span className="text-sm">Value for money</span>
-              <span className="text-sm text-gray-600">4.5</span>
+              <span className="text-sm text-gray-600">
+                {makerspace?.valueRating}
+              </span>
             </div>
             <div className="flex items-center gap-2">
               <ThumbsUp className="h-4 w-4 text-orange-500" />
               <span className="text-sm">Lab Experience</span>
-              <span className="text-sm text-gray-600">4.5</span>
+              <span className="text-sm text-gray-600">
+                {makerspace?.experienceRating}
+              </span>
             </div>
             <div className="flex items-center gap-2">
               <Star className="h-4 w-4 text-orange-500" />
               <span className="text-sm">Machine Quality</span>
-              <span className="text-sm text-gray-600">4.5</span>
+              <span className="text-sm text-gray-600">
+                {makerspace?.qualityRating}
+              </span>
             </div>
           </div>
         </div>
@@ -520,9 +508,7 @@ export default function LabSpacePage() {
                 <span>Location</span>
               </h3>
               <p className="text-sm text-gray-600 ml-8">
-                SQA University Campus 1, Khandagiri,
-                <br />
-                Bhubaneswar, Odisha - 751030
+                {makerspace?.address}
               </p>
 
               <h3 className="text-md font-medium mt-4 mb-2 flex gap-x-1 items-center">

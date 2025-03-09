@@ -4,7 +4,7 @@ const BASE_URL = 'http://localhost:5000';
 
 export async function fetchMachines(): Promise<MakerSpace[]> {
     try {
-        const response = await fetch('/api/machines');
+        const response = await fetch(`${BASE_URL}/api/machines`);
         if (!response.ok) {
             throw new Error('Failed to fetch machines');
         }
@@ -17,7 +17,7 @@ export async function fetchMachines(): Promise<MakerSpace[]> {
 
 export async function fetchCityData(city: string) {
     try {
-        const response = await fetch(`/api/city/${encodeURIComponent(city)}`);
+        const response = await fetch(`${BASE_URL}/api/city/${encodeURIComponent(city)}`);
         if (!response.ok) {
             throw new Error('Failed to fetch city data');
         }
@@ -25,6 +25,71 @@ export async function fetchCityData(city: string) {
     } catch (error) {
         console.error('Error fetching city data:', error);
         return { machines: [], events: [] };
+    }
+}
+
+export async function fetchMachinesByLocation(location: string) {
+    try {
+        const response = await fetch(`${BASE_URL}/api/machines/by-location/${encodeURIComponent(location)}`);
+        if (!response.ok) {
+            throw new Error('Failed to fetch machines for location');
+        }
+        return await response.json();
+    } catch (error) {
+        console.error('Error fetching machines by location:', error);
+        return [];
+    }
+}
+
+export async function fetchEventsByLocation(location: string) {
+    try {
+        const response = await fetch(`${BASE_URL}/api/events/by-location/${encodeURIComponent(location)}`);
+        if (!response.ok) {
+            throw new Error('Failed to fetch events for location');
+        }
+        return await response.json();
+    } catch (error) {
+        console.error('Error fetching events by location:', error);
+        return [];
+    }
+}
+
+export async function fetchMachinesByMakerspace(makerspaceName: string) {
+    try {
+        const response = await fetch(`${BASE_URL}/api/machines/by-makerspace/${encodeURIComponent(makerspaceName)}`);
+        if (!response.ok) {
+            throw new Error('Failed to fetch machines for makerspace');
+        }
+        return await response.json();
+    } catch (error) {
+        console.error('Error fetching machines by makerspace:', error);
+        return [];
+    }
+}
+
+export async function fetchEventsByMakerspace(makerspaceName: string) {
+    try {
+        const response = await fetch(`${BASE_URL}/api/events/by-makerspace/${encodeURIComponent(makerspaceName)}`);
+        if (!response.ok) {
+            throw new Error('Failed to fetch events for makerspace');
+        }
+        return await response.json();
+    } catch (error) {
+        console.error('Error fetching events by makerspace:', error);
+        return [];
+    }
+}
+
+export async function fetchMakerspaceByName(name: string) {
+    try {
+        const response = await fetch(`${BASE_URL}/api/makerspace/by-name/${encodeURIComponent(name)}`);
+        if (!response.ok) {
+            throw new Error('Failed to fetch makerspace details');
+        }
+        return await response.json();
+    } catch (error) {
+        console.error('Error fetching makerspace:', error);
+        return null;
     }
 }
 

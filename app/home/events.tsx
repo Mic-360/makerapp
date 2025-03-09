@@ -19,7 +19,6 @@ import { useMemo, useState } from 'react';
 export default function Event() {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const { events } = useCityDataStore();
-  const { selectedCategory } = useCategoryStore();
   const [expandedDescriptions, setExpandedDescriptions] = useState<{
     [key: string]: boolean;
   }>({});
@@ -30,19 +29,6 @@ export default function Event() {
       [id]: !prev[id],
     }));
   };
-
-  // Filter events based on selected category
-  const filteredEvents = useMemo(() => {
-    if (!selectedCategory) return events;
-
-    return events.filter(
-      (event) =>
-        event.categories &&
-        event.categories.some((category: string) =>
-          category.toLowerCase().includes(selectedCategory.toLowerCase())
-        )
-    );
-  }, [events, selectedCategory]);
 
   return (
     <main className="container mx-auto px-4 sm:px-6 lg:px-8 my-10">
@@ -104,7 +90,7 @@ export default function Event() {
             </aside>
           )}
           <div className={`${isFilterOpen ? 'col-span-9' : 'col-span-12'}`}>
-            {filteredEvents.length === 0 ? (
+            {events.length === 0 ? (
               <div className="text-center py-10">
                 <h3 className="text-lg font-medium">No events found</h3>
                 <p className="text-gray-500">
@@ -113,13 +99,13 @@ export default function Event() {
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-min">
-                {filteredEvents.map((event) => (
+                {events.map((event) => (
                   <div
                     key={event.id}
                     className="border rounded-xl overflow-hidden hover:shadow-xl shadow-inner h-fit"
                   >
                     <Image
-                      src={event.image || '/placeholder.svg'}
+                      src={event.imagelink || '/placeholder.svg'}
                       alt={event.name}
                       width={400}
                       height={600}
@@ -145,14 +131,10 @@ export default function Event() {
                       <div className="flex items-center gap-x-2 mt-2">
                         <Calendar className="w-4 h-4 text-gray-500" />
                         <p className="text-sm text-gray-600">
-                          {event.date || event.timing} | {event.time}
+                          {event.date.start} | {event.time.start}
                         </p>
                       </div>
-                      <p className="text-sm my-2">
-                        {event.categories
-                          ? event.categories.join(', ')
-                          : event.category}
-                      </p>
+                      <p className="text-sm my-2">{event.category}</p>
                       <div>
                         <button
                           type="button"
@@ -169,7 +151,7 @@ export default function Event() {
                       </div>
                       <div className="flex justify-end mt-4">
                         <Link
-                          href={`/events/${encodeURIComponent(event.name)}/register`}
+                          href={`/events/${encodeURIComponent(event.makerspacename)}/register`}
                         >
                           <Button
                             variant="default"

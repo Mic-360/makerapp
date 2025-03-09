@@ -6,9 +6,27 @@ interface CityState {
   setSelectedCity: (city: string) => void;
 }
 
+// Load initial city state from localStorage
+const loadCityState = () => {
+  if (typeof window === 'undefined') return { selectedCity: 'Location' };
+  try {
+    const city = localStorage.getItem('selectedCity') || 'Location';
+    const machines = JSON.parse(localStorage.getItem('cityMachines') || '[]');
+    const events = JSON.parse(localStorage.getItem('cityEvents') || '[]');
+    return { selectedCity: city, machines, events };
+  } catch (error) {
+    return { selectedCity: 'Location', machines: [], events: [] };
+  }
+};
+
 export const useCityStore = create<CityState>((set) => ({
-  selectedCity: 'Location',
-  setSelectedCity: (city) => set({ selectedCity: city }),
+  selectedCity: loadCityState().selectedCity,
+  setSelectedCity: (city) => {
+    set({ selectedCity: city });
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('selectedCity', city);
+    }
+  },
 }));
 
 interface CategoryFilterState {

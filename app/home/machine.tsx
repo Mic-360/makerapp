@@ -119,7 +119,7 @@ export default function Machine() {
                     className="border rounded-xl overflow-hidden hover:shadow-xl shadow-inner h-fit"
                   >
                     <Image
-                      src={machine.image || '/placeholder.svg'}
+                      src={machine.imagelink || '/placeholder.svg'}
                       alt={machine.name}
                       width={400}
                       height={600}
@@ -132,7 +132,7 @@ export default function Machine() {
                             {machine.name}
                           </h3>
                           <p className="text-xs text-gray-600">
-                            {machine.makerspaceName}, {machine.location}
+                            {machine.makerspacename}, {machine.location}
                           </p>
                         </div>
                         <div className="flex items-start justify-center gap-x-1.5">
@@ -165,7 +165,7 @@ export default function Machine() {
                       </div>
                       <div className="flex justify-end my-2 items-end">
                         <Link
-                          href={`/home/${encodeURIComponent(machine.makerspaceName)}/book`}
+                          href={`/home/${encodeURIComponent(machine.makerspacename)}/book`}
                         >
                           <Button
                             variant="default"

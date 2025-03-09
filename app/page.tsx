@@ -2,7 +2,7 @@
 
 import TopBar from '@/components/top-bar';
 import { Button } from '@/components/ui/button';
-import { fetchCityData } from '@/lib/api';
+import { fetchEventsByLocation, fetchMachinesByLocation } from '@/lib/api';
 import { cities } from '@/lib/constants';
 import { useCityDataStore, useCityStore } from '@/lib/store';
 import { X } from 'lucide-react';
@@ -19,9 +19,13 @@ export default function Home() {
     if (selectedCity === 'Location') return;
 
     try {
-      const cityData = await fetchCityData(selectedCity);
-      setMachines(cityData.machines);
-      setEvents(cityData.events);
+      const [machines, events] = await Promise.all([
+        fetchMachinesByLocation(selectedCity),
+        fetchEventsByLocation(selectedCity),
+      ]);
+
+      setMachines(machines);
+      setEvents(events);
       router.push('/home');
     } catch (error) {
       console.error('Failed to fetch city data:', error);

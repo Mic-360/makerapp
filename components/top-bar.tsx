@@ -1,6 +1,7 @@
 'use client';
 
-import { fetchCityData } from '@/lib/api';
+import { Button } from '@/components/ui/button';
+import { fetchEventsByLocation, fetchMachinesByLocation } from '@/lib/api';
 import { cities } from '@/lib/constants';
 import {
   useAuthenticationStore,
@@ -19,8 +20,7 @@ import {
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useState, useEffect } from 'react';
-import { Button } from './ui/button';
+import { useEffect, useState } from 'react';
 import { Tooltip, TooltipProvider } from './ui/tooltip';
 
 export default function TopBar({
@@ -38,19 +38,23 @@ export default function TopBar({
   const { setMachines, setEvents } = useCityDataStore();
   const { user, token, logout } = useAuthenticationStore();
   const [searchTerm, setSearchTerm] = useState('');
-
   const [isScrolled, setIsScrolled] = useState(false);
   const isDark = isScrolled ? false : theme === 'dark';
   const router = useRouter();
 
-  const handleCityChange = async (city: string) => {
+  const handleCitySelect = async (city: string) => {
     setSelectedCity(city);
     setIsDropdownOpen(false);
     if (city === 'Location') return;
+
     try {
-      const cityData = await fetchCityData(city);
-      setMachines(cityData.machines);
-      setEvents(cityData.events);
+      const [machines, events] = await Promise.all([
+        fetchMachinesByLocation(city),
+        fetchEventsByLocation(city),
+      ]);
+
+      setMachines(machines);
+      setEvents(events);
       router.push('/home');
     } catch (error) {
       console.error('Failed to fetch city data:', error);
@@ -62,20 +66,13 @@ export default function TopBar({
     router.push('/home');
   };
 
-  const getFirstName = (fullName: string) => {
-    return fullName.split(' ')[0];
-  };
-
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 200);
     };
 
     window.addEventListener('scroll', handleScroll);
-
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-    };
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   const MobileMenu = () => (
@@ -98,7 +95,7 @@ export default function TopBar({
             <>
               <div className="flex gap-x-2 items-center">
                 <Link href="/profile" className="font-medium text-md">
-                  {getFirstName(user.name)}
+                  {user.name.split(' ')[0]}
                 </Link>
                 {user.image && (
                   <Image
@@ -199,19 +196,18 @@ export default function TopBar({
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
             >
               <MapPin className="w-4 h-4 mr-2" />
-              <span className="mr-2 text-sm truncate max-w-[100px]">
-                {selectedCity}
-              </span>
-              <ChevronDown className="w-4 h-4" />
+              <span>{selectedCity}</span>
+              <ChevronDown className="w-4 h-4 ml-1" />
+
               {isDropdownOpen && (
-                <div className="absolute top-full left-0 mt-2 w-48 bg-white rounded-xl shadow-lg overflow-hidden z-50">
-                  {cities.map((loc) => (
+                <div className="absolute top-full left-0 w-48 mt-2 bg-white rounded-xl shadow-lg border">
+                  {cities.map((city) => (
                     <div
-                      key={loc}
-                      className="px-4 py-2 hover:bg-black hover:text-white cursor-pointer"
-                      onClick={() => handleCityChange(loc)}
+                      key={city}
+                      className="px-4 py-2 hover:bg-gray-100 cursor-pointer text-sm"
+                      onClick={() => handleCitySelect(city)}
                     >
-                      {loc}
+                      {city}
                     </div>
                   ))}
                 </div>
@@ -280,7 +276,7 @@ export default function TopBar({
                 <span
                   className={`${isDark ? 'text-white' : 'text-black'} font-medium`}
                 >
-                  {getFirstName(user.name)}
+                  {user.name.split(' ')[0]}
                 </span>
                 {user.image && (
                   <Image
@@ -350,13 +346,13 @@ export default function TopBar({
             <ChevronDown className="w-4 h-4 ml-1" />
             {isDropdownOpen && (
               <div className="absolute top-full left-0 mt-2 w-48 bg-white rounded-xl shadow-lg overflow-hidden z-50">
-                {cities.map((loc) => (
+                {cities.map((city) => (
                   <div
-                    key={loc}
+                    key={city}
                     className="px-4 py-2 hover:bg-black hover:text-white cursor-pointer"
-                    onClick={() => handleCityChange(loc)}
+                    onClick={() => handleCitySelect(city)}
                   >
-                    {loc}
+                    {city}
                   </div>
                 ))}
               </div>
