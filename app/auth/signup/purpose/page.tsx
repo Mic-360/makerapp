@@ -2,10 +2,10 @@
 
 import AuthCard from '@/components/auth-card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
-import { useSignupStore } from '@/lib/store';
-import { Check, Loader2 } from 'lucide-react';
+import { signupUser } from '@/lib/api';
+import { useAuthenticationStore, useSignupStore } from '@/lib/store';
+import { Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
@@ -20,6 +20,7 @@ const purposes = [
 
 export default function PurposePage() {
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
   const router = useRouter();
   const {
     email,
@@ -32,41 +33,34 @@ export default function PurposePage() {
     purpose,
     setPurpose,
   } = useSignupStore();
+  const { setUser, setToken } = useAuthenticationStore();
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setIsLoading(true);
+    setError('');
 
     try {
-      const response = await fetch('/api/auth/signup', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email,
-          password,
-          firstName,
-          lastName,
-          mobile,
-          userType,
-          industry,
-          purpose,
-        }),
+      const result = await signupUser({
+        email,
+        password,
+        name: `${firstName} ${lastName}`,
+        number: mobile,
+        usertype: userType,
+        industry,
+        purpose,
+        role: 'Individual',
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to create account');
-      }
-
-      const data = await response.json();
-      if (data.success) {
-        router.push('/home/onboarding');
-      } else {
-        throw new Error(data.error || 'Failed to create account');
-      }
+      setUser(result.user);
+      setToken(result.token);
+      router.push('/home/onboarding');
     } catch (error) {
-      console.error('Error during registration:', error);
+      if (error instanceof Error) {
+        setError(error.message);
+      } else {
+        setError('Failed to create account');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -99,6 +93,9 @@ export default function PurposePage() {
             </Button>
           ))}
         </div>
+        {error && (
+          <p className="text-sm text-red-500 text-center px-8">{error}</p>
+        )}
         <Button
           type="submit"
           className={`${purpose ? 'bg-green-500' : 'bg-gray-500'}

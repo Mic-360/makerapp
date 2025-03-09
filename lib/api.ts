@@ -1,5 +1,7 @@
 import { MakerSpace } from "./constants";
 
+const BASE_URL = 'http://localhost:5000';
+
 export async function fetchMachines(): Promise<MakerSpace[]> {
     try {
         const response = await fetch('/api/machines');
@@ -34,46 +36,42 @@ interface User {
     phone?: string;
 }
 
-// Mock user database
-const mockUsers: User[] = [
-    {
-        id: '1',
-        name: 'John Doe',
-        email: 'john@example.com',
-        phone: '1234567890',
-        image: 'https://ui-avatars.com/api/?name=John+Doe',
-    },
-    {
-        id: '2',
-        name: 'Jane Smith',
-        email: 'jane@example.com',
-        phone: '9876543210',
-        image: 'https://ui-avatars.com/api/?name=Jane+Smith',
-    }
-];
+interface SignupData {
+    email: string;
+    password: string;
+    name: string;
+    number: string;
+    usertype?: string;
+    industry?: string;
+    purpose?: string;
+    role?: string;
+}
 
-export async function verifyEmailOrPhone(identifier: string): Promise<{ email: string; isValid: boolean }> {
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 500));
+export async function signupUser(data: SignupData) {
+    try {
+        const response = await fetch(`${BASE_URL}/api/users/signup`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data),
+        });
 
-    // This could be a real API endpoint in production
-    const mockUsers = [
-        { email: 'john@example.com', phone: '1234567890' },
-        { email: 'jane@example.com', phone: '9876543210' },
-    ];
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.message || 'Failed to create account');
+        }
 
-    if (identifier.includes('@')) {
-        const user = mockUsers.find(u => u.email === identifier);
-        return { email: identifier, isValid: !!user };
-    } else {
-        const user = mockUsers.find(u => u.phone === identifier);
-        return { email: user?.email || '', isValid: !!user };
+        return await response.json();
+    } catch (error) {
+        console.error('Signup error:', error);
+        throw error;
     }
 }
 
-export async function loginUser(email: string, password: string): Promise<{ user: User; token: string } | null> {
+export async function loginUser(email: string, password: string) {
     try {
-        const response = await fetch('/api/auth/login', {
+        const response = await fetch(`${BASE_URL}/api/users/login`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -82,13 +80,59 @@ export async function loginUser(email: string, password: string): Promise<{ user
         });
 
         if (!response.ok) {
-            return null;
+            const error = await response.json();
+            throw new Error(error.message || 'Invalid credentials');
         }
 
-        const data = await response.json();
-        return data;
+        return await response.json();
     } catch (error) {
         console.error('Login error:', error);
-        return null;
+        throw error;
+    }
+}
+
+export async function verifyEmailOrPhone(identifier: string) {
+    try {
+        if (identifier.includes('@')) {
+            // For email, we'll check if the user exists via login attempt
+            const response = await fetch(`${BASE_URL}/api/users/login`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email: identifier, password: '' }),
+            });
+            return { email: identifier, isValid: response.status !== 401 };
+        } else {
+            // For phone number, use the by-number endpoint
+            const response = await fetch(`${BASE_URL}/api/users/by-number/${identifier}`);
+            if (response.ok) {
+                const data = await response.json();
+                return { email: data.email, isValid: true };
+            }
+            return { email: '', isValid: false };
+        }
+    } catch (error) {
+        console.error('Verification error:', error);
+        return { email: '', isValid: false };
+    }
+}
+
+export async function reauthorizeUser(token: string) {
+    try {
+        const response = await fetch(`${BASE_URL}/api/users/reauth`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+            },
+        });
+
+        if (!response.ok) {
+            throw new Error('Reauthorization failed');
+        }
+
+        return await response.json();
+    } catch (error) {
+        console.error('Reauth error:', error);
+        throw error;
     }
 }

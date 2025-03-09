@@ -24,15 +24,15 @@ export default function EmailLoginPage() {
 
     try {
       const result = await loginUser(loginIdentifier, password);
-      if (result) {
-        setUser(result.user);
-        setToken(result.token);
-        router.push('/home');
-      } else {
-        setError('Invalid credentials');
-      }
+      setUser(result.user);
+      setToken(result.token);
+      router.push('/home');
     } catch (error) {
-      setError('An error occurred. Please try again.');
+      if (error instanceof Error) {
+        setError(error.message);
+      } else {
+        setError('An error occurred during login');
+      }
     } finally {
       setIsLoading(false);
     }

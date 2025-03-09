@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { reauthorizeUser } from './api';
 
 interface CityState {
   selectedCity: string;
@@ -24,22 +25,18 @@ interface AuthState {
   loginIdentifier: string;
   isValidEmail: boolean;
   isValidPhone: boolean;
-  otpTimer: number;
   setLoginIdentifier: (identifier: string) => void;
   setIsValidEmail: (isValid: boolean) => void;
   setIsValidPhone: (isValid: boolean) => void;
-  setOtpTimer: (timer: number) => void;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
   loginIdentifier: '',
   isValidEmail: false,
   isValidPhone: false,
-  otpTimer: 45,
   setLoginIdentifier: (identifier) => set({ loginIdentifier: identifier }),
   setIsValidEmail: (isValid) => set({ isValidEmail: isValid }),
   setIsValidPhone: (isValid) => set({ isValidPhone: isValid }),
-  setOtpTimer: (timer) => set({ otpTimer: timer }),
 }));
 
 interface SignupStore {
@@ -92,10 +89,20 @@ interface CityDataState {
 }
 
 export const useCityDataStore = create<CityDataState>((set) => ({
-  machines: [],
-  events: [],
-  setMachines: (machines) => set({ machines }),
-  setEvents: (events) => set({ events }),
+  machines: loadCityState().machines,
+  events: loadCityState().events,
+  setMachines: (machines) => {
+    set({ machines });
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('cityMachines', JSON.stringify(machines));
+    }
+  },
+  setEvents: (events) => {
+    set({ events });
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('cityEvents', JSON.stringify(events));
+    }
+  },
 }));
 
 interface User {
@@ -112,6 +119,10 @@ interface AuthenticationState extends AuthState {
   setUser: (user: User | null) => void;
   setToken: (token: string | null) => void;
   logout: () => void;
+  reauth: () => Promise<void>;
+  isLoading: boolean;
+  otpTimer: number;
+  setOtpTimer: (timer: number) => void;
 }
 
 // Load initial state from localStorage if available
@@ -131,6 +142,7 @@ export const useAuthenticationStore = create<AuthenticationState>((set) => ({
   isValidEmail: false,
   isValidPhone: false,
   otpTimer: 45,
+  isLoading: true,
   ...loadAuthState(),
   setLoginIdentifier: (identifier) => set({ loginIdentifier: identifier }),
   setIsValidEmail: (isValid) => set({ isValidEmail: isValid }),
@@ -157,6 +169,25 @@ export const useAuthenticationStore = create<AuthenticationState>((set) => ({
     if (typeof window !== 'undefined') {
       localStorage.removeItem('user');
       localStorage.removeItem('token');
+    }
+  },
+  reauth: async () => {
+    try {
+      set({ isLoading: true });
+      const token = localStorage.getItem('token');
+      if (!token) {
+        set({ user: null, token: null, isLoading: false });
+        return;
+      }
+
+      const { user, token: newToken } = await reauthorizeUser(token);
+      set({ user, token: newToken, isLoading: false });
+    } catch (error) {
+      set({ user: null, token: null, isLoading: false });
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('user');
+        localStorage.removeItem('token');
+      }
     }
   },
 }));
