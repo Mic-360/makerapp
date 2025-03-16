@@ -10,11 +10,11 @@ import {
 } from '@/components/ui/popover';
 import { Separator } from '@/components/ui/separator';
 import { sortOptions } from '@/lib/constants';
-import { useCategoryStore, useCityDataStore } from '@/lib/store';
+import { useCityDataStore } from '@/lib/store';
 import { ArrowUpDown, Calendar, SlidersHorizontal, Star } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 
 export default function Event() {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -151,7 +151,7 @@ export default function Event() {
                       </div>
                       <div className="flex justify-end mt-4">
                         <Link
-                          href={`/events/${encodeURIComponent(event.makerspacename)}/register`}
+                          href={`/home/${encodeURIComponent(event.makerspacename)}/book?eventId=${event.id}`}
                         >
                           <Button
                             variant="default"

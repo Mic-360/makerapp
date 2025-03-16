@@ -1,13 +1,13 @@
 'use client';
 
+import CategoryScroll from '@/components/category-scroll';
 import Footer from '@/components/footer';
 import TopBar from '@/components/top-bar';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
 import { useState } from 'react';
-import Machine from './machine';
 import Event from './events';
-import CategoryScroll from '@/components/category-scroll';
+import Machine from './machine';
 
 export default function Page() {
   const [activeSegment, setActiveSegment] = useState('machines');
@@ -42,7 +42,9 @@ export default function Page() {
           <h2 className="font-semibold text-2xl capitalize">
             Explore {activeSegment}
           </h2>
-          <CategoryScroll />
+          <CategoryScroll
+            activeSegment={activeSegment as 'machines' | 'events'}
+          />
         </section>
         {activeSegment === 'machines' && <Machine />}
         {activeSegment === 'events' && <Event />}

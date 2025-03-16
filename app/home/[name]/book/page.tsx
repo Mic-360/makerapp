@@ -38,14 +38,100 @@ import {
 import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 export default function LabSpacePage({ params }: { params: { name: string } }) {
-  const [date, setDate] = useState<Date | undefined>(new Date());
   const [showMore, setShowMore] = useState(false);
   const [machines, setMachines] = useState<any[]>([]);
   const [events, setEvents] = useState<any[]>([]);
   const [makerspace, setMakerspace] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [searchParams, setSearchParams] = useState<{
+    machineId?: string;
+    eventId?: string;
+  }>({});
+  const [eventDate, setEventDate] = useState<Date | undefined>(() => {
+    const eventDate = events.find((event) => event.id === searchParams.eventId)
+      ?.date.start;
+    return eventDate ? new Date(eventDate) : undefined;
+  });
+
+  const [machineDate, setMachineDate] = useState<Date | undefined>(new Date());
+
+  console.log(
+    new Date(
+      events.find((event) => event.id === searchParams.eventId)?.date.start
+    )
+  );
+  console.log(new Date());
+
+  const urlSearchParams = useSearchParams();
+
+  useEffect(() => {
+    // Get URL search params
+    setSearchParams({
+      machineId: urlSearchParams.get('machineId') ?? undefined,
+      eventId: urlSearchParams.get('eventId') ?? undefined,
+    });
+  }, []);
+
+  const initializeQuantities = (items: any[], selectedId?: string) => {
+    return items.map((item) => (selectedId === item.id ? 1 : 0));
+  };
+
+  const [machineQuantities, setMachineQuantities] = useState<number[]>([]);
+  const [eventQuantities, setEventQuantities] = useState<number[]>([]);
+
+  useEffect(() => {
+    // Initialize quantities when machines and events are loaded
+    setMachineQuantities(
+      initializeQuantities(machines, searchParams.machineId)
+    );
+    setEventQuantities(initializeQuantities(events, searchParams.eventId));
+  }, [machines, events, searchParams]);
+
+  const handleMachineQuantityChange = (index: number, increment: boolean) => {
+    setMachineQuantities((prevQuantities) => {
+      const newQuantities = [...prevQuantities];
+      if (machines[index].id === searchParams.machineId) {
+        // Don't allow selected machine to go below 1
+        newQuantities[index] = increment
+          ? newQuantities[index] + 1
+          : Math.max(1, newQuantities[index] - 1);
+      } else {
+        // Other machines can go to 0
+        newQuantities[index] = increment
+          ? newQuantities[index] + 1
+          : Math.max(0, newQuantities[index] - 1);
+      }
+      return newQuantities;
+    });
+  };
+
+  const handleEventQuantityChange = (index: number, increment: boolean) => {
+    setEventQuantities((prevQuantities) => {
+      const newQuantities = [...prevQuantities];
+      if (events[index].id === searchParams.eventId) {
+        // Don't allow selected event to go below 1
+        newQuantities[index] = increment
+          ? newQuantities[index] + 1
+          : Math.max(1, newQuantities[index] - 1);
+      } else {
+        // Other events can go to 0
+        newQuantities[index] = increment
+          ? newQuantities[index] + 1
+          : Math.max(0, newQuantities[index] - 1);
+      }
+      return newQuantities;
+    });
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -70,84 +156,66 @@ export default function LabSpacePage({ params }: { params: { name: string } }) {
     fetchData();
   }, [params.name]);
 
-  console.log('makerspace', makerspace);
+  console.log('events', events);
 
-  const filters = [
-    '3D Printer',
-    'Laser',
-    'Post Tools',
-    'Wood CNC',
-    'Laser Machine',
-  ];
+  const machine = machines.find(
+    (machine) => machine.id === searchParams.machineId
+  );
+  const startTime = machine?.time.start;
+  const endTime = machine?.time.end;
 
-  const [machineQuantities, setMachineQuantities] = useState<number[]>([
-    1,
-    ...new Array(Math.max(0, machines.length - 1)).fill(0),
-  ]);
-  const [eventQuantities, setEventQuantities] = useState<number[]>([
-    1,
-    ...new Array(Math.max(0, events.length)).fill(0),
-  ]);
-
-  const amenities = [
-    { icon: Wifi, label: 'WiFi' },
-    { icon: Monitor, label: 'Computers' },
-    { icon: Tv, label: 'TV Screen 32"' },
-    { icon: Projector, label: 'Projector' },
-    { icon: Speaker, label: 'Speaker' },
-    { icon: BellRing, label: 'Medical Room' },
-    { icon: FireExtinguisher, label: 'Fire Extinguishers' },
-    { icon: DoorOpen, label: 'Emergency Exits' },
-    { icon: Camera, label: 'CCTV Camera' },
-    { icon: Building2, label: 'Conference Rooms' },
-    { icon: Building2, label: 'Meeting Room' },
-    { icon: Coffee, label: 'Water Cooler' },
-    { icon: Car, label: 'Free parking' },
-  ];
-
-  const facilitators = [
-    {
-      name: 'Mr. Suresh Nayak',
-      role: 'Mentor',
-      image: '/assetlist.png',
-    },
-  ];
-
-  const handleMachineQuantityChange = (index: number, increment: boolean) => {
-    setMachineQuantities((prevQuantities) => {
-      const newQuantities = [...prevQuantities];
-      newQuantities[index] = increment
-        ? newQuantities[index] + 1
-        : index === 0
-          ? Math.max(1, newQuantities[index] - 1)
-          : Math.max(0, newQuantities[index] - 1);
-      return newQuantities;
-    });
+  const generateTimeSlots = (start: string, end: string) => {
+    const startHour = parseInt(start.split(':')[0], 10);
+    const endHour = parseInt(end.split(':')[0], 10);
+    const slots = [];
+    for (let hour = startHour; hour < endHour; hour++) {
+      slots.push(`${hour}:00 to ${hour + 1}:00`);
+    }
+    return slots;
   };
 
-  const handleEventQuantityChange = (index: number, increment: boolean) => {
-    setEventQuantities((prevQuantities) => {
-      const newQuantities = [...prevQuantities];
-      newQuantities[index] = increment
-        ? newQuantities[index] + 1
-        : index === 0
-          ? Math.max(1, newQuantities[index] - 1)
-          : Math.max(0, newQuantities[index] - 1);
-      return newQuantities;
-    });
-  };
+  const timeSlots =
+    startTime && endTime ? generateTimeSlots(startTime, endTime) : [];
+
+  // const amenities = [
+  //   { icon: Wifi, label: 'WiFi' },
+  //   { icon: Monitor, label: 'Computers' },
+  //   { icon: Tv, label: 'TV Screen 32"' },
+  //   { icon: Projector, label: 'Projector' },
+  //   { icon: Speaker, label: 'Speaker' },
+  //   { icon: BellRing, label: 'Medical Room' },
+  //   { icon: FireExtinguisher, label: 'Fire Extinguishers' },
+  //   { icon: DoorOpen, label: 'Emergency Exits' },
+  //   { icon: Camera, label: 'CCTV Camera' },
+  //   { icon: Building2, label: 'Conference Rooms' },
+  //   { icon: Building2, label: 'Meeting Room' },
+  //   { icon: Coffee, label: 'Water Cooler' },
+  //   { icon: Car, label: 'Free parking' },
+  // ].filter((amenity) => makerspace?.amenities.includes(amenity.label));
 
   const calculateMachineTotalPrice = () => {
     return machines.reduce((total, machine, index) => {
-      return total + parseInt(machine.price) * machineQuantities[index];
+      return (
+        total + Number.parseInt(machine.price) * (machineQuantities[index] || 0)
+      );
     }, 0);
   };
 
   const calculateEventsTotalPrice = () => {
     return events.reduce((total, event, index) => {
-      return total + parseInt(event.price) * eventQuantities[index];
+      return (
+        total + Number.parseInt(event.price) * (eventQuantities[index] || 0)
+      );
     }, 0);
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p>Loading...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-white">
@@ -229,7 +297,10 @@ export default function LabSpacePage({ params }: { params: { name: string } }) {
             </div>
           </div>
         </div>
-        <Tabs defaultValue="machines" className="mb-8">
+        <Tabs
+          defaultValue={searchParams.machineId ? 'machines' : 'events'}
+          className="mb-8"
+        >
           <TabsList className="border-b w-full justify-start h-auto p-0 bg-transparent">
             <TabsTrigger
               value="machines"
@@ -245,21 +316,22 @@ export default function LabSpacePage({ params }: { params: { name: string } }) {
             </TabsTrigger>
           </TabsList>
 
-          <ScrollArea className="w-full whitespace-nowrap my-4">
-            <div className="flex gap-2">
-              {filters.map((filter) => (
-                <Badge
-                  key={filter}
-                  variant="outline"
-                  className="rounded-full px-4 py-1 text-sm"
-                >
-                  {filter}
-                </Badge>
-              ))}
-            </div>
-          </ScrollArea>
-
           <TabsContent value="machines">
+            <ScrollArea className="w-full whitespace-nowrap my-4">
+              <div className="flex gap-2">
+                {machines
+                  .flatMap((machine) => machine.categories)
+                  .map((category, index) => (
+                    <Badge
+                      key={index}
+                      variant="outline"
+                      className="rounded-full px-4 py-1 text-sm"
+                    >
+                      {category}
+                    </Badge>
+                  ))}
+              </div>
+            </ScrollArea>
             <div className="flex justify-between gap-x-10 my-4">
               <ScrollArea className="h-[32rem] w-full my-4">
                 {machines.map((machine, index) => (
@@ -313,7 +385,7 @@ export default function LabSpacePage({ params }: { params: { name: string } }) {
                   </div>
                 ))}
               </ScrollArea>
-              <Card className="p-6">
+              <Card className="p-6 flex flex-col justify-between">
                 <div className="text-center mb-6">
                   <p className="text-2xl font-semibold mb-1">
                     ₹ {calculateMachineTotalPrice()}/hr
@@ -322,16 +394,22 @@ export default function LabSpacePage({ params }: { params: { name: string } }) {
 
                 <Calendar
                   mode="single"
-                  selected={date}
-                  onSelect={setDate}
-                  className="mb-6"
+                  selected={machineDate}
+                  onSelect={setMachineDate}
                 />
 
-                <div className="flex justify-between text-sm text-gray-600 mb-6 px-10">
-                  <span>9:00 am</span>
-                  <span>to</span>
-                  <span>6:00 pm</span>
-                </div>
+                <Select>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select time slot" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {timeSlots.map((slot, index) => (
+                      <SelectItem key={index} value={slot}>
+                        {slot}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
 
                 <Button className="w-full">
                   <Link
@@ -344,12 +422,25 @@ export default function LabSpacePage({ params }: { params: { name: string } }) {
             </div>
           </TabsContent>
           <TabsContent value="events">
+            <ScrollArea className="w-full whitespace-nowrap my-4">
+              <div className="flex gap-2">
+                {events.map(({ id, category }) => (
+                  <Badge
+                    key={id}
+                    variant="outline"
+                    className="rounded-full px-4 py-1 text-sm"
+                  >
+                    {category}
+                  </Badge>
+                ))}
+              </div>
+            </ScrollArea>
             <div className="flex justify-between gap-x-10 my-4">
               <ScrollArea className="h-[32rem] w-2/3 my-4">
                 {events.map((event, index) => (
                   <div key={index} className="flex gap-4 my-4">
                     <Image
-                      src={event.image}
+                      src={event.imagelink}
                       alt={event.name}
                       width={100}
                       height={100}
@@ -392,7 +483,7 @@ export default function LabSpacePage({ params }: { params: { name: string } }) {
                         {event.location}
                       </p>
                       <p className="text-sm text-gray-600 mt-1">
-                        {event.date} | {event.time}
+                        {event.date.start} | {event.time.start}
                       </p>
                       <div className="flex gap-2 mt-2">
                         <Badge variant="outline" className="text-xs">
@@ -412,18 +503,28 @@ export default function LabSpacePage({ params }: { params: { name: string } }) {
 
                 <Calendar
                   mode="single"
-                  selected={date}
-                  onSelect={setDate}
+                  selected={eventDate}
+                  onSelect={setEventDate}
                   className="mb-6"
                 />
 
-                <div className="flex justify-between text-sm text-gray-600 mb-6 px-10">
-                  <span>9:00 am</span>
+                {/* <div className="flex justify-between text-sm text-gray-600 mb-6 px-10">
+                  <span>
+                    {
+                      events.find((event) => event.id === searchParams.eventId)
+                        ?.time.start
+                    }
+                  </span>
                   <span>to</span>
-                  <span>6:00 pm</span>
-                </div>
+                  <span>
+                    {
+                      events.find((event) => event.id === searchParams.eventId)
+                        ?.time.end
+                    }
+                  </span>
+                </div> */}
 
-                <Button className="w-full">
+                <Button className="w-full mt-auto">
                   <Link
                     href={`/home/${encodeURIComponent(makerspace?.name)}/book/payment`}
                   >
@@ -450,12 +551,12 @@ export default function LabSpacePage({ params }: { params: { name: string } }) {
           <div className="mb-4 ml-4">
             <h2 className="text-lg font-medium mb-4">What this space offers</h2>
             <div className="grid grid-cols-3 gap-y-4 ml-4">
-              {amenities.slice(0, 4).map((amenity, index) => (
+              {/* {amenities.slice(0, 4).map((amenity, index) => (
                 <div key={index} className="flex items-center gap-2">
                   <amenity.icon className="h-4 w-4 text-orange-500" />
                   <span className="text-sm">{amenity.label}</span>
                 </div>
-              ))}
+              ))} */}
             </div>
           </div>
         </div>
@@ -515,12 +616,21 @@ export default function LabSpacePage({ params }: { params: { name: string } }) {
                 <Star className="h-4 w-4 inline-block text-orange-500" />
                 <span>How to reach us</span>
               </h3>
-              <ul className="text-sm text-gray-600 space-y-1 ml-8">
-                <li>2km from Bhubaneswar airport</li>
-                <li>5km from Bhubaneswar Railway Station</li>
-                <li>1km from Khandagiri metro station</li>
-                <li>2km from Municipal metro station</li>
-              </ul>
+              <p className="text-sm text-gray-600 ml-8">
+                {makerspace?.howtoreach
+                  .split('.')
+                  .map((sentence: string, index: number) => (
+                    <span key={index}>
+                      {sentence.trim()}
+                      {index < makerspace.howtoreach.split('.').length - 1 && (
+                        <>
+                          .
+                          <br />
+                        </>
+                      )}
+                    </span>
+                  ))}
+              </p>
 
               <h3 className="text-md font-medium mt-4 mb-2 flex gap-x-1 items-center">
                 <MessageCircle className="h-4 w-4 inline-block text-orange-500" />
