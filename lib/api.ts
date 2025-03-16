@@ -1,5 +1,27 @@
 import { MakerSpace } from "./constants";
 
+export interface Machine {
+    id: string;
+    name: string;
+    imagelink: string;
+    makerspacename: string;
+    location: string;
+    rating: number;
+    categories: string[];
+    description: string;
+    price: number;
+    time: {
+        start: string;
+        end: string;
+    };
+    status: string;
+}
+
+export interface Event {
+    category: string;
+    // Add other event properties as needed
+}
+
 const BASE_URL = 'http://localhost:5000';
 
 export async function fetchMachines(): Promise<MakerSpace[]> {

@@ -55,6 +55,43 @@ interface FormData {
   };
 }
 
+const countryCodes = [
+  { code: '+91', country: 'India' },
+  { code: '+1', country: 'USA' },
+  { code: '+44', country: 'UK' },
+  { code: '+81', country: 'Japan' },
+  { code: '+86', country: 'China' },
+  { code: '+61', country: 'Australia' },
+  { code: '+49', country: 'Germany' },
+  { code: '+33', country: 'France' },
+  { code: '+7', country: 'Russia' },
+  { code: '+39', country: 'Italy' },
+];
+
+const countries = countryCodes.map((country) => country.country);
+
+const convertTo12Hour = (hour24: string): string => {
+  const [hour] = hour24.split(':');
+  const hourNum = parseInt(hour);
+  if (hourNum === 0) return '12:00 AM';
+  if (hourNum === 12) return '12:00 PM';
+  if (hourNum > 12) return `${hourNum - 12}:00 PM`;
+  return `${hourNum}:00 AM`;
+};
+
+const convertTo24Hour = (hour12: string): string => {
+  const [time, period] = hour12.split(' ');
+  const [hour] = time.split(':');
+  const hourNum = parseInt(hour);
+  if (period === 'AM') {
+    if (hourNum === 12) return '00:00';
+    return `${hourNum.toString().padStart(2, '0')}:00`;
+  } else {
+    if (hourNum === 12) return '12:00';
+    return `${(hourNum + 12).toString()}:00`;
+  }
+};
+
 export default function SpaceSubmissionFlow() {
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<FormData>({
@@ -85,6 +122,7 @@ export default function SpaceSubmissionFlow() {
     },
   });
   const urlPathname = usePathname();
+  const [selectedCountryCode, setSelectedCountryCode] = useState('+91');
 
   const steps = [1, 2, 3, 4, 5];
   const days = [
@@ -109,17 +147,22 @@ export default function SpaceSubmissionFlow() {
     setCurrentStep((prev) => Math.max(prev - 1, 1));
   };
 
-  const validateCase3 = () => {
-    const { name, email, contact, inchargeName, website } =
-      formData.spaceDetails;
+  const validateEmail = (email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
 
+  const validateContact = (contact: string) => {
+    return contact.replace(/[^0-9]/g, '').length === 10;
+  };
+
+  const validateCase3 = () => {
+    const { name, email, contact, inchargeName } = formData.spaceDetails;
     return (
       name.trim() !== '' &&
-      emailRegex.test(email) &&
-      contact.trim() !== '' &&
-      inchargeName.trim() !== '' &&
-      website.trim() !== ''
+      validateEmail(email) &&
+      validateContact(contact) &&
+      inchargeName.trim() !== ''
     );
   };
 
@@ -133,6 +176,12 @@ export default function SpaceSubmissionFlow() {
       zipCode.trim() !== '' &&
       country.trim() !== ''
     );
+  };
+
+  const validateCase5 = () => {
+    const { images, spaceLogo } = formData.media;
+    const filledImagesCount = images.filter((img) => img).length;
+    return filledImagesCount >= 3 && spaceLogo !== undefined;
   };
 
   const handleImageUpload = (
@@ -353,28 +402,53 @@ export default function SpaceSubmissionFlow() {
                   >
                     Contact number*
                   </Label>
-                  <div className="relative">
-                    <Input
-                      id="contact"
-                      placeholder="+91"
-                      type="tel"
-                      value={formData.spaceDetails.contact}
-                      onChange={(e) => {
-                        const value = e.target.value.replace(/[^0-9+]/g, '');
-                        setFormData({
-                          ...formData,
-                          spaceDetails: {
-                            ...formData.spaceDetails,
-                            contact: value,
-                          },
-                        });
-                      }}
-                      className="h-12 rounded-2xl pr-12 text-base placeholder:text-gray-400 border border-black/20"
-                    />
-                    {formData.spaceDetails.contact && (
-                      <Check className="w-5 h-5 text-green-500 absolute right-4 top-1/2 -translate-y-1/2" />
-                    )}
+                  <div className="flex gap-2">
+                    <Select
+                      value={selectedCountryCode}
+                      onValueChange={setSelectedCountryCode}
+                    >
+                      <SelectTrigger className="w-32 h-12 rounded-2xl border-black/20">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {countryCodes.map((country) => (
+                          <SelectItem key={country.code} value={country.code}>
+                            {country.code} ({country.country})
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <div className="relative flex-1">
+                      <Input
+                        id="contact"
+                        placeholder="Enter your number"
+                        type="tel"
+                        value={formData.spaceDetails.contact}
+                        onChange={(e) => {
+                          const value = e.target.value.replace(/[^0-9]/g, '');
+                          if (value.length <= 10) {
+                            setFormData({
+                              ...formData,
+                              spaceDetails: {
+                                ...formData.spaceDetails,
+                                contact: value,
+                              },
+                            });
+                          }
+                        }}
+                        className="h-12 rounded-2xl pr-12 text-base placeholder:text-gray-400 border border-black/20"
+                      />
+                      {validateContact(formData.spaceDetails.contact) && (
+                        <Check className="w-5 h-5 text-green-500 absolute right-4 top-1/2 -translate-y-1/2" />
+                      )}
+                    </div>
                   </div>
+                  {formData.spaceDetails.contact &&
+                    !validateContact(formData.spaceDetails.contact) && (
+                      <p className="text-red-500 text-sm pl-4">
+                        Please enter a valid 10-digit number
+                      </p>
+                    )}
                 </div>
 
                 <div className="space-y-2">
@@ -382,7 +456,7 @@ export default function SpaceSubmissionFlow() {
                     htmlFor="website"
                     className="pl-4 text-base font-normal text-gray-600"
                   >
-                    Website*
+                    Website
                   </Label>
                   <div className="relative">
                     <Input
@@ -408,11 +482,12 @@ export default function SpaceSubmissionFlow() {
 
                 <div className="space-y-4 mt-8">
                   <Label className="pl-4 text-base font-normal text-gray-600">
-                    Days Open*
+                    Days Open
                   </Label>
                   <div className="grid grid-cols-3 gap-2">
                     {days.map((day) => (
-                      <button
+                      <Button
+                        variant="ghost"
                         key={day}
                         onClick={() => {
                           const newDays =
@@ -448,7 +523,7 @@ export default function SpaceSubmissionFlow() {
                         }`}
                       >
                         {day.slice(0, 3)}
-                      </button>
+                      </Button>
                     ))}
                   </div>
                 </div>
@@ -479,10 +554,16 @@ export default function SpaceSubmissionFlow() {
                       }
                       className="h-12 rounded-2xl pr-12 text-base placeholder:text-gray-400 border border-black/20"
                     />
-                    {formData.spaceDetails.email && (
+                    {validateEmail(formData.spaceDetails.email) && (
                       <Check className="w-5 h-5 text-green-500 absolute right-4 top-1/2 -translate-y-1/2" />
                     )}
                   </div>
+                  {formData.spaceDetails.email &&
+                    !validateEmail(formData.spaceDetails.email) && (
+                      <p className="text-red-500 text-sm pl-4">
+                        Please enter a valid email address
+                      </p>
+                    )}
                 </div>
 
                 <div className="space-y-2">
@@ -515,9 +596,51 @@ export default function SpaceSubmissionFlow() {
                 </div>
 
                 <div className="space-y-4">
-                  <Label className="pl-4 text-base font-normal text-gray-600">
-                    Timings*
-                  </Label>
+                  <div className="flex items-center justify-between">
+                    <Label className="pl-4 text-base font-normal text-gray-600">
+                      Timings*
+                    </Label>
+                    {Object.keys(formData.spaceDetails.timings).length > 0 && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="h-8 px-3 rounded-xl"
+                        onClick={() => {
+                          const firstDay = Object.entries(
+                            formData.spaceDetails.timings
+                          )[0];
+                          if (firstDay) {
+                            const [_, timing] = firstDay;
+                            const newTimings =
+                              formData.spaceDetails.daysOpen.reduce(
+                                (
+                                  acc: Record<
+                                    string,
+                                    { from: string; to: string }
+                                  >,
+                                  day
+                                ) => {
+                                  if (day !== 'Sunday') {
+                                    acc[day] = { ...timing };
+                                  }
+                                  return acc;
+                                },
+                                {}
+                              );
+                            setFormData({
+                              ...formData,
+                              spaceDetails: {
+                                ...formData.spaceDetails,
+                                timings: newTimings,
+                              },
+                            });
+                          }
+                        }}
+                      >
+                        Assign to all
+                      </Button>
+                    )}
+                  </div>
                   <div className="h-72 overflow-y-scroll space-y-4 scrollbar-hide">
                     {formData.spaceDetails.daysOpen.map((day) => (
                       <div
@@ -528,73 +651,222 @@ export default function SpaceSubmissionFlow() {
                           {day}
                         </span>
                         <div className="flex-1 flex items-center gap-2">
-                          <Select
-                            value={
-                              formData.spaceDetails.timings[day]?.from || ''
-                            }
-                            onValueChange={(value) =>
-                              setFormData({
-                                ...formData,
-                                spaceDetails: {
-                                  ...formData.spaceDetails,
-                                  timings: {
-                                    ...formData.spaceDetails.timings,
-                                    [day]: {
-                                      ...formData.spaceDetails.timings[day],
-                                      from: value,
+                          {day === 'Sunday' ? (
+                            <>
+                              <Select
+                                value={
+                                  formData.spaceDetails.timings[day]?.from || ''
+                                }
+                                onValueChange={(value) => {
+                                  if (value === 'closed') {
+                                    setFormData({
+                                      ...formData,
+                                      spaceDetails: {
+                                        ...formData.spaceDetails,
+                                        timings: {
+                                          ...formData.spaceDetails.timings,
+                                          [day]: {
+                                            from: 'closed',
+                                            to: 'closed',
+                                          },
+                                        },
+                                      },
+                                    });
+                                  } else {
+                                    setFormData({
+                                      ...formData,
+                                      spaceDetails: {
+                                        ...formData.spaceDetails,
+                                        timings: {
+                                          ...formData.spaceDetails.timings,
+                                          [day]: {
+                                            ...formData.spaceDetails.timings[
+                                              day
+                                            ],
+                                            from: convertTo24Hour(value),
+                                          },
+                                        },
+                                      },
+                                    });
+                                  }
+                                }}
+                              >
+                                <SelectTrigger className="w-full h-12 rounded-xl border-gray-300">
+                                  <SelectValue placeholder="Opening time" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="closed">Closed</SelectItem>
+                                  {Array.from({ length: 12 }, (_, i) => {
+                                    const hour = (i + 1).toString();
+                                    return (
+                                      <>
+                                        <SelectItem
+                                          key={`${hour}AM`}
+                                          value={`${hour}:00 AM`}
+                                        >
+                                          {`${hour}:00 AM`}
+                                        </SelectItem>
+                                        <SelectItem
+                                          key={`${hour}PM`}
+                                          value={`${hour}:00 PM`}
+                                        >
+                                          {`${hour}:00 PM`}
+                                        </SelectItem>
+                                      </>
+                                    );
+                                  })}
+                                </SelectContent>
+                              </Select>
+                              {formData.spaceDetails.timings[day]?.from !==
+                                'closed' && (
+                                <>
+                                  <span className="text-gray-400">to</span>
+                                  <Select
+                                    value={convertTo12Hour(
+                                      formData.spaceDetails.timings[day]?.to ||
+                                        ''
+                                    )}
+                                    onValueChange={(value) =>
+                                      setFormData({
+                                        ...formData,
+                                        spaceDetails: {
+                                          ...formData.spaceDetails,
+                                          timings: {
+                                            ...formData.spaceDetails.timings,
+                                            [day]: {
+                                              ...formData.spaceDetails.timings[
+                                                day
+                                              ],
+                                              to: convertTo24Hour(value),
+                                            },
+                                          },
+                                        },
+                                      })
+                                    }
+                                  >
+                                    <SelectTrigger className="w-full h-12 rounded-xl border-gray-300">
+                                      <SelectValue placeholder="Closing time" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      {Array.from({ length: 12 }, (_, i) => {
+                                        const hour = (i + 1).toString();
+                                        return (
+                                          <>
+                                            <SelectItem
+                                              key={`${hour}AM`}
+                                              value={`${hour}:00 AM`}
+                                            >
+                                              {`${hour}:00 AM`}
+                                            </SelectItem>
+                                            <SelectItem
+                                              key={`${hour}PM`}
+                                              value={`${hour}:00 PM`}
+                                            >
+                                              {`${hour}:00 PM`}
+                                            </SelectItem>
+                                          </>
+                                        );
+                                      })}
+                                    </SelectContent>
+                                  </Select>
+                                </>
+                              )}
+                            </>
+                          ) : (
+                            <>
+                              <Select
+                                value={convertTo12Hour(
+                                  formData.spaceDetails.timings[day]?.from || ''
+                                )}
+                                onValueChange={(value) =>
+                                  setFormData({
+                                    ...formData,
+                                    spaceDetails: {
+                                      ...formData.spaceDetails,
+                                      timings: {
+                                        ...formData.spaceDetails.timings,
+                                        [day]: {
+                                          ...formData.spaceDetails.timings[day],
+                                          from: convertTo24Hour(value),
+                                        },
+                                      },
                                     },
-                                  },
-                                },
-                              })
-                            }
-                          >
-                            <SelectTrigger className="w-full h-12 rounded-xl border-gray-300">
-                              <SelectValue placeholder="Opening time" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {Array.from({ length: 24 }, (_, i) => {
-                                const hour = i.toString().padStart(2, '0');
-                                return (
-                                  <SelectItem key={hour} value={`${hour}:00`}>
-                                    {`${hour}:00`}
-                                  </SelectItem>
-                                );
-                              })}
-                            </SelectContent>
-                          </Select>
-                          <span className="text-gray-400">to</span>
-                          <Select
-                            value={formData.spaceDetails.timings[day]?.to || ''}
-                            onValueChange={(value) =>
-                              setFormData({
-                                ...formData,
-                                spaceDetails: {
-                                  ...formData.spaceDetails,
-                                  timings: {
-                                    ...formData.spaceDetails.timings,
-                                    [day]: {
-                                      ...formData.spaceDetails.timings[day],
-                                      to: value,
+                                  })
+                                }
+                              >
+                                <SelectTrigger className="w-full h-12 rounded-xl border-gray-300">
+                                  <SelectValue placeholder="Opening time" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {Array.from({ length: 12 }, (_, i) => {
+                                    const hour = (i + 1).toString();
+                                    return (
+                                      <>
+                                        <SelectItem
+                                          key={`${hour}AM`}
+                                          value={`${hour}:00 AM`}
+                                        >
+                                          {`${hour}:00 AM`}
+                                        </SelectItem>
+                                        <SelectItem
+                                          key={`${hour}PM`}
+                                          value={`${hour}:00 PM`}
+                                        >
+                                          {`${hour}:00 PM`}
+                                        </SelectItem>
+                                      </>
+                                    );
+                                  })}
+                                </SelectContent>
+                              </Select>
+                              <span className="text-gray-400">to</span>
+                              <Select
+                                value={convertTo12Hour(
+                                  formData.spaceDetails.timings[day]?.to || ''
+                                )}
+                                onValueChange={(value) =>
+                                  setFormData({
+                                    ...formData,
+                                    spaceDetails: {
+                                      ...formData.spaceDetails,
+                                      timings: {
+                                        ...formData.spaceDetails.timings,
+                                        [day]: {
+                                          ...formData.spaceDetails.timings[day],
+                                          to: convertTo24Hour(value),
+                                        },
+                                      },
                                     },
-                                  },
-                                },
-                              })
-                            }
-                          >
-                            <SelectTrigger className="w-full h-12 rounded-xl border-gray-300">
-                              <SelectValue placeholder="Closing time" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {Array.from({ length: 24 }, (_, i) => {
-                                const hour = i.toString().padStart(2, '0');
-                                return (
-                                  <SelectItem key={hour} value={`${hour}:00`}>
-                                    {`${hour}:00`}
-                                  </SelectItem>
-                                );
-                              })}
-                            </SelectContent>
-                          </Select>
+                                  })
+                                }
+                              >
+                                <SelectTrigger className="text-black w-full h-12 rounded-xl border-gray-300">
+                                  <SelectValue placeholder="Closing time" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {Array.from({ length: 12 }, (_, i) => {
+                                    const hour = (i + 1).toString();
+                                    return (
+                                      <>
+                                        <SelectItem
+                                          key={`${hour}AM`}
+                                          value={`${hour}:00 AM`}
+                                        >
+                                          {`${hour}:00 AM`}
+                                        </SelectItem>
+                                        <SelectItem
+                                          key={`${hour}PM`}
+                                          value={`${hour}:00 PM`}
+                                        >
+                                          {`${hour}:00 PM`}
+                                        </SelectItem>
+                                      </>
+                                    );
+                                  })}
+                                </SelectContent>
+                              </Select>
+                            </>
+                          )}
                         </div>
                       </div>
                     ))}
@@ -628,6 +900,7 @@ export default function SpaceSubmissionFlow() {
                     <Input
                       id="city"
                       value={formData.address.city}
+                      placeholder="Enter your city"
                       onChange={(e) =>
                         setFormData({
                           ...formData,
@@ -639,7 +912,7 @@ export default function SpaceSubmissionFlow() {
                       }
                       className="h-12 border border-black/20 rounded-2xl pr-12 text-base"
                     />
-                    {formData.address.city && (
+                    {formData.address.city.trim() && (
                       <Check className="w-5 h-5 text-green-500 absolute right-4 top-1/2 -translate-y-1/2" />
                     )}
                   </div>
@@ -670,7 +943,7 @@ export default function SpaceSubmissionFlow() {
                       }
                       className="h-36 border border-black/20 mb-2 rounded-2xl pr-12 text-base align-top text-start p-4 w-full bg-transparent placeholder:text-gray-400"
                     />
-                    {formData.address.address && (
+                    {formData.address.address.trim() && (
                       <Check className="w-5 h-5 text-green-500 absolute right-4 top-4" />
                     )}
                   </div>
@@ -710,13 +983,14 @@ export default function SpaceSubmissionFlow() {
                 <div className="space-y-2">
                   <Label
                     htmlFor="state"
-                    className="text-base font-normal text-gray-600"
+                    className="pl-4 text-base font-normal text-gray-600"
                   >
                     State*
                   </Label>
                   <div className="relative">
                     <Input
                       id="state"
+                      placeholder="Enter your state"
                       value={formData.address.state}
                       onChange={(e) =>
                         setFormData({
@@ -729,7 +1003,7 @@ export default function SpaceSubmissionFlow() {
                       }
                       className="h-12 border border-black/20 rounded-2xl pr-12 text-base"
                     />
-                    {formData.address.state && (
+                    {formData.address.state.trim() && (
                       <Check className="w-5 h-5 text-green-500 absolute right-4 top-1/2 -translate-y-1/2" />
                     )}
                   </div>
@@ -745,6 +1019,7 @@ export default function SpaceSubmissionFlow() {
                   <div className="relative">
                     <Input
                       id="zip"
+                      placeholder="Enter your zip code"
                       value={formData.address.zipCode}
                       onChange={(e) =>
                         setFormData({
@@ -757,7 +1032,7 @@ export default function SpaceSubmissionFlow() {
                       }
                       className="h-12 border border-black/20 rounded-2xl pr-12 text-base"
                     />
-                    {formData.address.zipCode && (
+                    {formData.address.zipCode.trim() && (
                       <Check className="w-5 h-5 text-green-500 absolute right-4 top-1/2 -translate-y-1/2" />
                     )}
                   </div>
@@ -771,20 +1046,29 @@ export default function SpaceSubmissionFlow() {
                     Country*
                   </Label>
                   <div className="relative">
-                    <Input
-                      id="country"
+                    <Select
                       value={formData.address.country}
-                      onChange={(e) =>
+                      onValueChange={(value) =>
                         setFormData({
                           ...formData,
                           address: {
                             ...formData.address,
-                            country: e.target.value,
+                            country: value,
                           },
                         })
                       }
-                      className="h-12 border border-black/20 rounded-2xl pr-12 text-base"
-                    />
+                    >
+                      <SelectTrigger className="w-full h-12 rounded-2xl border-black/20">
+                        <SelectValue placeholder="Select your country" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {countries.map((country) => (
+                          <SelectItem key={country} value={country}>
+                            {country}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                     {formData.address.country && (
                       <Check className="w-5 h-5 text-green-500 absolute right-4 top-1/2 -translate-y-1/2" />
                     )}
@@ -815,9 +1099,10 @@ export default function SpaceSubmissionFlow() {
                       }
                       className="h-12 border border-black/20 rounded-2xl pr-12 text-base placeholder:text-gray-400"
                     />
-                    {formData.address.orgEmail && (
-                      <Check className="w-5 h-5 text-green-500 absolute right-4 top-1/2 -translate-y-1/2" />
-                    )}
+                    {formData.address.orgEmail &&
+                      validateEmail(formData.address.orgEmail) && (
+                        <Check className="w-5 h-5 text-green-500 absolute right-4 top-1/2 -translate-y-1/2" />
+                      )}
                   </div>
                 </div>
               </div>
@@ -1005,7 +1290,8 @@ export default function SpaceSubmissionFlow() {
           (currentStep === 1 && !formData.type) ||
           (currentStep === 2 && formData.purposes.length === 0) ||
           (currentStep === 3 && !validateCase3()) ||
-          (currentStep === 4 && !validateCase4())
+          (currentStep === 4 && !validateCase4()) ||
+          (currentStep === 5 && !validateCase5())
         }
       >
         SAVE AND NEXT

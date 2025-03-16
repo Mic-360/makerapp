@@ -9,11 +9,19 @@ import { X } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 
 export default function Home() {
   const router = useRouter();
   const { selectedCity, setSelectedCity } = useCityStore();
   const { setMachines, setEvents } = useCityDataStore();
+
+  useEffect(() => {
+    if (selectedCity !== 'Location') {
+      router.push('/home');
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleCityConfirm = async () => {
     if (selectedCity === 'Location') return;
