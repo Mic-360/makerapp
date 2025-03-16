@@ -756,7 +756,274 @@ export default function MachinesPage() {
       )}
 
       {viewMode === 'monitor' && (
-        <div className="space-y-6">
+        <div>
+          <div className="flex items-center mb-4 justify-between">
+            <div className="flex items-center">
+              <div className="relative">
+                <DropdownMenu
+                  open={showMachineTypeDropdown}
+                  onOpenChange={setShowMachineTypeDropdown}
+                >
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      className="flex items-center gap-2 font-medium"
+                    >
+                      All Machines
+                      <ChevronDown className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="w-56">
+                    {machineTypes.map((type) => (
+                      <DropdownMenuItem key={type}>{type}</DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+
+              <Tabs value={activeTab} onValueChange={setActiveTab}>
+                <TabsList className="bg-transparent ml-4">
+                  <TabsTrigger
+                    value="active"
+                    className="data-[state=active]:bg-black data-[state=active]:text-white"
+                  >
+                    Active
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="draft"
+                    className="data-[state=active]:bg-black data-[state=active]:text-white"
+                  >
+                    Draft
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="trash"
+                    className="data-[state=active]:bg-black data-[state=active]:text-white"
+                  >
+                    Trash
+                  </TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="active">
+                  {/* Content for active tab */}
+                </TabsContent>
+                <TabsContent value="draft">
+                  {/* Content for draft tab */}
+                </TabsContent>
+                <TabsContent value="trash">
+                  {/* Content for trash tab */}
+                </TabsContent>
+              </Tabs>
+
+              <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    className="rounded-full bg-transparent text-black ml-4"
+                  >
+                    Add
+                    <PlusCircle className="ml-2 h-4 w-4" />
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="bg-white max-w-xl max-h-[85vh] overflow-y-auto">
+                  <DialogHeader>
+                    <DialogTitle>Add a machine</DialogTitle>
+                  </DialogHeader>
+                  <form onSubmit={handleAddMachine} className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="category">Category</Label>
+                      <Select name="category" defaultValue="3D Printer">
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select category" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {machineTypes.map((type) => (
+                            <SelectItem key={type} value={type}>
+                              {type}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="brandName">Brand Name</Label>
+                      <Input
+                        id="brandName"
+                        name="brandName"
+                        placeholder="e.g. Creality"
+                        required
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="modelNumber">Model Number</Label>
+                      <Input
+                        id="modelNumber"
+                        name="modelNumber"
+                        placeholder="e.g. 333XP"
+                        required
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="price">Price per hour</Label>
+                      <div className="relative">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2">
+                          ₹
+                        </span>
+                        <Input
+                          id="price"
+                          name="price"
+                          placeholder="e.g. 500"
+                          className="pl-7"
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label>Select Timings</Label>
+                      <div className="flex items-center gap-2">
+                        <Input
+                          id="startTime"
+                          name="startTime"
+                          placeholder="10:00 a.m."
+                          defaultValue="10 AM"
+                          className="flex-1"
+                          required
+                        />
+                        <span className="text-sm">to</span>
+                        <Input
+                          id="endTime"
+                          name="endTime"
+                          placeholder="12:00 p.m."
+                          defaultValue="3 AM"
+                          className="flex-1"
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label>Add Images of the machine</Label>
+                      <div className="grid grid-cols-4 gap-2">
+                        {[1, 2, 3, 4].map((i) => (
+                          <div
+                            key={i}
+                            className="border rounded-md aspect-square flex items-center justify-center cursor-pointer hover:bg-gray-50"
+                          >
+                            <ImagePlus className="h-6 w-6 text-gray-400" />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="description">
+                        Add other technical details
+                      </Label>
+                      <Textarea
+                        id="description"
+                        name="description"
+                        placeholder="Describe the machine, its specifications, and usage instructions"
+                        rows={3}
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="location">
+                        Machine's room, number and building
+                      </Label>
+                      <Input
+                        id="location"
+                        name="location"
+                        placeholder="e.g. Room 101, Main Building"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="specialInstructions">
+                        Special instructions for the user
+                      </Label>
+                      <Textarea
+                        id="specialInstructions"
+                        name="specialInstructions"
+                        placeholder="Any special instructions or guidelines for users"
+                        rows={3}
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label>Lab Incharge's Assigned</Label>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="inchargeName1" className="text-xs">
+                            Name
+                          </Label>
+                          <Input
+                            id="inchargeName1"
+                            name="inchargeName1"
+                            placeholder="Incharge name"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="inchargeNumber1" className="text-xs">
+                            Number
+                          </Label>
+                          <Input
+                            id="inchargeNumber1"
+                            name="inchargeNumber1"
+                            placeholder="Contact number"
+                          />
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4 mt-2">
+                        <div>
+                          <Input
+                            name="inchargeName2"
+                            placeholder="Incharge name"
+                          />
+                        </div>
+                        <div>
+                          <Input
+                            name="inchargeNumber2"
+                            placeholder="Contact number"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    <Button
+                      type="submit"
+                      className="w-full bg-black hover:bg-gray-800"
+                    >
+                      Save and Submit
+                    </Button>
+                  </form>
+                </DialogContent>
+              </Dialog>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="flex items-center gap-1"
+              >
+                <Filter className="h-4 w-4" />
+                Filter
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="flex items-center gap-1"
+              >
+                <SlidersHorizontal className="h-4 w-4" />
+                Sort
+              </Button>
+            </div>
+          </div>
+
           <div className="rounded-md border">
             <div className="grid grid-cols-11 bg-orange-100 p-3 text-sm font-medium">
               <div className="col-span-3 flex items-center">

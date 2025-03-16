@@ -887,7 +887,478 @@ export default function EventsPage() {
       )}
 
       {viewMode === 'monitor' && (
-        <div className="space-y-6">
+        <div>
+          <div className="flex items-center mb-4 justify-between">
+            <div className="flex items-center">
+              <div className="relative">
+                <DropdownMenu
+                  open={showEventTypeDropdown}
+                  onOpenChange={setShowEventTypeDropdown}
+                >
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      className="flex items-center gap-2 font-medium"
+                    >
+                      All Events
+                      <ChevronDown className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="w-56">
+                    {eventCategories.map((category) => (
+                      <DropdownMenuItem key={category}>
+                        {category}
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+
+              <Tabs value={activeTab} onValueChange={setActiveTab}>
+                <TabsList className="bg-transparent ml-4">
+                  <TabsTrigger
+                    value="active"
+                    className="data-[state=active]:bg-black data-[state=active]:text-white"
+                  >
+                    Active
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="draft"
+                    className="data-[state=active]:bg-black data-[state=active]:text-white"
+                  >
+                    Draft
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="trash"
+                    className="data-[state=active]:bg-black data-[state=active]:text-white"
+                  >
+                    Trash
+                  </TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="active">
+                  <div className="rounded-md border">
+                    <div className="grid grid-cols-12 bg-orange-100 p-3 text-sm font-medium">
+                      <div className="col-span-3 flex items-center">
+                        Name
+                        <ArrowUpDown className="ml-1 h-4 w-4" />
+                      </div>
+                      <div className="col-span-2 flex items-center">
+                        Price
+                        <ArrowUpDown className="ml-1 h-4 w-4" />
+                      </div>
+                      <div className="col-span-3 flex items-center">
+                        Category
+                        <ArrowUpDown className="ml-1 h-4 w-4" />
+                      </div>
+                      <div className="col-span-2 flex items-center">
+                        Timing
+                        <ArrowUpDown className="ml-1 h-4 w-4" />
+                      </div>
+                      <div className="col-span-1 flex items-center">
+                        Status
+                        <ArrowUpDown className="ml-1 h-4 w-4" />
+                      </div>
+                      <div className="col-span-1 text-center">Edit</div>
+                    </div>
+
+                    <div>
+                      {events
+                        .filter((e) => e.isOn)
+                        .map((event) => (
+                          <div
+                            key={event.id}
+                            className="grid grid-cols-12 p-3 text-sm border-t"
+                          >
+                            <div className="col-span-3 flex items-center gap-2">
+                              <div className="h-10 w-10 rounded bg-gray-200 overflow-hidden flex items-center justify-center">
+                                <Calendar className="h-6 w-6 text-gray-500" />
+                              </div>
+                              <span>{event.name}</span>
+                            </div>
+                            <div className="col-span-2 flex items-center">
+                              {event.price}
+                            </div>
+                            <div className="col-span-3 flex items-center">
+                              {event.category}
+                            </div>
+                            <div className="col-span-2 flex items-center">
+                              {event.timing}
+                            </div>
+                            <div className="col-span-1 flex items-center gap-2">
+                              <Switch
+                                checked={event.isOn}
+                                onCheckedChange={() =>
+                                  toggleEventStatus(event.id)
+                                }
+                              />
+                              <Badge
+                                variant="outline"
+                                className="bg-green-100 text-green-800 hover:bg-green-100"
+                              >
+                                ON
+                              </Badge>
+                            </div>
+                            <div className="col-span-1 flex items-center justify-center">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => openEditDialog(event)}
+                              >
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </div>
+                        ))}
+                    </div>
+                    {events.filter((e) => e.isOn).length === 0 && (
+                      <div className="p-20 flex flex-col items-center justify-center">
+                        <div className="text-gray-500">No active events</div>
+                      </div>
+                    )}
+                  </div>
+                </TabsContent>
+                <TabsContent value="draft">
+                  <div className="rounded-md border p-20 flex flex-col items-center justify-center">
+                    <div className="text-gray-500">No draft events</div>
+                  </div>
+                </TabsContent>
+                <TabsContent value="trash">
+                  <div className="rounded-md border p-20 flex flex-col items-center justify-center">
+                    <div className="text-gray-500">No events in trash</div>
+                  </div>
+                </TabsContent>
+              </Tabs>
+
+              <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    className="rounded-full bg-transparent text-black ml-4"
+                  >
+                    Add
+                    <PlusCircle className="ml-2 h-4 w-4" />
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="bg-white max-w-xl max-h-[85vh] overflow-y-auto">
+                  <DialogHeader>
+                    <DialogTitle>Add an events</DialogTitle>
+                  </DialogHeader>
+                  <form onSubmit={handleAddEvent} className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="category">Category</Label>
+                      <Select name="category" defaultValue="Hackathon">
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Select category" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {eventCategories.map((category) => (
+                            <SelectItem key={category} value={category}>
+                              {category}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="name">Event Name</Label>
+                      <Input
+                        id="name"
+                        name="name"
+                        placeholder="Enter event name"
+                        required
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="startDate">Start Date</Label>
+                        <div className="relative">
+                          <Select name="startDate" defaultValue="">
+                            <SelectTrigger className="w-full">
+                              <SelectValue placeholder="Select date" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="25 Jun">25 Jun</SelectItem>
+                              <SelectItem value="26 Jun">26 Jun</SelectItem>
+                              <SelectItem value="27 Jun">27 Jun</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="endDate">End Date</Label>
+                        <div className="relative">
+                          <Select name="endDate" defaultValue="">
+                            <SelectTrigger className="w-full">
+                              <SelectValue placeholder="Select date" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="28 Jun, 2024">
+                                28 Jun, 2024
+                              </SelectItem>
+                              <SelectItem value="29 Jun, 2024">
+                                29 Jun, 2024
+                              </SelectItem>
+                              <SelectItem value="30 Jun, 2024">
+                                30 Jun, 2024
+                              </SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label>Select Timings</Label>
+                      <div className="flex items-center gap-2">
+                        <Input
+                          id="startTime"
+                          name="startTime"
+                          defaultValue="10:00 a.m."
+                          className="flex-1"
+                        />
+                        <span className="text-sm">to</span>
+                        <Input
+                          id="endTime"
+                          name="endTime"
+                          defaultValue="12:00 p.m."
+                          className="flex-1"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label>Ticket Type and Price</Label>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <div className="flex items-center">
+                            <span className="text-sm mr-2">1.</span>
+                            <Input
+                              name="ticketType1"
+                              placeholder="Ticket type"
+                              className="flex-1"
+                            />
+                          </div>
+                          <div className="flex items-center">
+                            <span className="text-sm mr-2">2.</span>
+                            <Input
+                              name="ticketType2"
+                              placeholder="Ticket type"
+                              className="flex-1"
+                            />
+                          </div>
+                          <div className="flex items-center">
+                            <span className="text-sm mr-2">3.</span>
+                            <Input
+                              name="ticketType3"
+                              placeholder="Ticket type"
+                              className="flex-1"
+                            />
+                          </div>
+                          <div className="flex items-center">
+                            <span className="text-sm mr-2">4.</span>
+                            <Input
+                              name="ticketType4"
+                              placeholder="Ticket type"
+                              className="flex-1"
+                            />
+                          </div>
+                        </div>
+                        <div className="space-y-2">
+                          <div className="relative">
+                            <span className="absolute left-3 top-1/2 -translate-y-1/2">
+                              ₹
+                            </span>
+                            <Input
+                              name="price1"
+                              placeholder="Price"
+                              className="pl-7"
+                            />
+                          </div>
+                          <div className="relative">
+                            <span className="absolute left-3 top-1/2 -translate-y-1/2">
+                              ₹
+                            </span>
+                            <Input
+                              name="price2"
+                              placeholder="Price"
+                              className="pl-7"
+                            />
+                          </div>
+                          <div className="relative">
+                            <span className="absolute left-3 top-1/2 -translate-y-1/2">
+                              ₹
+                            </span>
+                            <Input
+                              name="price3"
+                              placeholder="Price"
+                              className="pl-7"
+                            />
+                          </div>
+                          <div className="relative">
+                            <span className="absolute left-3 top-1/2 -translate-y-1/2">
+                              ₹
+                            </span>
+                            <Input
+                              name="price4"
+                              placeholder="Price"
+                              className="pl-7"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="totalTickets">
+                        Total Tickets to be sold in single purchase
+                      </Label>
+                      <Input
+                        id="totalTickets"
+                        name="totalTickets"
+                        placeholder="Enter number"
+                      />
+                      <p className="text-xs text-gray-500">
+                        You can add up to 4 tickets only
+                      </p>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label>Add event posters/images</Label>
+                      <div className="grid grid-cols-4 gap-2">
+                        {[
+                          'Banner Image',
+                          'Display Image',
+                          'Event Logo',
+                          'Other',
+                        ].map((type, i) => (
+                          <div
+                            key={i}
+                            className="border rounded-md aspect-square flex flex-col items-center justify-center cursor-pointer hover:bg-gray-50 p-2 text-center"
+                          >
+                            <ImagePlus className="h-6 w-6 text-gray-400 mb-1" />
+                            <span className="text-xs text-gray-400">
+                              {type}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="about">About</Label>
+                      <Textarea
+                        id="about"
+                        name="about"
+                        placeholder="Event description"
+                        rows={3}
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="agenda">Agenda</Label>
+                      <Textarea
+                        id="agenda"
+                        name="agenda"
+                        placeholder="Event agenda"
+                        rows={3}
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="terms">Terms and Conditions</Label>
+                      <Textarea
+                        id="terms"
+                        name="terms"
+                        placeholder="Terms and conditions"
+                        rows={3}
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="location">
+                        Event's room, number and building
+                      </Label>
+                      <Input
+                        id="location"
+                        name="location"
+                        placeholder="Enter location details"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label>Workshop Experts</Label>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="expertName1" className="text-xs">
+                            Name
+                          </Label>
+                          <Input
+                            id="expertName1"
+                            name="expertName1"
+                            placeholder="Expert name"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="expertNumber1" className="text-xs">
+                            Number
+                          </Label>
+                          <Input
+                            id="expertNumber1"
+                            name="expertNumber1"
+                            placeholder="Contact number"
+                          />
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4 mt-2">
+                        <div>
+                          <Input name="expertName2" placeholder="Expert name" />
+                        </div>
+                        <div>
+                          <Input
+                            name="expertNumber2"
+                            placeholder="Contact number"
+                          />
+                        </div>
+                      </div>
+                      <Button variant="link" className="text-xs p-0 h-auto">
+                        + Add people
+                      </Button>
+                    </div>
+
+                    <Button
+                      type="submit"
+                      className="w-full bg-black hover:bg-gray-800"
+                    >
+                      Save and Submit
+                    </Button>
+                  </form>
+                </DialogContent>
+              </Dialog>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="flex items-center gap-1"
+              >
+                <Filter className="h-4 w-4" />
+                Filter
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="flex items-center gap-1"
+              >
+                <SlidersHorizontal className="h-4 w-4" />
+                Sort
+              </Button>
+            </div>
+          </div>
+
           <div className="rounded-md border">
             <div className="grid grid-cols-11 bg-orange-100 p-3 text-sm font-medium">
               <div className="col-span-3 flex items-center">
