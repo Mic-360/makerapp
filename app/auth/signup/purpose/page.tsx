@@ -31,9 +31,18 @@ export default function PurposePage() {
     userType,
     industry,
     purpose,
-    setPurpose,
+    addPurpose,
+    removePurpose,
   } = useSignupStore();
-  const { setUser, setToken } = useAuthenticationStore();
+  const { login } = useAuthenticationStore();
+
+  const handlePurposeClick = (p: string) => {
+    if (purpose.includes(p)) {
+      removePurpose(p);
+    } else {
+      addPurpose(p);
+    }
+  };
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -52,8 +61,7 @@ export default function PurposePage() {
         role: 'Individual',
       });
 
-      setUser(result.user);
-      setToken(result.token);
+      login(result.user, result.token);
       router.push('/home/onboarding');
     } catch (error) {
       if (error instanceof Error) {
@@ -86,21 +94,25 @@ export default function PurposePage() {
               key={field}
               type="button"
               variant='outline'
-              className={`${purpose === field ? 'bg-green-500 text-white font-semibold' : 'text-gray-900'} rounded-xl py-8 text-sm`}
-              onClick={() => setPurpose(field)}
+              className={`${purpose.includes(field) ? 'bg-green-500 text-white font-semibold' : 'text-gray-900'} rounded-xl py-8 text-sm`}
+              onClick={() => handlePurposeClick(field)}
+              disabled={purpose.length >= 3 && !purpose.includes(field)}
             >
               {field}
             </Button>
           ))}
         </div>
+        <p className="text-xs text-center text-muted-foreground">
+          Select up to 3 options that best describe your purpose
+        </p>
         {error && (
           <p className="text-sm text-red-500 text-center px-8">{error}</p>
         )}
         <Button
           type="submit"
-          className={`${purpose ? 'bg-green-500' : 'bg-gray-500'}
+          className={`${purpose.length > 0 ? 'bg-green-500' : 'bg-gray-500'}
             rounded-full px-10 py-4 mt-6 hover:bg-green-400`}
-          disabled={isLoading || !purpose}
+          disabled={isLoading || purpose.length === 0}
         >
           {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
           Create Account

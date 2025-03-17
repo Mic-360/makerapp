@@ -14,14 +14,22 @@ const userTypes = ['Student', 'Entrepreneur', 'Employee', 'Freelancer'];
 export default function UserTypePage() {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
-  const { userType, setUserType, firstName, email } = useSignupStore();
+  const { userType, addUserType, removeUserType, firstName } = useSignupStore();
+
+  const handleUserTypeClick = (type: string) => {
+    if (userType.includes(type)) {
+      removeUserType(type);
+    } else {
+      addUserType(type);
+    }
+  };
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setIsLoading(true);
 
     try {
-      if (userType) {
+      if (userType.length > 0) {
         router.push('/auth/signup/industry');
       }
     } catch (error) {
@@ -53,18 +61,22 @@ setting up your Karkhana account`}
               type="button"
               variant="outline"
               className={`${
-                userType === type ? 'bg-green-500 text-white font-semibold' : 'text-gray-900'
+                userType.includes(type) ? 'bg-green-500 text-white font-semibold' : 'text-gray-900'
               } rounded-xl py-12 text-md`}
-              onClick={() => setUserType(type)}
+              onClick={() => handleUserTypeClick(type)}
+              disabled={userType.length >= 2 && !userType.includes(type)}
             >
               {type}
             </Button>
           ))}
         </div>
+        <p className="text-xs text-center text-muted-foreground">
+          Select up to 2 options that best describe you
+        </p>
         <Button
           type="submit"
           className="rounded-full px-10 py-4 mt-6"
-          disabled={isLoading || !userType}
+          disabled={isLoading || userType.length === 0}
         >
           {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
           Continue

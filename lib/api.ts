@@ -128,9 +128,9 @@ interface SignupData {
     password: string;
     name: string;
     number: string;
-    usertype?: string;
-    industry?: string;
-    purpose?: string;
+    usertype: string[];
+    industry: string;
+    purpose: string[];
     role?: string;
 }
 
@@ -144,19 +144,27 @@ export async function signupUser(data: SignupData) {
             body: JSON.stringify(data),
         });
 
+        const responseData = await response.json();
+
         if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.message || 'Failed to create account');
+            throw new Error(responseData.message || 'Failed to create account');
         }
 
-        return await response.json();
+        return responseData;
     } catch (error) {
-        console.error('Signup error:', error);
-        throw error;
+        if (error instanceof Error) {
+            throw error;
+        }
+        throw new Error('Failed to create account');
     }
 }
 
-export async function loginUser(email: string, password: string) {
+interface LoginResponse {
+    user: User;
+    token: string;
+}
+
+export async function loginUser(email: string, password: string): Promise<LoginResponse> {
     try {
         const response = await fetch(`${BASE_URL}/api/users/login`, {
             method: 'POST',
@@ -166,32 +174,29 @@ export async function loginUser(email: string, password: string) {
             body: JSON.stringify({ email, password }),
         });
 
+        const data = await response.json();
+
         if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.message || 'Invalid credentials');
+            throw new Error(data.message || 'Invalid credentials');
         }
 
-        return await response.json();
+        return data;
     } catch (error) {
-        console.error('Login error:', error);
-        throw error;
+        if (error instanceof Error) {
+            throw error;
+        }
+        throw new Error('An error occurred during login');
     }
 }
 
 export async function verifyEmailOrPhone(identifier: string) {
     try {
         if (identifier.includes('@')) {
-            // For email, we'll check if the user exists via login attempt
-            const response = await fetch(`${BASE_URL}/api/users/login`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ email: identifier, password: '' }),
-            });
-            return { email: identifier, isValid: response.status !== 401 };
+            // For email verification
+            const response = await fetch(`${BASE_URL}/api/users/by-email/${identifier}`);
+            return { email: identifier, isValid: response.ok };
         } else {
-            // For phone number, use the by-number endpoint
+            // For phone number verification
             const response = await fetch(`${BASE_URL}/api/users/by-number/${identifier}`);
             if (response.ok) {
                 const data = await response.json();

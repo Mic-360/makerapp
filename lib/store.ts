@@ -64,9 +64,9 @@ interface SignupStore {
   firstName: string;
   lastName: string;
   mobile: string;
-  userType: string;
+  userType: string[];
   industry: string;
-  purpose: string;
+  purpose: string[];
   setUserId: (userId: string) => void;
   setEmail: (email: string) => void;
   setPassword: (password: string) => void;
@@ -74,8 +74,12 @@ interface SignupStore {
   setLastName: (lastName: string) => void;
   setMobile: (mobile: string) => void;
   setUserType: (userType: string) => void;
+  addUserType: (type: string) => void;
+  removeUserType: (type: string) => void;
   setIndustry: (industry: string) => void;
   setPurpose: (purpose: string) => void;
+  addPurpose: (purpose: string) => void;
+  removePurpose: (purpose: string) => void;
 }
 
 export const useSignupStore = create<SignupStore>((set) => ({
@@ -85,18 +89,36 @@ export const useSignupStore = create<SignupStore>((set) => ({
   firstName: '',
   lastName: '',
   mobile: '',
-  userType: '',
+  userType: [],
   industry: '',
-  purpose: '',
+  purpose: [],
   setUserId: (userId) => set({ userId }),
   setEmail: (email) => set({ email }),
   setPassword: (password) => set({ password }),
   setFirstName: (firstName) => set({ firstName }),
   setLastName: (lastName) => set({ lastName }),
   setMobile: (mobile) => set({ mobile }),
-  setUserType: (userType) => set({ userType }),
+  setUserType: (userType) => set({ userType: [userType] }),
+  addUserType: (type) => set((state) => {
+    if (state.userType.length < 2 && !state.userType.includes(type)) {
+      return { userType: [...state.userType, type] };
+    }
+    return state;
+  }),
+  removeUserType: (type) => set((state) => ({
+    userType: state.userType.filter((t) => t !== type)
+  })),
   setIndustry: (industry) => set({ industry }),
-  setPurpose: (purpose) => set({ purpose }),
+  setPurpose: (purpose) => set({ purpose: [purpose] }),
+  addPurpose: (purpose) => set((state) => {
+    if (state.purpose.length < 3 && !state.purpose.includes(purpose)) {
+      return { purpose: [...state.purpose, purpose] };
+    }
+    return state;
+  }),
+  removePurpose: (purpose) => set((state) => ({
+    purpose: state.purpose.filter((p) => p !== purpose)
+  })),
 }));
 
 interface CityDataState {
@@ -136,6 +158,7 @@ interface AuthenticationState extends AuthState {
   token: string | null;
   setUser: (user: User | null) => void;
   setToken: (token: string | null) => void;
+  login: (user: User, token: string) => void;
   logout: () => void;
   reauth: () => Promise<void>;
   isLoading: boolean;
@@ -169,7 +192,11 @@ export const useAuthenticationStore = create<AuthenticationState>((set) => ({
   setUser: (user) => {
     set({ user });
     if (typeof window !== 'undefined') {
-      localStorage.setItem('user', JSON.stringify(user));
+      if (user) {
+        localStorage.setItem('user', JSON.stringify(user));
+      } else {
+        localStorage.removeItem('user');
+      }
     }
   },
   setToken: (token) => {
@@ -180,6 +207,13 @@ export const useAuthenticationStore = create<AuthenticationState>((set) => ({
       } else {
         localStorage.removeItem('token');
       }
+    }
+  },
+  login: (user, token) => {
+    set({ user, token });
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('user', JSON.stringify(user));
+      localStorage.setItem('token', token);
     }
   },
   logout: () => {

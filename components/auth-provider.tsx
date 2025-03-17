@@ -5,6 +5,8 @@ import { useAuthenticationStore } from '@/lib/store';
 import { usePathname, useRouter } from 'next/navigation';
 
 const publicPaths = ['/auth/login', '/auth/signup', '/home', '/']; // Add other public paths
+const protectedPaths = ['/home/onboarding']; // Add other protected paths
+const authPaths = ['/auth']; // Auth paths that should be inaccessible when logged in
 
 export default function AuthProvider({
   children,
@@ -33,11 +35,13 @@ export default function AuthProvider({
     if (isLoading) return;
 
     const isPublicPath = publicPaths.some(path => pathname.startsWith(path));
+    const isProtectedPath = protectedPaths.some(path => pathname.startsWith(path));
+    const isAuthPath = authPaths.some(path => pathname.startsWith(path));
 
-    if (!token && !isPublicPath) {
+    if (!token && isProtectedPath) {
       // Redirect to login if trying to access protected route without auth
       router.push('/auth/login');
-    } else if (token && pathname.startsWith('/auth')) {
+    } else if (token && isAuthPath) {
       // Redirect to home if trying to access auth routes while logged in
       router.push('/home');
     }

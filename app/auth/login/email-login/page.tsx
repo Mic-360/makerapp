@@ -14,7 +14,7 @@ export default function EmailLoginPage() {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-  const { loginIdentifier, setUser, setToken } = useAuthenticationStore();
+  const { loginIdentifier, login } = useAuthenticationStore();
   const router = useRouter();
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -24,8 +24,7 @@ export default function EmailLoginPage() {
 
     try {
       const result = await loginUser(loginIdentifier, password);
-      setUser(result.user);
-      setToken(result.token);
+      login(result.user, result.token);
       router.push('/home');
     } catch (error) {
       if (error instanceof Error) {
