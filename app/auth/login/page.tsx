@@ -34,12 +34,24 @@ export default function LoginPage() {
       const { email, isValid } = await verifyEmailOrPhone(loginIdentifier);
 
       if (isValid) {
-        setLoginIdentifier(email); // Set the email for the next page
-        router.push('/auth/login/email-login');
+        // If email was returned, use it for login
+        if (email) {
+          setLoginIdentifier(email);
+          router.push('/auth/login/email-login');
+        } else {
+          setError('Unable to retrieve account information');
+        }
       } else {
-        setError('No account found with these credentials');
-        setIsValidEmail(false);
-        setIsValidPhone(false);
+        // Show appropriate error based on input type
+        if (isValidEmail) {
+          setError('No account found with this email');
+          setIsValidEmail(false);
+        } else if (isValidPhone) {
+          setError('No account found with this phone number');
+          setIsValidPhone(false);
+        } else {
+          setError('Please enter a valid email or phone number');
+        }
       }
     } catch (error) {
       setError('An error occurred. Please try again.');
@@ -52,9 +64,11 @@ export default function LoginPage() {
     setError('');
     setLoginIdentifier(value);
     if (isNaN(Number(value))) {
+      // Email validation
       setIsValidEmail(/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value));
       setIsValidPhone(false);
     } else {
+      // Phone validation (10 digits)
       setIsValidPhone(/^\d{10}$/.test(value));
       setIsValidEmail(false);
     }

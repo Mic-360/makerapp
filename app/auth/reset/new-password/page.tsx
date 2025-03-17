@@ -1,35 +1,46 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Loader2 } from 'lucide-react';
 import AuthCard from '@/components/auth-card';
 import Link from 'next/link';
+import { resetPassword } from '@/lib/api';
 
 export default function NewPasswordPage() {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const token = searchParams.get('token');
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setIsLoading(true);
+    setError('');
 
     try {
+      if (!token) {
+        throw new Error('Invalid reset token');
+      }
+
       if (newPassword !== confirmPassword) {
-        console.error('Passwords do not match');
-        setIsLoading(false);
+        setError('Passwords do not match');
         return;
       }
 
-      console.log('Password changed successfully');
-
+      await resetPassword(token, newPassword);
       router.push('/auth/reset/password-changed');
     } catch (error) {
-      console.error('Password change error:', error);
+      if (error instanceof Error) {
+        setError(error.message);
+      } else {
+        setError('Failed to reset password');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -80,6 +91,9 @@ export default function NewPasswordPage() {
               className="rounded-xl p-6"
             />
           </div>
+          {error && (
+            <p className="text-sm text-red-500 pl-3">{error}</p>
+          )}
         </div>
         <Button
           type="submit"
@@ -88,7 +102,8 @@ export default function NewPasswordPage() {
             isLoading ||
             !newPassword ||
             !confirmPassword ||
-            newPassword !== confirmPassword
+            newPassword !== confirmPassword ||
+            !token
           }
         >
           {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}

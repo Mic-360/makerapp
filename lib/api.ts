@@ -191,19 +191,21 @@ export async function loginUser(email: string, password: string): Promise<LoginR
 
 export async function verifyEmailOrPhone(identifier: string) {
     try {
+        let queryParam = '';
         if (identifier.includes('@')) {
-            // For email verification
-            const response = await fetch(`${BASE_URL}/api/users/by-email/${identifier}`);
-            return { email: identifier, isValid: response.ok };
+            queryParam = `email=${encodeURIComponent(identifier)}`;
         } else {
-            // For phone number verification
-            const response = await fetch(`${BASE_URL}/api/users/by-number/${identifier}`);
-            if (response.ok) {
-                const data = await response.json();
-                return { email: data.email, isValid: true };
-            }
+            queryParam = `number=${encodeURIComponent(identifier)}`;
+        }
+
+        const response = await fetch(`${BASE_URL}/api/users/by-contact?${queryParam}`);
+        const data = await response.json();
+
+        if (!response.ok) {
             return { email: '', isValid: false };
         }
+
+        return { email: data.email, isValid: true };
     } catch (error) {
         console.error('Verification error:', error);
         return { email: '', isValid: false };
@@ -226,5 +228,55 @@ export async function reauthorizeUser(token: string) {
     } catch (error) {
         console.error('Reauth error:', error);
         throw error;
+    }
+}
+
+export async function forgotPassword(email: string) {
+    try {
+        const response = await fetch(`${BASE_URL}/api/users/forgot-password`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ email }),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.message || 'Failed to process forgot password request');
+        }
+
+        return data;
+    } catch (error) {
+        if (error instanceof Error) {
+            throw error;
+        }
+        throw new Error('Failed to process forgot password request');
+    }
+}
+
+export async function resetPassword(token: string, newPassword: string) {
+    try {
+        const response = await fetch(`${BASE_URL}/api/users/reset-password`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ token, newPassword }),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.message || 'Failed to reset password');
+        }
+
+        return data;
+    } catch (error) {
+        if (error instanceof Error) {
+            throw error;
+        }
+        throw new Error('Failed to reset password');
     }
 }
