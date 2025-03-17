@@ -9,9 +9,24 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { Separator } from '@/components/ui/separator';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
+import type { Event } from '@/lib/api';
 import { sortOptions } from '@/lib/constants';
 import { useCityDataStore } from '@/lib/store';
-import { ArrowUpDown, Calendar, SlidersHorizontal, Star } from 'lucide-react';
+import { formatPrice } from '@/lib/utils';
+import {
+  ArrowUpDown,
+  Calendar,
+  Clock,
+  MapPin,
+  SlidersHorizontal,
+  Users,
+} from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useState } from 'react';
@@ -98,66 +113,137 @@ export default function Event() {
                 </p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-min">
-                {events.map((event) => (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {events.map((event: Event) => (
                   <div
                     key={event.id}
-                    className="border rounded-xl overflow-hidden hover:shadow-xl shadow-inner h-fit"
+                    className="border rounded-xl overflow-hidden hover:shadow-xl transition-shadow duration-300 h-fit bg-white"
                   >
-                    <Image
-                      src={event.imagelink || '/placeholder.svg'}
-                      alt={event.name}
-                      width={400}
-                      height={600}
-                      className="w-full object-cover rounded-xl"
-                    />
+                    <div className="relative aspect-video">
+                      <Image
+                        src={event.imageLinks?.[0] || '/placeholder-2.png'}
+                        alt={event.name}
+                        fill
+                        className="object-cover"
+                      />
+                      {event.status === 'inactive' && (
+                        <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                          <span className="text-white text-lg font-semibold">
+                            Event Ended
+                          </span>
+                        </div>
+                      )}
+                    </div>
                     <div className="p-4">
-                      <div className="flex justify-between w-full">
+                      <div className="flex justify-between items-start w-full mb-2">
                         <div>
-                          <h3 className="font-semibold text-lg">
+                          <h3 className="font-semibold text-lg line-clamp-2">
                             {event.name}
                           </h3>
-                          <p className="text-xs text-gray-600">
+                          <p className="text-xs text-gray-600 mt-1">
+                            {event.category}
+                          </p>
+                        </div>
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger>
+                              <div className="text-right">
+                                <p className="text-sm font-semibold text-emerald-600">
+                                  {event.ticket.type === 'Free'
+                                    ? 'Free'
+                                    : formatPrice(event.ticket.price)}
+                                </p>
+                                <p className="text-xs text-gray-500">
+                                  {event.ticketLimit} spots left
+                                </p>
+                              </div>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>Ticket price & availability</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      </div>
+
+                      <div className="space-y-2">
+                        <div className="flex items-center text-gray-600">
+                          <Calendar className="w-4 h-4 mr-2" />
+                          <p className="text-sm">
+                            {event.date.start === event.date.end
+                              ? event.date.start
+                              : `${event.date.start} - ${event.date.end}`}
+                          </p>
+                        </div>
+                        <div className="flex items-center text-gray-600">
+                          <Clock className="w-4 h-4 mr-2" />
+                          <p className="text-sm">
+                            {event.time.start} - {event.time.end}
+                          </p>
+                        </div>
+                        <div className="flex items-center text-gray-600">
+                          <MapPin className="w-4 h-4 mr-2" />
+                          <p className="text-sm line-clamp-1">
                             {event.location}
                           </p>
                         </div>
-                        <div className="flex items-start justify-center gap-x-1.5">
-                          <span className="text-gray-600 font-semibold text-md">
-                            {event.rating ? event.rating.toFixed(1) : '4.5'}
-                          </span>
-                          <Star className="w-4 h-4 mt-[3px] text-orange-400 fill-current" />
-                        </div>
+                        {event.experts.length > 0 && (
+                          <div className="flex items-center text-gray-600">
+                            <Users className="w-4 h-4 mr-2" />
+                            <p className="text-sm">
+                              {event.experts
+                                .map((expert) => expert.name)
+                                .join(', ')}
+                            </p>
+                          </div>
+                        )}
                       </div>
-                      <div className="flex items-center gap-x-2 mt-2">
-                        <Calendar className="w-4 h-4 text-gray-500" />
-                        <p className="text-sm text-gray-600">
-                          {event.date.start} | {event.time.start}
-                        </p>
-                      </div>
-                      <p className="text-sm my-2">{event.category}</p>
-                      <div>
+
+                      <div className="mt-3">
                         <button
                           type="button"
                           onClick={() => toggleDescription(event.id)}
-                          className="underline text-xs"
+                          className="text-xs text-gray-500 hover:text-gray-700 underline"
                         >
                           {expandedDescriptions[event.id]
                             ? 'Show Less'
                             : 'Show More'}
                         </button>
                         {expandedDescriptions[event.id] && (
-                          <p className="text-sm mt-2">{event.description}</p>
+                          <div className="mt-2 space-y-2">
+                            <p className="text-sm text-gray-600">
+                              {event.description}
+                            </p>
+                            {event.agenda && (
+                              <div>
+                                <p className="text-sm font-medium mt-2">
+                                  Agenda:
+                                </p>
+                                <p className="text-sm text-gray-600">
+                                  {event.agenda}
+                                </p>
+                              </div>
+                            )}
+                          </div>
                         )}
                       </div>
-                      <div className="flex justify-end mt-4">
+
+                      <div className="mt-4 flex justify-between items-center">
+                        <p className="text-xs text-gray-500">
+                          {event.makerSpace}
+                        </p>
                         <Link
-                          href={`/home/${encodeURIComponent(event.makerspacename)}/book?eventId=${event.id}`}
+                          href={`/home/${encodeURIComponent(event.makerSpace)}/book?eventId=${event.id}`}
                         >
                           <Button
                             variant="default"
-                            className="rounded-lg px-6 hover:bg-green-500 hover:text-black"
+                            className="rounded-lg px-6 hover:bg-emerald-600"
+                            disabled={event.status === 'inactive'}
                           >
-                            <span className="text-xs">REGISTER</span>
+                            <span className="text-xs">
+                              {event.status === 'inactive'
+                                ? 'ENDED'
+                                : 'REGISTER'}
+                            </span>
                           </Button>
                         </Link>
                       </div>
@@ -168,6 +254,7 @@ export default function Event() {
             )}
           </div>
         </div>
+
         <div className="text-center mt-8">
           <Button variant="link" className="text-lg">
             View More →

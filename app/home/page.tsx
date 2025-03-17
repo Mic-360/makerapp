@@ -4,13 +4,49 @@ import CategoryScroll from '@/components/category-scroll';
 import Footer from '@/components/footer';
 import TopBar from '@/components/top-bar';
 import { Button } from '@/components/ui/button';
+import {
+  fetchEventsByMakerspaces,
+  fetchMachinesByMakerspaces,
+  fetchMakerspaces,
+} from '@/lib/api';
+import { useCityDataStore, useCityStore } from '@/lib/store';
 import Image from 'next/image';
-import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useCallback, useEffect, useState } from 'react';
 import Event from './events';
 import Machine from './machine';
 
 export default function Page() {
   const [activeSegment, setActiveSegment] = useState('machines');
+  const router = useRouter();
+  const { selectedCity } = useCityStore();
+  const { setMachines, setEvents } = useCityDataStore();
+
+  // Using useCallback to memoize the fetchData function
+  const fetchData = useCallback(async () => {
+    if (selectedCity === 'Location') {
+      return;
+    }
+
+    try {
+      const makerspaces = await fetchMakerspaces(selectedCity);
+
+      if (activeSegment === 'machines') {
+        const machines = await fetchMachinesByMakerspaces(makerspaces);
+        setMachines(machines);
+      } else {
+        const events = await fetchEventsByMakerspaces(makerspaces);
+        setEvents(events);
+      }
+    } catch (error) {
+      console.error('Failed to fetch data:', error);
+    }
+  }, [selectedCity, activeSegment, setMachines, setEvents]);
+
+  // Fetch data when component mounts or city/segment changes
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   return (
     <div>
@@ -38,7 +74,7 @@ export default function Page() {
           <div className="pointer-events-none absolute inset-x-0 top-0 h-1/3 bg-gradient-to-b from-black/40 dark:from-background"></div>
           <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/40 dark:from-background"></div>
         </div>
-        <section className="container mx-auto px-4 sm:px-6 lg:px-8 my-8">
+        <section className="container mx-auto px-4 sm:px-6 lg:px-8 my-6">
           <h2 className="font-semibold text-2xl capitalize">
             Explore {activeSegment}
           </h2>

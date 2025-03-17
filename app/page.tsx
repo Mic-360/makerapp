@@ -2,7 +2,11 @@
 
 import TopBar from '@/components/top-bar';
 import { Button } from '@/components/ui/button';
-import { fetchEventsByLocation, fetchMachinesByLocation } from '@/lib/api';
+import {
+  fetchEventsByMakerspaces,
+  fetchMachinesByMakerspaces,
+  fetchMakerspaces,
+} from '@/lib/api';
 import { cities } from '@/lib/constants';
 import { useCityDataStore, useCityStore } from '@/lib/store';
 import { X } from 'lucide-react';
@@ -27,9 +31,13 @@ export default function Home() {
     if (selectedCity === 'Location') return;
 
     try {
+      // First fetch makerspaces for the selected city
+      const makerspaces = await fetchMakerspaces(selectedCity);
+
+      // Then fetch both machines and events for those makerspaces
       const [machines, events] = await Promise.all([
-        fetchMachinesByLocation(selectedCity),
-        fetchEventsByLocation(selectedCity),
+        fetchMachinesByMakerspaces(makerspaces),
+        fetchEventsByMakerspaces(makerspaces),
       ]);
 
       setMachines(machines);

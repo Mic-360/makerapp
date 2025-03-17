@@ -19,7 +19,8 @@ export default function CategoryScroll({ activeSegment }: CategoryScrollProps) {
 
   useEffect(() => {
     if (activeSegment === 'machines') {
-      const allCategories = machines.flatMap((machine) => machine.categories);
+      // const allCategories = machines.flatMap((machine) => machine.categories);
+      const allCategories = machines.map((machine) => machine.category);
       const uniqueCategories = Array.from(new Set<string>(allCategories));
       setCategories(uniqueCategories);
     } else {
@@ -64,7 +65,7 @@ export default function CategoryScroll({ activeSegment }: CategoryScrollProps) {
   };
 
   return (
-    <div className="relative max-w-full mb-8">
+    <div className="relative max-w-full mt-2">
       {showLeftButton && (
         <div className="absolute left-0 top-0 bottom-0 w-16 bg-gradient-to-r from-white to-transparent z-10">
           <Button
@@ -79,7 +80,7 @@ export default function CategoryScroll({ activeSegment }: CategoryScrollProps) {
       )}
       <div
         ref={scrollRef}
-        className="flex space-x-4 overflow-x-auto scrollbar-hide py-4"
+        className="flex space-x-4 overflow-x-auto scrollbar-hide"
         onScroll={checkScroll}
       >
         {categories.map((category, index) => (

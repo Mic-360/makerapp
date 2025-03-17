@@ -9,9 +9,19 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { Separator } from '@/components/ui/separator';
+import type { Machine } from '@/lib/api';
 import { sortOptions } from '@/lib/constants';
 import { useCategoryStore, useCityDataStore } from '@/lib/store';
-import { ArrowUpDown, SlidersHorizontal, Star } from 'lucide-react';
+import { formatPrice } from '@/lib/utils';
+import {
+  ArrowUpDown,
+  Clock,
+  Info,
+  MapPin,
+  SlidersHorizontal,
+  Star,
+  Users,
+} from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
@@ -34,13 +44,8 @@ export default function Machine() {
   // Filter machines based on selected category
   const filteredMachines = useMemo(() => {
     if (!selectedCategory) return machines;
-
-    return machines.filter(
-      (machine) =>
-        machine.categories &&
-        machine.categories.some((category: string) =>
-          category.toLowerCase().includes(selectedCategory.toLowerCase())
-        )
+    return machines.filter((machine) =>
+      machine.category.toLowerCase().includes(selectedCategory.toLowerCase())
     );
   }, [machines, selectedCategory]);
 
@@ -113,65 +118,126 @@ export default function Machine() {
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-min">
-                {filteredMachines.map((machine) => (
+                {filteredMachines.map((machine: Machine) => (
                   <div
                     key={machine.id}
-                    className="border rounded-xl overflow-hidden hover:shadow-xl shadow-inner h-fit"
+                    className="border rounded-xl overflow-hidden hover:shadow-xl shadow-inner h-fit bg-white"
                   >
-                    <Image
-                      src={machine.imagelink || '/placeholder.svg'}
-                      alt={machine.name}
-                      width={400}
-                      height={600}
-                      className="w-full object-cover rounded-xl"
-                    />
+                    <div className="relative aspect-video">
+                      <Image
+                        src={machine.imageLinks?.[0] || '/assetlist.png'}
+                        alt={`${machine.brand} ${machine.model}`}
+                        fill
+                        className="object-cover"
+                      />
+                      {machine.status === 'inactive' && (
+                        <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                          <span className="text-white text-lg font-semibold">
+                            Currently Unavailable
+                          </span>
+                        </div>
+                      )}
+                    </div>
                     <div className="p-4">
-                      <div className="flex justify-between w-full">
+                      <div className="flex justify-between w-full mb-2">
                         <div>
-                          <h3 className="font-semibold text-lg">
-                            {machine.name}
+                          <h3 className="font-semibold text-lg line-clamp-1">
+                            {machine.brand} {machine.model}
                           </h3>
-                          <p className="text-xs text-gray-600">
-                            {machine.makerspacename}, {machine.location}
+                          <p className="text-xs text-gray-600 mt-1">
+                            {machine.category}
                           </p>
                         </div>
-                        <div className="flex items-start justify-center gap-x-1.5">
-                          <span className="text-gray-600 font-semibold text-md">
-                            {machine.rating ? machine.rating.toFixed(1) : '4.5'}
-                          </span>
-                          <Star className="w-4 h-4 mt-[3px] text-orange-400 fill-current" />
-                        </div>
+                        {machine.rating && (
+                          <div className="flex items-start justify-center gap-x-1.5">
+                            <span className="text-gray-600 font-semibold text-md">
+                              {machine.rating}
+                            </span>
+                            <Star className="w-4 h-4 mt-[3px] text-orange-400 fill-current" />
+                          </div>
+                        )}
                       </div>
-                      <p className="text-sm my-2">
-                        {machine.categories
-                          ? machine.categories.join(', ')
-                          : machine.category}
-                      </p>
+
+                      <div className="space-y-2 mb-3">
+                        <div className="flex items-center text-gray-600">
+                          <Clock className="w-4 h-4 mr-2" />
+                          <p className="text-sm">
+                            {machine.time.start} - {machine.time.end}
+                          </p>
+                        </div>
+                        <div className="flex items-center text-gray-600">
+                          <MapPin className="w-4 h-4 mr-2" />
+                          <p className="text-sm line-clamp-1">
+                            {machine.location}
+                          </p>
+                        </div>
+                        {machine.inCharge && machine.inCharge.length > 0 && (
+                          <div className="flex items-center text-gray-600">
+                            <Users className="w-4 h-4 mr-2" />
+                            <p className="text-sm">
+                              {machine.inCharge
+                                .map((person) => person.name)
+                                .join(', ')}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+
                       <div>
                         <button
                           type="button"
                           onClick={() => toggleDescription(machine.id)}
-                          className="underline text-xs"
+                          className="text-xs text-gray-500 hover:text-gray-700 underline"
                         >
                           {expandedDescriptions[machine.id]
                             ? 'Show Less'
                             : 'Show More'}
                         </button>
                         {expandedDescriptions[machine.id] && (
-                          <p className="text-sm mt-2">
-                            {machine.description || machine.fullDescription}
-                          </p>
+                          <div className="mt-2 space-y-2">
+                            <p className="text-sm text-gray-600">
+                              {machine.description}
+                            </p>
+                            {machine.instruction && (
+                              <div className="flex items-start gap-2 mt-2 p-2 bg-gray-50 rounded-lg">
+                                <Info className="w-4 h-4 mt-0.5 text-blue-500" />
+                                <div>
+                                  <p className="text-sm font-medium">
+                                    Instructions:
+                                  </p>
+                                  <p className="text-sm text-gray-600">
+                                    {machine.instruction}
+                                  </p>
+                                </div>
+                              </div>
+                            )}
+                          </div>
                         )}
                       </div>
-                      <div className="flex justify-end my-2 items-end">
+
+                      <div className="flex justify-between items-center mt-4">
+                        <div>
+                          <p className="text-xs text-gray-500">
+                            {machine.makerSpace}
+                          </p>
+                          <p className="text-emerald-600 font-semibold">
+                            {formatPrice(machine.price)}
+                            <span className="text-xs text-gray-500">/hr</span>
+                          </p>
+                        </div>
                         <Link
-                          href={`/home/${encodeURIComponent(machine.makerspacename)}/book?machineId=${machine.id}`}
+                          href={`/home/${encodeURIComponent(machine.makerSpace)}/book?machineId=${machine.id}`}
                         >
                           <Button
                             variant="default"
-                            className="rounded-lg px-6 hover:bg-green-500 hover:text-black"
+                            className="rounded-lg px-6 hover:bg-emerald-600"
+                            disabled={machine.status === 'inactive'}
                           >
-                            <span className="text-xs">BOOK NOW</span>
+                            <span className="text-xs">
+                              {machine.status === 'inactive'
+                                ? 'UNAVAILABLE'
+                                : 'BOOK NOW'}
+                            </span>
                           </Button>
                         </Link>
                       </div>

@@ -11,11 +11,9 @@ const loadCityState = () => {
   if (typeof window === 'undefined') return { selectedCity: 'Location' };
   try {
     const city = localStorage.getItem('selectedCity') || 'Location';
-    const machines = JSON.parse(localStorage.getItem('cityMachines') || '[]');
-    const events = JSON.parse(localStorage.getItem('cityEvents') || '[]');
-    return { selectedCity: city, machines, events };
+    return { selectedCity: city };
   } catch (error) {
-    return { selectedCity: 'Location', machines: [], events: [] };
+    return { selectedCity: 'Location' };
   }
 };
 
@@ -129,20 +127,10 @@ interface CityDataState {
 }
 
 export const useCityDataStore = create<CityDataState>((set) => ({
-  machines: loadCityState().machines,
-  events: loadCityState().events,
-  setMachines: (machines) => {
-    set({ machines });
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('cityMachines', JSON.stringify(machines));
-    }
-  },
-  setEvents: (events) => {
-    set({ events });
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('cityEvents', JSON.stringify(events));
-    }
-  },
+  machines: [],
+  events: [],
+  setMachines: (machines) => set({ machines }),
+  setEvents: (events) => set({ events }),
 }));
 
 interface User {

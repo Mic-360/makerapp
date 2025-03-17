@@ -2,24 +2,54 @@ import { MakerSpace } from "./constants";
 
 export interface Machine {
     id: string;
-    name: string;
-    imagelink: string;
-    makerspacename: string;
-    location: string;
-    rating: number;
-    categories: string[];
-    description: string;
+    category: string;
+    brand: string;
+    model: string;
     price: number;
     time: {
         start: string;
         end: string;
     };
-    status: string;
+    imageLinks?: string[];
+    description: string;
+    location: string;
+    instruction?: string | null;
+    inCharge?: Array<{
+        name: string;
+        number: string;
+    }>;
+    makerSpace: string;
+    status?: 'active' | 'inactive';
+    rating?: number;
 }
 
 export interface Event {
+    id: string;
+    name: string;
     category: string;
-    // Add other event properties as needed
+    date: {
+        start: string;
+        end: string;
+    };
+    time: {
+        start: string;
+        end: string;
+    };
+    ticket: {
+        type: string;
+        price: number;
+    };
+    ticketLimit: number;
+    imageLinks?: string[];
+    description: string;
+    agenda?: string;
+    location: string;
+    experts: Array<{
+        name: string;
+        number: string;
+    }>;
+    makerSpace: string;
+    status?: 'active' | 'inactive';
 }
 
 const BASE_URL = 'http://localhost:5000';
@@ -112,6 +142,57 @@ export async function fetchMakerspaceByName(name: string) {
     } catch (error) {
         console.error('Error fetching makerspace:', error);
         return null;
+    }
+}
+
+export async function fetchMakerspaces(city: string): Promise<string[]> {
+    try {
+        const response = await fetch(`${BASE_URL}/api/makerspace/by-city/${encodeURIComponent(city)}`);
+        if (!response.ok) {
+            throw new Error('Failed to fetch makerspaces');
+        }
+        return await response.json();
+    } catch (error) {
+        console.error('Error fetching makerspaces:', error);
+        return [];
+    }
+}
+
+export async function fetchMachinesByMakerspaces(makerSpaces: string[]) {
+    try {
+        const response = await fetch(`${BASE_URL}/api/machines/by-makerspaces`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ makerSpaces }),
+        });
+        if (!response.ok) {
+            throw new Error('Failed to fetch machines');
+        }
+        return await response.json();
+    } catch (error) {
+        console.error('Error fetching machines:', error);
+        return [];
+    }
+}
+
+export async function fetchEventsByMakerspaces(makerSpaces: string[]) {
+    try {
+        const response = await fetch(`${BASE_URL}/api/events/by-makerspaces`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ makerSpaces }),
+        });
+        if (!response.ok) {
+            throw new Error('Failed to fetch events');
+        }
+        return await response.json();
+    } catch (error) {
+        console.error('Error fetching events:', error);
+        return [];
     }
 }
 

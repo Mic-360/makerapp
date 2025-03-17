@@ -1,7 +1,7 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { fetchEventsByLocation, fetchMachinesByLocation } from '@/lib/api';
+import { fetchMachinesByMakerspaces, fetchMakerspaces } from '@/lib/api';
 import { cities } from '@/lib/constants';
 import {
   useAuthenticationStore,
@@ -48,14 +48,18 @@ export default function TopBar({
     if (city === 'Location') return;
 
     try {
-      const [machines, events] = await Promise.all([
-        fetchMachinesByLocation(city),
-        fetchEventsByLocation(city),
-      ]);
+      // First fetch makerspaces for the selected city
+      const makerspaces = await fetchMakerspaces(city);
 
+      // Then fetch both machines and events for those makerspaces
+      const machines = await fetchMachinesByMakerspaces(makerspaces);
       setMachines(machines);
-      setEvents(events);
-      router.push('/home');
+
+      if (window.location.pathname === '/home') {
+        router.refresh();
+      } else {
+        router.push('/home');
+      }
     } catch (error) {
       console.error('Failed to fetch city data:', error);
     }
