@@ -21,6 +21,7 @@ import { useCityDataStore } from '@/lib/store';
 import { formatPrice } from '@/lib/utils';
 import {
   ArrowUpDown,
+  Bookmark,
   Calendar,
   Clock,
   MapPin,
@@ -133,6 +134,10 @@ export default function Event() {
                           </span>
                         </div>
                       )}
+                      <span className="absolute text-red-400 text-sm font-semibold bg-white h-fit w-fit rounded-lg top-4 left-4 px-4 py-1">
+                        {event.ticket.type}
+                      </span>
+                      <Bookmark className="h-6 w-6 absolute text-gray-100 top-4 right-4 hover:fill-white transition-fill duration-300" />
                     </div>
                     <div className="p-4">
                       <div className="flex justify-between items-start w-full mb-2">
@@ -141,96 +146,51 @@ export default function Event() {
                             {event.name}
                           </h3>
                           <p className="text-xs text-gray-600 mt-1">
-                            {event.category}
+                            {event.makerSpace}
                           </p>
                         </div>
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger>
-                              <div className="text-right">
-                                <p className="text-sm font-semibold text-emerald-600">
-                                  {event.ticket.type === 'Free'
-                                    ? 'Free'
-                                    : formatPrice(event.ticket.price)}
-                                </p>
-                                <p className="text-xs text-gray-500">
-                                  {event.ticketLimit} spots left
-                                </p>
-                              </div>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>Ticket price & availability</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                      </div>
-
-                      <div className="space-y-2">
-                        <div className="flex items-center text-gray-600">
-                          <Calendar className="w-4 h-4 mr-2" />
-                          <p className="text-sm">
-                            {event.date.start === event.date.end
-                              ? event.date.start
-                              : `${event.date.start} - ${event.date.end}`}
+                        <div className="text-right">
+                          <p className="text-lg font-semibold">
+                            {event.ticket.type === 'Free'
+                              ? 'Free'
+                              : formatPrice(event.ticket.price)}
                           </p>
                         </div>
-                        <div className="flex items-center text-gray-600">
-                          <Clock className="w-4 h-4 mr-2" />
-                          <p className="text-sm">
-                            {event.time.start} - {event.time.end}
-                          </p>
-                        </div>
-                        <div className="flex items-center text-gray-600">
-                          <MapPin className="w-4 h-4 mr-2" />
-                          <p className="text-sm line-clamp-1">
-                            {event.location}
-                          </p>
-                        </div>
-                        {event.experts.length > 0 && (
-                          <div className="flex items-center text-gray-600">
-                            <Users className="w-4 h-4 mr-2" />
-                            <p className="text-sm">
-                              {event.experts
-                                .map((expert) => expert.name)
-                                .join(', ')}
-                            </p>
-                          </div>
-                        )}
-                      </div>
-
-                      <div className="mt-3">
-                        <button
-                          type="button"
-                          onClick={() => toggleDescription(event.id)}
-                          className="text-xs text-gray-500 hover:text-gray-700 underline"
-                        >
-                          {expandedDescriptions[event.id]
-                            ? 'Show Less'
-                            : 'Show More'}
-                        </button>
-                        {expandedDescriptions[event.id] && (
-                          <div className="mt-2 space-y-2">
-                            <p className="text-sm text-gray-600">
-                              {event.description}
-                            </p>
-                            {event.agenda && (
-                              <div>
-                                <p className="text-sm font-medium mt-2">
-                                  Agenda:
-                                </p>
-                                <p className="text-sm text-gray-600">
-                                  {event.agenda}
-                                </p>
-                              </div>
-                            )}
-                          </div>
-                        )}
                       </div>
 
                       <div className="mt-4 flex justify-between items-center">
-                        <p className="text-xs text-gray-500">
-                          {event.makerSpace}
-                        </p>
+                        <div>
+                          <p className="text-sm font-bold">
+                            {new Date(event.date.start)
+                              .toLocaleDateString('en-GB', {
+                                day: '2-digit',
+                                month: 'short',
+                              })
+                              .replace(/ /g, ' ')}{' '}
+                            -{' '}
+                            {new Date(event.date.end)
+                              .toLocaleDateString('en-GB', {
+                                day: '2-digit',
+                                month: 'short',
+                              })
+                              .replace(/ /g, ' ')}
+                          </p>
+                          <button
+                            type="button"
+                            onClick={() => toggleDescription(event.id)}
+                            className="text-xs text-gray-500 hover:text-gray-700 underline"
+                          >
+                            {expandedDescriptions[event.id]
+                              ? 'Show Less'
+                              : 'Show More'}
+                          </button>
+                          {expandedDescriptions[event.id] && (
+                            <p className="text-sm text-gray-600 pr-2">
+                              {event.description}
+                            </p>
+                          )}
+                        </div>
+
                         <Link
                           href={`/home/${encodeURIComponent(event.makerSpace)}/book?eventId=${event.id}`}
                         >

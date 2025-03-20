@@ -142,10 +142,10 @@ export default function Machine() {
                       <div className="flex justify-between w-full mb-2">
                         <div>
                           <h3 className="font-semibold text-lg line-clamp-1">
-                            {machine.brand} {machine.model}
+                            {machine.brand}, {machine.model}
                           </h3>
                           <p className="text-xs text-gray-600 mt-1">
-                            {machine.category}
+                            {machine.makerSpace}
                           </p>
                         </div>
                         {machine.rating && (
@@ -158,72 +158,27 @@ export default function Machine() {
                         )}
                       </div>
 
-                      <div className="space-y-2 mb-3">
-                        <div className="flex items-center text-gray-600">
-                          <Clock className="w-4 h-4 mr-2" />
-                          <p className="text-sm">
-                            {machine.time.start} - {machine.time.end}
-                          </p>
-                        </div>
-                        <div className="flex items-center text-gray-600">
-                          <MapPin className="w-4 h-4 mr-2" />
-                          <p className="text-sm line-clamp-1">
-                            {machine.location}
-                          </p>
-                        </div>
-                        {machine.inCharge && machine.inCharge.length > 0 && (
-                          <div className="flex items-center text-gray-600">
-                            <Users className="w-4 h-4 mr-2" />
-                            <p className="text-sm">
-                              {machine.inCharge
-                                .map((person) => person.name)
-                                .join(', ')}
-                            </p>
-                          </div>
-                        )}
-                      </div>
-
-                      <div>
-                        <button
-                          type="button"
-                          onClick={() => toggleDescription(machine.id)}
-                          className="text-xs text-gray-500 hover:text-gray-700 underline"
-                        >
-                          {expandedDescriptions[machine.id]
-                            ? 'Show Less'
-                            : 'Show More'}
-                        </button>
-                        {expandedDescriptions[machine.id] && (
-                          <div className="mt-2 space-y-2">
-                            <p className="text-sm text-gray-600">
-                              {machine.description}
-                            </p>
-                            {machine.instruction && (
-                              <div className="flex items-start gap-2 mt-2 p-2 bg-gray-50 rounded-lg">
-                                <Info className="w-4 h-4 mt-0.5 text-blue-500" />
-                                <div>
-                                  <p className="text-sm font-medium">
-                                    Instructions:
-                                  </p>
-                                  <p className="text-sm text-gray-600">
-                                    {machine.instruction}
-                                  </p>
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        )}
-                      </div>
-
                       <div className="flex justify-between items-center mt-4">
                         <div>
-                          <p className="text-xs text-gray-500">
-                            {machine.makerSpace}
+                          <p className="text-xs text-gray-600 mt-1">
+                            {machine.category}
                           </p>
-                          <p className="text-emerald-600 font-semibold">
-                            {formatPrice(machine.price)}
-                            <span className="text-xs text-gray-500">/hr</span>
-                          </p>
+                          <button
+                            type="button"
+                            onClick={() => toggleDescription(machine.id)}
+                            className="text-xs text-gray-500 hover:text-gray-700 underline"
+                          >
+                            {expandedDescriptions[machine.id]
+                              ? 'Show Less'
+                              : 'Show More'}
+                          </button>
+                          {expandedDescriptions[machine.id] && (
+                            <div className="mt-2 space-y-2">
+                              <p className="text-sm text-gray-600">
+                                {machine.description}
+                              </p>
+                            </div>
+                          )}
                         </div>
                         <Link
                           href={`/home/${encodeURIComponent(machine.makerSpace)}/book?machineId=${machine.id}`}

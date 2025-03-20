@@ -16,14 +16,15 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { verifyMakerspaceToken } from '@/lib/api';
 import { Check, Info, Plus } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { ChangeEvent, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { ChangeEvent, useEffect, useState } from 'react';
 
 interface FormData {
-  type: 'independent' | 'institution' | null;
+  type: 'independent' | 'institution' | '';
   purposes: ('rent' | 'membership' | 'events')[];
   spaceDetails: {
     name: string;
@@ -31,22 +32,17 @@ interface FormData {
     contact: string;
     inchargeName: string;
     website: string;
-    timings: {
-      [key: string]: {
-        from: string;
-        to: string;
-      };
-    };
     daysOpen: string[];
+    timings: Record<string, { from: string; to: string }>;
   };
   address: {
     city: string;
     state: string;
     address: string;
     zipCode: string;
-    country: string;
-    orgName?: string;
+    orgName: string;
     orgEmail?: string;
+    country: string;
   };
   media: {
     images: File[];
@@ -55,47 +51,16 @@ interface FormData {
   };
 }
 
-const countryCodes = [
-  { code: '+91', country: 'India' },
-  { code: '+1', country: 'USA' },
-  { code: '+44', country: 'UK' },
-  { code: '+81', country: 'Japan' },
-  { code: '+86', country: 'China' },
-  { code: '+61', country: 'Australia' },
-  { code: '+49', country: 'Germany' },
-  { code: '+33', country: 'France' },
-  { code: '+7', country: 'Russia' },
-  { code: '+39', country: 'Italy' },
-];
-
-const countries = countryCodes.map((country) => country.country);
-
-const convertTo12Hour = (hour24: string): string => {
-  const [hour] = hour24.split(':');
-  const hourNum = parseInt(hour);
-  if (hourNum === 0) return '12:00 AM';
-  if (hourNum === 12) return '12:00 PM';
-  if (hourNum > 12) return `${hourNum - 12}:00 PM`;
-  return `${hourNum}:00 AM`;
-};
-
-const convertTo24Hour = (hour12: string): string => {
-  const [time, period] = hour12.split(' ');
-  const [hour] = time.split(':');
-  const hourNum = parseInt(hour);
-  if (period === 'AM') {
-    if (hourNum === 12) return '00:00';
-    return `${hourNum.toString().padStart(2, '0')}:00`;
-  } else {
-    if (hourNum === 12) return '12:00';
-    return `${(hourNum + 12).toString()}:00`;
-  }
-};
+const steps = [1, 2, 3, 4, 5];
 
 export default function SpaceSubmissionFlow() {
+  const router = useRouter();
   const [currentStep, setCurrentStep] = useState(1);
+  const [loading, setLoading] = useState(true);
+  const [verifiedEmail, setVerifiedEmail] = useState<string | null>(null);
+  const [selectedCountryCode, setSelectedCountryCode] = useState('+91');
   const [formData, setFormData] = useState<FormData>({
-    type: null,
+    type: '',
     purposes: [],
     spaceDetails: {
       name: '',
@@ -103,28 +68,106 @@ export default function SpaceSubmissionFlow() {
       contact: '',
       inchargeName: '',
       website: '',
-      timings: {},
       daysOpen: [],
+      timings: {},
     },
     address: {
       city: '',
       state: '',
       address: '',
       zipCode: '',
-      country: '',
       orgName: '',
-      orgEmail: '',
+      country: '',
     },
     media: {
       images: [],
-      spaceLogo: undefined,
-      orgLogo: undefined,
     },
   });
-  const urlPathname = usePathname();
-  const [selectedCountryCode, setSelectedCountryCode] = useState('+91');
 
-  const steps = [1, 2, 3, 4, 5];
+  useEffect(() => {
+    const verifyToken = async () => {
+      try {
+        const token = window.location.pathname.split('/').pop();
+        if (!token) {
+          router.push('/vendor-space');
+          return;
+        }
+
+        const response = await verifyMakerspaceToken(token);
+        if (!response.isValid) {
+          router.push('/vendor-space');
+          return;
+        }
+
+        if (response.email) {
+          setVerifiedEmail(response.email);
+          setFormData((prev) => ({
+            ...prev,
+            spaceDetails: {
+              ...prev.spaceDetails,
+              email: response.email || '',
+            },
+          }));
+        }
+
+        setLoading(false);
+      } catch (error) {
+        console.error('Error verifying token:', error);
+        router.push('/vendor-space');
+      }
+    };
+
+    verifyToken();
+  }, [router]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900"></div>
+      </div>
+    );
+  }
+
+  const validateEmail = (email: string) => {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  };
+
+  const validateContact = (contact: string) => {
+    return /^\d{10}$/.test(contact);
+  };
+
+  const convertTo24Hour = (time12h: string) => {
+    const [time, modifier] = time12h.split(' ');
+    const [hours, minutes] = time.split(':');
+    let convertedHours = hours;
+
+    if (hours === '12') {
+      convertedHours = '00';
+    }
+
+    if (modifier === 'PM') {
+      convertedHours = String(parseInt(convertedHours, 10) + 12);
+    }
+
+    return `${convertedHours}:${minutes}`;
+  };
+
+  const convertTo12Hour = (time24h: string) => {
+    if (!time24h) return '';
+    const [hours, minutes] = time24h.split(':');
+    const hour = parseInt(hours, 10);
+
+    if (hour === 0) {
+      return `12:${minutes} AM`;
+    } else if (hour < 12) {
+      return `${hour}:${minutes} AM`;
+    } else if (hour === 12) {
+      return `12:${minutes} PM`;
+    } else {
+      return `${hour - 12}:${minutes} PM`;
+    }
+  };
+
   const days = [
     'Monday',
     'Tuesday',
@@ -135,9 +178,15 @@ export default function SpaceSubmissionFlow() {
     'Sunday',
   ];
 
+  const countryCodes = [
+    { country: 'India', code: '+91' },
+    { country: 'United States', code: '+1' },
+    { country: 'United Kingdom', code: '+44' },
+  ];
+
   const handleNext = () => {
     setCurrentStep((prev) => Math.min(prev + 1, 5));
-    const uniqueId = urlPathname.split('/');
+    const uniqueId = window.location.pathname.split('/');
     if (currentStep === 5 && uniqueId[2]) {
       window.location.href = `/vendor-space/${uniqueId[2]}/dashboard`;
     }
@@ -145,15 +194,6 @@ export default function SpaceSubmissionFlow() {
 
   const handleBack = () => {
     setCurrentStep((prev) => Math.max(prev - 1, 1));
-  };
-
-  const validateEmail = (email: string) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  };
-
-  const validateContact = (contact: string) => {
-    return contact.replace(/[^0-9]/g, '').length === 10;
   };
 
   const validateCase3 = () => {
@@ -1062,9 +1102,9 @@ export default function SpaceSubmissionFlow() {
                         <SelectValue placeholder="Select your country" />
                       </SelectTrigger>
                       <SelectContent>
-                        {countries.map((country) => (
-                          <SelectItem key={country} value={country}>
-                            {country}
+                        {countryCodes.map((country) => (
+                          <SelectItem key={country.code} value={country.code}>
+                            {country.code} ({country.country})
                           </SelectItem>
                         ))}
                       </SelectContent>

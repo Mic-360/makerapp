@@ -52,7 +52,50 @@ export interface Event {
     status?: 'active' | 'inactive';
 }
 
-const BASE_URL = 'http://localhost:5000';
+export interface Makerspace {
+    id: string;
+    type: string;
+    usage: string[];
+    name: string;
+    description: string;
+    email: string;
+    number: string;
+    inChargeName: string;
+    websiteLink: string;
+    timings: {
+        monday: string;
+        tuesday: string;
+        wednesday: string;
+        thursday: string;
+        friday: string;
+        saturday: string;
+        sunday: string;
+    };
+    city: string;
+    state: string;
+    address: string;
+    zipcode: string;
+    country: string;
+    organizationName: string;
+    organizationEmail: string;
+    imageLinks: string[];
+    logoImageLinks: string[];
+    googleMapLink: string;
+    howToReach: string[];
+    amenities: string[];
+    mentors: Array<{
+        name: string;
+        designation: string;
+        linkedin: string;
+        image: string;
+    }>;
+    instructions: string;
+    additionalInformation: string;
+    rating: number;
+    status: 'active' | 'inactive';
+}
+
+const BASE_URL = 'http://localhost:8080';
 
 export async function fetchMachines(): Promise<MakerSpace[]> {
     try {
@@ -359,5 +402,39 @@ export async function resetPassword(token: string, newPassword: string) {
             throw error;
         }
         throw new Error('Failed to reset password');
+    }
+}
+
+export interface VerifyTokenResponse {
+    isValid: boolean;
+    email?: string;
+    message: string;
+}
+
+export async function verifyMakerspaceToken(token: string): Promise<VerifyTokenResponse> {
+    try {
+        const response = await fetch(`${BASE_URL}/api/makerspace/verify/${token}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            return {
+                isValid: false,
+                message: data.message || 'Token verification failed'
+            };
+        }
+
+        return data;
+    } catch (error) {
+        console.error('Token verification error:', error);
+        return {
+            isValid: false,
+            message: 'Error verifying token'
+        };
     }
 }

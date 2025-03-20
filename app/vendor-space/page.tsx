@@ -31,7 +31,8 @@ const faqs = [
       'We offer 24/7 customer support through multiple channels including chat, email, and phone. Our team is always ready to assist you with any queries, ensuring you have a smooth experience with our services.',
   },
 ];
-export default function footer() {
+
+export default function Page() {
   return (
     <div className="min-h-screen flex flex-col">
       <TopBar button={false} theme="light" />
@@ -127,7 +128,7 @@ export default function footer() {
           </div>
         </section>
 
-        <section className="py-16 px-4 bg-gray-100">
+        <section className="py-16 px-4 bg-blue-600 text-white">
           <div className="max-w-6xl mx-auto">
             <div className="grid md:grid-cols-4 gap-6 items-center">
               <h2 className="text-5xl font-bold text-start col-span-2 pl-8">
@@ -185,8 +186,13 @@ export default function footer() {
                     'Provide insurance coverage for your makerspace and its users.',
                 },
               ].map((feature, index) => (
-                <div key={index} className="rounded-lg bg-white p-4 text-black">
-                  <h3 className="mb-2 font-semibold">{feature.title}</h3>
+                <div
+                  key={index}
+                  className="w-full h-44 flex flex-col justify-center rounded-xl bg-white p-4 hover:border-4 border-2 hover:border-green-400 text-black"
+                >
+                  <h3 className="mb-2 text-2xl font-semibold">
+                    {feature.title}
+                  </h3>
                   <p className="text-sm text-gray-600">{feature.description}</p>
                 </div>
               ))}
