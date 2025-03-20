@@ -44,7 +44,7 @@ export function Filters({
   const displayedBrands = showMore ? brands : brands.slice(0, 6);
 
   return (
-    <div className="-mt-12">
+    <div className="-mt-[3.2rem]">
       <div className="p-2 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <SlidersHorizontal className="h-5 w-5" />
@@ -59,7 +59,7 @@ export function Filters({
           <X className="h-4 w-4" />
         </Button>
       </div>
-      <div className="bg-white backdrop-blur-sm border rounded-xl">
+      <div className="bg-white backdrop-blur-sm border rounded-xl shadow-xl">
         <div className="rounded-t-xl bg-background">
           <div className=" overflow-y-auto scrollbar-hide">
             <div className="space-y-6 p-4">
