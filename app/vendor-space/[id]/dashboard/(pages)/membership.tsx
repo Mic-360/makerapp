@@ -119,42 +119,28 @@ export default function MembershipPage() {
             </TabsTrigger>
           </TabsList>
         </Tabs>
-        <div className="flex items-center gap-4">
-          <div className="text-orange-500 font-medium">Mon 5 Aug, 4:11 PM</div>
+        <div className="flex items-center justify-end gap-8">
+          <div className="text-orange-500 font-semibold text-lg">
+            Mon 5 Aug, 4:11 PM
+          </div>
           <div className="relative">
-            <select
-              aria-label="Select Timeframe"
-              className="appearance-none bg-white border border-gray-200 rounded-md px-4 py-1.5 pr-8 text-sm focus:outline-none"
-            >
-              <option>Monthly</option>
-              <option>Weekly</option>
-              <option>Daily</option>
-            </select>
-            <div className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
-              <svg
-                width="12"
-                height="12"
-                viewBox="0 0 12 12"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M2.5 4.5L6 8L9.5 4.5"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </div>
+            <Select defaultValue="monthly">
+              <SelectTrigger className="border-blue-800 text-blue-800 rounded-md w-[110px] text-sm">
+                <SelectValue placeholder="Monthly" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="monthly">Monthly</SelectItem>
+                <SelectItem value="weekly">Weekly</SelectItem>
+                <SelectItem value="daily">Daily</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
           <div className="flex flex-col items-center gap-1">
-            <Switch checked={statusOpen} onCheckedChange={setStatusOpen} />
-            <span
-              className={`text-xs ${statusOpen ? 'text-green-500' : 'text-red-500'} font-medium`}
-            >
-              Status: {statusOpen ? 'Open' : 'Closed'}
-            </span>
+            <Switch
+              checked={statusOpen}
+              onCheckedChange={setStatusOpen}
+              showStatus
+            />
           </div>
         </div>
       </div>

@@ -263,11 +263,13 @@ export default function MachinesPage() {
             </TabsTrigger>
           </TabsList>
         </Tabs>
-        <div className="flex items-center gap-4">
-          <div className="text-orange-500 font-medium">Mon 5 Aug, 4:11 PM</div>
+        <div className="flex items-center justify-end gap-8">
+          <div className="text-orange-500 font-semibold text-lg">
+            Mon 5 Aug, 4:11 PM
+          </div>
           <div className="relative">
             <Select defaultValue="monthly">
-              <SelectTrigger className="w-[100px] border-gray-200">
+              <SelectTrigger className="border-blue-800 text-blue-800 rounded-md w-[110px] text-sm">
                 <SelectValue placeholder="Monthly" />
               </SelectTrigger>
               <SelectContent>
@@ -278,16 +280,14 @@ export default function MachinesPage() {
             </Select>
           </div>
           <div className="flex flex-col items-center gap-1">
-            <Switch checked={statusOpen} onCheckedChange={setStatusOpen} />
-            <span
-              className={`text-xs ${statusOpen ? 'text-green-500' : 'text-red-500'} font-medium`}
-            >
-              Status: {statusOpen ? 'Open' : 'Closed'}
-            </span>
+            <Switch
+              checked={statusOpen}
+              onCheckedChange={setStatusOpen}
+              showStatus
+            />
           </div>
         </div>
       </div>
-
       {viewMode === 'manage' && (
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <div className="flex items-center mb-4 justify-between">
