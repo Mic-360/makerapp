@@ -1,45 +1,96 @@
 'use client';
 
-import * as React from 'react';
-import { Bell, Search, Star } from 'lucide-react';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Input } from '@/components/ui/input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Switch } from '@/components/ui/switch';
-import Link from 'next/link';
-import Image from 'next/image';
 import Footer from '@/components/footer';
-import { Separator } from '@/components/ui/separator';
-import DashboardPage from './(pages)/dashboard';
-import MachinesPage from './(pages)/machines';
-import EventsPage from './(pages)/events';
-import MembershipsPage from './(pages)/membership';
-import MySpacePage from './(pages)/my-space';
-import RevenuePage from './(pages)/revenue';
-import MessagesPage from './(pages)/messages';
-import {
-  Settings,
-  User,
-  HelpCircle,
-  Globe,
-  CreditCard,
-  LayoutDashboard,
-} from 'lucide-react';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import { Button } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
+import type { Makerspace } from '@/lib/api';
+import { useAuthenticationStore } from '@/lib/store';
+import {
+  Bell,
+  CreditCard,
+  Globe,
+  HelpCircle,
+  LayoutDashboard,
+  Settings,
+  Star,
+  User,
+} from 'lucide-react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { usePathname, useRouter } from 'next/navigation';
+import * as React from 'react';
+import DashboardPage from './(pages)/dashboard';
+import EventsPage from './(pages)/events';
+import MachinesPage from './(pages)/machines';
+import MembershipsPage from './(pages)/membership';
+import MessagesPage from './(pages)/messages';
+import MySpacePage from './(pages)/my-space';
+import RevenuePage from './(pages)/revenue';
 
 export default function Page() {
   const [activePage, setActivePage] = React.useState('My Space');
+  const [makerspace, setMakerspace] = React.useState<Makerspace | null>(null);
+  const [isLoading, setIsLoading] = React.useState(true);
+  const [openPopover, setOpenPopover] = React.useState<
+    'notifications' | 'profile' | null
+  >(null);
+
+  const pathname = usePathname();
+  const router = useRouter();
+  const { user, token, logout } = useAuthenticationStore();
+
+  React.useEffect(() => {
+    if (!user || !token) {
+      router.replace('/auth/login');
+      return;
+    }
+
+    const fetchMakerspace = async () => {
+      try {
+        const id = pathname.split('/')[2];
+        const response = await fetch(`/api/makerspaces/${id}`);
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch makerspace');
+        }
+
+        const data = await response.json();
+        // Check if user's email matches makerspace email
+        if (data.email !== user.email) {
+          await logout();
+          router.replace('/auth/login');
+          return;
+        }
+
+        setMakerspace(data);
+      } catch (error) {
+        console.error('Error fetching makerspace:', error);
+        router.replace('/auth/login');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchMakerspace();
+  }, [user, token, pathname, router, logout]);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        Loading...
+      </div>
+    );
+  }
+
+  if (!makerspace) {
+    return null;
+  }
 
   const navItems = [
     '',
@@ -66,19 +117,15 @@ export default function Page() {
       case 'Memberships':
         return <MembershipsPage />;
       case 'My Space':
-        return <MySpacePage />;
+        return <MySpacePage makerspace={makerspace} />;
       case 'Revenue':
         return <RevenuePage />;
       case 'Messages':
         return <MessagesPage />;
       default:
-        return <MySpacePage />;
+        return <MySpacePage makerspace={makerspace} />;
     }
   };
-
-  const [openPopover, setOpenPopover] = React.useState<
-    'notifications' | 'profile' | null
-  >(null);
 
   const notifications = [
     {
@@ -185,15 +232,20 @@ export default function Page() {
           <div>
             <div className="flex items-center gap-x-4 my-6">
               <Avatar className="h-10 w-10">
-                <AvatarImage src="/placeholder.svg" alt="SQA FAB Lab" />
-                <AvatarFallback>SQ</AvatarFallback>
+                <AvatarImage
+                  src={makerspace.logoImageLinks[0] || '/placeholder.svg'}
+                  alt={makerspace.name}
+                />
+                <AvatarFallback>
+                  {makerspace.name.substring(0, 2)}
+                </AvatarFallback>
               </Avatar>
               <div>
                 <h2 className="text-sm font-semibold text-white">
-                  SQA FAB Lab
+                  {makerspace.name}
                 </h2>
-                <p className='text-white'>
-                  4.2{' '}
+                <p className="text-white">
+                  {makerspace.rating}{' '}
                   <Star className="h-2.5 w-2.5 text-orange-500 fill-orange-500 inline-block" />
                 </p>
               </div>

@@ -16,11 +16,11 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { verifyMakerspaceToken } from '@/lib/api';
+import { createMakerspace, verifyMakerspaceToken } from '@/lib/api';
 import { Check, Info, Plus } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { ChangeEvent, useEffect, useState } from 'react';
 
 interface FormData {
@@ -55,6 +55,7 @@ const steps = [1, 2, 3, 4, 5];
 
 export default function SpaceSubmissionFlow() {
   const router = useRouter();
+  const pathname = usePathname();
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(true);
   const [verifiedEmail, setVerifiedEmail] = useState<string | null>(null);
@@ -87,7 +88,7 @@ export default function SpaceSubmissionFlow() {
   useEffect(() => {
     const verifyToken = async () => {
       try {
-        const token = window.location.pathname.split('/').pop();
+        const token = pathname.split('/').pop();
         if (!token) {
           router.push('/vendor-space');
           return;
@@ -118,7 +119,7 @@ export default function SpaceSubmissionFlow() {
     };
 
     verifyToken();
-  }, [router]);
+  }, [pathname, router]);
 
   if (loading) {
     return (
@@ -184,18 +185,6 @@ export default function SpaceSubmissionFlow() {
     { country: 'United Kingdom', code: '+44' },
   ];
 
-  const handleNext = () => {
-    setCurrentStep((prev) => Math.min(prev + 1, 5));
-    const uniqueId = window.location.pathname.split('/');
-    if (currentStep === 5 && uniqueId[2]) {
-      window.location.href = `/vendor-space/${uniqueId[2]}/dashboard`;
-    }
-  };
-
-  const handleBack = () => {
-    setCurrentStep((prev) => Math.max(prev - 1, 1));
-  };
-
   const validateCase3 = () => {
     const { name, email, contact, inchargeName } = formData.spaceDetails;
     return (
@@ -255,6 +244,66 @@ export default function SpaceSubmissionFlow() {
           [type === 'space' ? 'spaceLogo' : 'orgLogo']: file,
         },
       });
+    }
+  };
+
+  const handleSubmit = async () => {
+    try {
+      setLoading(true);
+      const token = pathname.split('/').pop();
+
+      if (!token) {
+        throw new Error('No token found');
+      }
+
+      // Process uploaded images and logos to get URLs
+      const imageUrls = await Promise.all(
+        formData.media.images.map(async (file) => {
+          // Here you would implement your image upload logic
+          // and return the URL of the uploaded image
+          return '/assetlist.png'; // Replace with actual upload logic
+        })
+      );
+
+      const spaceLogoUrl = formData.media.spaceLogo
+        ? '/assetlist.png'
+        : undefined; // Replace with actual upload
+      const orgLogoUrl = formData.media.orgLogo ? '/assetlist.png' : undefined; // Replace with actual upload
+
+      // Convert timings to required format
+      const processedTimings: Record<string, string> = {};
+      Object.entries(formData.spaceDetails.timings).forEach(([day, timing]) => {
+        processedTimings[day.toLowerCase()] = `${timing.from}-${timing.to}`;
+      });
+
+      const makerspaceData = {
+        type: formData.type,
+        usage: formData.purposes,
+        name: formData.spaceDetails.name,
+        email: formData.spaceDetails.email,
+        number: selectedCountryCode + formData.spaceDetails.contact,
+        inChargeName: formData.spaceDetails.inchargeName,
+        websiteLink: formData.spaceDetails.website || '',
+        timings: processedTimings,
+        city: formData.address.city,
+        state: formData.address.state,
+        address: formData.address.address,
+        zipcode: formData.address.zipCode,
+        country: formData.address.country,
+        organizationName: formData.address.orgName || undefined,
+        organizationEmail: formData.address.orgEmail || undefined,
+        imageLinks: imageUrls,
+        logoImageLinks: [spaceLogoUrl, orgLogoUrl].filter(Boolean) as string[],
+      };
+
+      const response = await createMakerspace(token, makerspaceData);
+
+      // Redirect to the dashboard page for the created makerspace
+      router.push(`/vendor-space/${response._id}/dashboard`);
+    } catch (error: any) {
+      console.log('Submission error:', error.message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -1103,8 +1152,11 @@ export default function SpaceSubmissionFlow() {
                       </SelectTrigger>
                       <SelectContent>
                         {countryCodes.map((country) => (
-                          <SelectItem key={country.code} value={country.code}>
-                            {country.code} ({country.country})
+                          <SelectItem
+                            key={country.country}
+                            value={country.country}
+                          >
+                            {country.country}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -1317,7 +1369,7 @@ export default function SpaceSubmissionFlow() {
       <Button
         className="rounded-2xl px-8 border-gray-300 border"
         variant="outline"
-        onClick={handleBack}
+        onClick={() => setCurrentStep((prev) => Math.max(prev - 1, 1))}
         disabled={currentStep === 1}
       >
         BACK
@@ -1325,7 +1377,11 @@ export default function SpaceSubmissionFlow() {
       <Button
         variant="default"
         className="flex rounded-3xl items-center gap-2 px-12"
-        onClick={handleNext}
+        onClick={() =>
+          currentStep === 5
+            ? handleSubmit()
+            : setCurrentStep((prev) => prev + 1)
+        }
         disabled={
           (currentStep === 1 && !formData.type) ||
           (currentStep === 2 && formData.purposes.length === 0) ||
