@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import localFont from 'next/font/local';
 import './globals.css';
 import AuthProvider from '@/components/auth-provider';
+import { Suspense } from 'react';
 
 const geistSans = localFont({
   src: './fonts/GeistVF.woff',
@@ -16,7 +17,8 @@ const geistMono = localFont({
 
 export const metadata: Metadata = {
   title: 'Karkhana MakerHub',
-  description: 'Karkhana MakerHub is a platform for makers to find and book machines, events and makerspaces.',
+  description:
+    'Karkhana MakerHub is a platform for makers to find and book machines, events and makerspaces.',
 };
 
 export default function RootLayout({
@@ -30,9 +32,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <AuthProvider>
-
-          {children}
-
+          <Suspense>{children}</Suspense>
         </AuthProvider>
       </body>
     </html>
