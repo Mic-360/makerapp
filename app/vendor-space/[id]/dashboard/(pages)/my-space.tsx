@@ -1,9 +1,15 @@
-import { ChevronDown, Plus } from 'lucide-react';
+'use client';
+
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import {
   Select,
   SelectContent,
@@ -11,306 +17,535 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import Image from 'next/image';
-
-import { Separator } from '@/components/ui/separator';
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from '@/components/ui/collapsible';
 import { Switch } from '@/components/ui/switch';
-import { useState } from 'react';
+import { Textarea } from '@/components/ui/textarea';
+import type { Makerspace } from '@/lib/api';
+import { updateMakerspace } from '@/lib/api';
+import { useAuthenticationStore } from '@/lib/store';
+import { Check, Plus } from 'lucide-react';
+import Image from 'next/image';
+import type React from 'react';
+import { useEffect, useState } from 'react';
 
-export default function MySpacePage() {
-  const [statusOpen, setStatusOpen] = useState(true);
-  const sections = [
-    { id: 1, title: 'Basic Details', content: <BasicDetailsContent /> },
-    { id: 2, title: 'Rooms and Seats', content: <RoomsAndSeatsContent /> },
-    { id: 3, title: 'Lab Mentors', content: <LabMentorsContent /> },
-    { id: 4, title: 'Amenities', content: <AmenitiesContent /> },
-    { id: 5, title: 'How to reach your space', content: <LocationContent /> },
-  ];
+interface MySpacePageProps {
+  makerspace: Makerspace;
+}
+
+export default function MySpacePage({
+  makerspace: initialMakerspace,
+}: MySpacePageProps) {
+  const [wordCount, setWordCount] = useState(0);
+  const [statusOpen, setStatusOpen] = useState(
+    initialMakerspace.status === 'active'
+  );
+  const [formData, setFormData] =
+    useState<Partial<Makerspace>>(initialMakerspace);
+  const { token } = useAuthenticationStore();
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    if (initialMakerspace.description) {
+      const words =
+        initialMakerspace.description.trim() === ''
+          ? 0
+          : initialMakerspace.description.trim().split(/\s+/).length;
+      setWordCount(words);
+    }
+  }, [initialMakerspace.description]);
+
+  const handleDescriptionChange = (
+    e: React.ChangeEvent<HTMLTextAreaElement>
+  ) => {
+    const text = e.target.value;
+    const words = text.trim() === '' ? 0 : text.trim().split(/\s+/).length;
+    setWordCount(words);
+    setFormData((prev) => ({ ...prev, description: text }));
+  };
+
+  const handleInputChange = (field: keyof Makerspace, value: any) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleSubmit = async () => {
+    if (!token || !formData) return;
+
+    setIsLoading(true);
+    try {
+      const updatedData = {
+        ...formData,
+        status: statusOpen ? 'active' : 'inactive',
+      };
+
+      const result = await updateMakerspace(
+        initialMakerspace.id,
+        updatedData,
+        token
+      );
+      // Update local state after successful API call
+      setFormData(result);
+    } catch (error) {
+      console.error('Error updating makerspace:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
-    <div className="space-y-8">
-      <div className="flex items-center justify-end gap-4">
-        <div className="text-orange-500 font-medium">Mon 5 Aug, 4:11 PM</div>
+    <div className="container mx-auto py-8 max-w-4xl space-y-4">
+      {/* Header Section */}
+      <div className="flex items-center justify-end gap-12">
+        <div className="text-orange-500 font-semibold text-lg">
+          {new Date().toLocaleDateString('en-US', {
+            weekday: 'short',
+            month: 'short',
+            day: 'numeric',
+          })}
+          ,{' '}
+          {new Date().toLocaleTimeString('en-US', {
+            hour: 'numeric',
+            minute: '2-digit',
+          })}
+        </div>
         <div className="relative">
-          <select
-            aria-label="Select Timeframe"
-            className="appearance-none bg-white border border-gray-200 rounded-md px-4 py-1.5 pr-8 text-sm focus:outline-none"
-          >
-            <option>Monthly</option>
-            <option>Weekly</option>
-            <option>Daily</option>
-          </select>
-          <div className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
-            <svg
-              width="12"
-              height="12"
-              viewBox="0 0 12 12"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M2.5 4.5L6 8L9.5 4.5"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </div>
-        </div>
-        <div className="flex flex-col items-center gap-1">
-          <Switch checked={statusOpen} onCheckedChange={setStatusOpen} />
-          <span
-            className={`text-xs ${statusOpen ? 'text-green-500' : 'text-red-500'} font-medium`}
-          >
-            Status: {statusOpen ? 'Open' : 'Closed'}
-          </span>
-        </div>
-      </div>
-      <div className="space-y-6 mr-8">
-        {sections.map((section) => (
-          <Collapsible key={section.id}>
-            <CollapsibleTrigger className="flex w-full items-center justify-between border-t bg-white p-4">
-              <span className="text-lg font-medium">
-                {section.id}. {section.title}
-              </span>
-              <ChevronDown className="h-5 w-5" />
-            </CollapsibleTrigger>
-            <CollapsibleContent className="p-4">
-              {section.content}
-            </CollapsibleContent>
-          </Collapsible>
-        ))}
-        <Separator />
-      </div>
-      <div className="my-8 flex justify-center">
-        <Button variant="default" className="rounded-full px-10 py-6 text-md">
-          Save and Preview
-        </Button>
-      </div>
-    </div>
-  );
-}
-
-function BasicDetailsContent() {
-  return (
-    <div className="space-y-6 p-6">
-      <div className="space-y-2">
-        <Label htmlFor="spaceName" className="pl-4 text-sm font-medium">
-          Name of the space*
-        </Label>
-        <Input
-          id="spaceName"
-          placeholder="SQA FAB LAB"
-          className="h-12 rounded-2xl border-black/20"
-        />
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor="spaceDescription" className="pl-4 text-sm font-medium">
-          Space Description*
-        </Label>
-        <Textarea
-          id="spaceDescription"
-          className="min-h-[160px] rounded-2xl border-black/20 resize-none"
-          maxLength={2000}
-        />
-        <p className="text-right text-sm text-gray-500 pr-4">0/2000 words</p>
-      </div>
-    </div>
-  );
-}
-
-function RoomsAndSeatsContent() {
-  return (
-    <div className="space-y-6 p-6">
-      <div className="text-md font-semibold pl-4">
-        Available Rooms and Seats
-      </div>
-      <div className="grid grid-cols-3 gap-6">
-        <div className="space-y-2">
-          <Label htmlFor="category" className="pl-4 text-sm">
-            Category
-          </Label>
-          <Select>
-            <SelectTrigger
-              id="category"
-              className="h-12 rounded-2xl border-black/20"
-            >
-              <SelectValue placeholder="Select" />
+          <Select defaultValue="monthly">
+            <SelectTrigger className="border-blue-800 text-blue-800 rounded-md w-[110px] text-sm">
+              <SelectValue placeholder="Monthly" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="lab">Lab</SelectItem>
-              <SelectItem value="classroom">Classroom</SelectItem>
-              <SelectItem value="workshop">Workshop</SelectItem>
+              <SelectItem value="monthly">Monthly</SelectItem>
+              <SelectItem value="weekly">Weekly</SelectItem>
+              <SelectItem value="daily">Daily</SelectItem>
             </SelectContent>
           </Select>
         </div>
-        <div className="space-y-2">
-          <Label htmlFor="roomName" className="pl-4 text-sm">
-            Room Name/Number
-          </Label>
-          <Input id="roomName" className="h-12 rounded-2xl border-black/20" />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="seats" className="pl-4 text-sm">
-            No. of Seats
-          </Label>
-          <Input
-            id="seats"
-            type="number"
-            className="h-12 rounded-2xl border-black/20"
+        <div className="flex flex-col items-center gap-1">
+          <Switch
+            checked={statusOpen}
+            onCheckedChange={setStatusOpen}
+            showStatus
           />
         </div>
       </div>
-      <Button
-        variant="outline"
-        size="sm"
-        className="h-10 gap-2 text-sm font-medium rounded-2xl px-4 border-black/20"
-      >
-        <Plus className="h-4 w-4" /> Add More Rooms
-      </Button>
-    </div>
-  );
-}
 
-function LabMentorsContent() {
-  return (
-    <div className="space-y-6 p-6">
-      <div className="text-md font-semibold pl-4">Lab Facilitators</div>
-      <div className="grid grid-cols-3 gap-6">
-        <div className="space-y-2">
-          <Label htmlFor="name" className="pl-4 text-sm">
-            Name
-          </Label>
-          <Input id="name" className="h-12 rounded-2xl border-black/20" />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="designation" className="pl-4 text-sm">
-            Select Designation
-          </Label>
-          <Select>
-            <SelectTrigger
-              id="designation"
-              className="h-12 rounded-2xl border-black/20"
-            >
-              <SelectValue placeholder="Select" />
-            </SelectTrigger>
-            <SelectContent className="rounded-xl">
-              <SelectItem value="mentor">Mentor</SelectItem>
-              <SelectItem value="facilitator">Facilitator</SelectItem>
-              <SelectItem value="instructor">Instructor</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="linkedin" className="pl-4 text-sm">
-            Add LinkedIn Profile
-          </Label>
-          <Input
-            id="linkedin"
-            type="url"
-            className="h-12 rounded-2xl border-black/20"
-          />
-        </div>
-      </div>
-      <Button
-        variant="outline"
-        size="sm"
-        className="h-10 gap-2 text-sm font-medium px-4 rounded-2xl border-black/20"
-      >
-        <Plus className="h-4 w-4" /> Add More people
-      </Button>
-    </div>
-  );
-}
-
-function AmenitiesContent() {
-  const amenities = [
-    ['WiFi', 'Medical Room', 'Washrooms'],
-    ['Computers', 'Smoke Alarms', 'Conference Rooms'],
-    ['TV Screen 32"', 'Fire Extinguishers', 'Meeting Room'],
-    ['Projector', 'Emergency Exits', 'Water Cooler'],
-    ['Speaker', 'CCTV Camera', 'Free parking'],
-  ];
-
-  return (
-    <div className="p-6">
-      <div className="text-md font-semibold mb-10">
-        Select amenities available in your space
-      </div>
-      <div className="space-y-6 max-w-3xl">
-        {amenities.map((row, i) => (
-          <div key={i} className="grid grid-cols-3 gap-6">
-            {row.map((amenity) => (
-              <div key={amenity} className="flex items-center space-x-3">
-                <Checkbox
-                  id={amenity.toLowerCase().replace(/\s+/g, '-')}
-                  className="h-5 w-5 rounded border-gray-300 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
-                />
-                <Label
-                  htmlFor={amenity.toLowerCase().replace(/\s+/g, '-')}
-                  className="text-sm"
-                >
-                  {amenity}
+      <Accordion type="single" collapsible className="w-full space-y-4">
+        <AccordionItem value="item-1" className="border-0">
+          <div className="border-t border-gray-200">
+            <AccordionTrigger className="px-4 py-4 flex font-medium hover:no-underline">
+              <span className="flex items-center text-xl font-bold">
+                1. Basic Details
+              </span>
+            </AccordionTrigger>
+          </div>
+          <AccordionContent className="px-4 py-6">
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="spaceName" className="text-sm">
+                  Name of the space*
                 </Label>
+                <Input
+                  id="spaceName"
+                  value={formData.name || ''}
+                  onChange={(e) => handleInputChange('name', e.target.value)}
+                  placeholder="SQA FAB LAB"
+                  className="mt-1 rounded-2xl h-12"
+                />
               </div>
-            ))}
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
+              <div>
+                <Label htmlFor="spaceDescription" className="text-sm">
+                  Space Description*
+                </Label>
+                <Textarea
+                  id="spaceDescription"
+                  value={formData.description || ''}
+                  onChange={handleDescriptionChange}
+                  className="mt-1 min-h-[120px] rounded-2xl resize-none"
+                />
+                <div className="text-right text-xs text-gray-500 mt-1">
+                  {wordCount}/2000 words
+                </div>
+              </div>
+            </div>
+          </AccordionContent>
+        </AccordionItem>
 
-function LocationContent() {
-  return (
-    <div className="space-y-6 p-6">
-      <div className="space-y-2">
-        <Label htmlFor="address" className="text-md font-semibold pl-4">
-          Complete Address
-        </Label>
-        <Input
-          id="address"
-          className="h-12 rounded-2xl border-black/20"
-          defaultValue="SQA University Campus 1, Khandagiri, Bhubaneswar, Odisha - 751030"
-        />
-      </div>
-      <div className="space-y-6">
-        {[
-          'Nearest Airport',
-          'Nearest Railway Station',
-          'Nearest Metro',
-          'Nearest Bus stop',
-        ].map((label) => (
-          <div key={label} className="space-y-2">
-            <Label
-              htmlFor={label.toLowerCase().replace(/\s+/g, '-')}
-              className="text-sm"
-            >
-              {label}
-            </Label>
-            <Input
-              id={label.toLowerCase().replace(/\s+/g, '-')}
-              className="h-12 rounded-2xl border-black/20"
-            />
+        <AccordionItem value="item-2" className="border-0">
+          <div className="border-t border-gray-200">
+            <AccordionTrigger className="px-4 py-4 flex text-gray-800 font-medium hover:no-underline">
+              <span className="flex items-center text-xl font-bold">
+                2. Space Details
+              </span>
+            </AccordionTrigger>
           </div>
-        ))}
-      </div>
-      <div className="space-y-4">
-        <div className="text-md">Mark exact location on Map</div>
-        <div className="bg-yellow-100 rounded-2xl py-1 px-4">
-          <Image
-            src="/world.svg"
-            alt="World Map"
-            width={400}
-            height={200}
-            className="w-full"
-          />
-        </div>
+          <AccordionContent className="px-4 py-6">
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="townCity" className="text-sm">
+                  Town/City*
+                </Label>
+                <div className="relative mt-1">
+                  <Input id="townCity" className="rounded-2xl pr-10 h-12" />
+                  <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                    <Check className="h-5 w-5 text-green-500" />
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <Label htmlFor="completeAddress" className="text-sm">
+                  Complete Address*
+                </Label>
+                <div className="relative mt-1">
+                  <Input
+                    id="completeAddress"
+                    className="rounded-2xl pr-10 h-12"
+                  />
+                  <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                    <Check className="h-5 w-5 text-green-500" />
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <Label htmlFor="organizationName" className="text-sm">
+                  Name of the organization (Optional)
+                </Label>
+                <div className="relative mt-1">
+                  <Input
+                    id="organizationName"
+                    placeholder="Enter name of your university/institute/org/space"
+                    className="rounded-2xl pr-10 h-12"
+                  />
+                  <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                    <Check className="h-5 w-5 text-green-500" />
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="state" className="text-sm">
+                    State*
+                  </Label>
+                  <div className="relative mt-1">
+                    <Input id="state" className="rounded-2xl pr-10 h-12" />
+                    <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                      <Check className="h-5 w-5 text-green-500" />
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <Label htmlFor="zipCode" className="text-sm">
+                    Zip Code*
+                  </Label>
+                  <Input id="zipCode" className="mt-1 rounded-2xl h-12" />
+                </div>
+              </div>
+
+              <div>
+                <Label htmlFor="country" className="text-sm">
+                  Country*
+                </Label>
+                <Input id="country" className="mt-1 rounded-2xl h-12" />
+              </div>
+
+              <div>
+                <Label htmlFor="orgEmail" className="text-sm">
+                  Email of the organization (Optional)
+                </Label>
+                <div className="relative mt-1">
+                  <Input
+                    id="orgEmail"
+                    placeholder="Enter email id if you want to share it with us"
+                    className="rounded-2xl pr-10 h-12"
+                  />
+                  <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                    <Check className="h-5 w-5 text-green-500" />
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <Label className="text-sm font-medium">
+                  Available Rooms and Seats
+                </Label>
+                <div className="grid grid-cols-3 gap-4 mt-2">
+                  <div>
+                    <Input
+                      placeholder="Category"
+                      className="rounded-2xl h-12"
+                    />
+                  </div>
+                  <div>
+                    <Input
+                      placeholder="Room Name/Number"
+                      className="rounded-2xl h-12"
+                    />
+                  </div>
+                  <div>
+                    <Input
+                      placeholder="No. of Seats"
+                      type="number"
+                      className="rounded-2xl h-12"
+                    />
+                  </div>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="mt-2 rounded-2xl"
+                >
+                  <Plus className="h-4 w-4 mr-1" /> Add More Rooms
+                </Button>
+              </div>
+
+              <div>
+                <Label className="text-sm font-medium">
+                  Upload Images of your space*
+                </Label>
+                <div className="grid grid-cols-4 gap-4 mt-2">
+                  {[1, 2, 3, 4].map((i) => (
+                    <div
+                      key={i}
+                      className="aspect-square border border-dashed rounded-2xl flex items-center justify-center bg-gray-50 cursor-pointer"
+                    >
+                      <span className="text-sm text-gray-500">Select</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-8 mt-6">
+                <div className="flex flex-col items-center">
+                  <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-2">
+                    <Plus className="h-6 w-6 text-gray-400" />
+                  </div>
+                  <span className="text-sm text-center">
+                    Upload logo of your space*
+                  </span>
+                </div>
+                <div className="flex flex-col items-center">
+                  <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-2">
+                    <Plus className="h-6 w-6 text-gray-400" />
+                  </div>
+                  <span className="text-sm text-center">
+                    Upload organization logo (Optional)
+                  </span>
+                </div>
+              </div>
+            </div>
+          </AccordionContent>
+        </AccordionItem>
+
+        <AccordionItem value="item-3" className="border-0">
+          <div className="border-t border-gray-200">
+            <AccordionTrigger className="px-4 py-4 flex text-gray-800 font-medium hover:no-underline">
+              <span className="flex items-center text-xl font-bold">
+                3. Lab Mentors
+              </span>
+            </AccordionTrigger>
+          </div>
+          <AccordionContent className="px-4 py-6">
+            <div className="space-y-4">
+              <div>
+                <Label className="text-sm font-medium">Lab Facilitators</Label>
+                <Input className="mt-2 rounded-2xl h-12" />
+              </div>
+
+              <div className="grid grid-cols-3 gap-4">
+                <div>
+                  <Input
+                    placeholder="Select Designation"
+                    className="rounded-2xl h-12"
+                  />
+                </div>
+                <div>
+                  <Input
+                    placeholder="Add LinkedIn Profile"
+                    className="rounded-2xl h-12"
+                  />
+                </div>
+                <div className="flex items-center">
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="rounded-full h-8 w-8"
+                  >
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+
+              <Button variant="outline" size="sm" className="rounded-2xl">
+                <Plus className="h-4 w-4 mr-1" /> Add More people
+              </Button>
+            </div>
+          </AccordionContent>
+        </AccordionItem>
+
+        <AccordionItem value="item-4" className="border-0">
+          <div className="border-t border-gray-200">
+            <AccordionTrigger className="px-4 py-4 flex text-gray-800 font-medium hover:no-underline">
+              <span className="flex items-center text-xl font-bold">
+                4. Amenities
+              </span>
+            </AccordionTrigger>
+          </div>
+          <AccordionContent className="px-4 py-6">
+            <div>
+              <Label className="text-sm font-medium">
+                Select amenities available in your space
+              </Label>
+              <div className="grid grid-cols-3 gap-x-8 gap-y-4 mt-4">
+                {[
+                  'WiFi',
+                  'Medical Room',
+                  'Washrooms',
+                  'Computers',
+                  'Smoke Alarms',
+                  'Conference Rooms',
+                  'TV Screen 32"',
+                  'Fire Extinguishers',
+                  'Meeting Room',
+                  'Projector',
+                  'Emergency Exits',
+                  'Water Cooler',
+                  'Speaker',
+                  'CCTV Camera',
+                  'Free parking',
+                ].map((amenity) => (
+                  <div key={amenity} className="flex items-center space-x-2">
+                    <Checkbox id={`amenity-${amenity}`} />
+                    <Label
+                      htmlFor={`amenity-${amenity}`}
+                      className="text-sm font-normal"
+                    >
+                      {amenity}
+                    </Label>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </AccordionContent>
+        </AccordionItem>
+
+        <AccordionItem value="item-5" className="border-0">
+          <div className="border-t border-gray-200">
+            <AccordionTrigger className="px-4 py-4 flex text-gray-800 font-medium hover:no-underline">
+              <span className="flex items-center text-xl font-bold">
+                5. Basic Instructions
+              </span>
+            </AccordionTrigger>
+          </div>
+          <AccordionContent className="px-4 py-6">
+            <div>
+              <Label className="text-sm font-medium">
+                Select some basic instructions for your space
+              </Label>
+              <div className="grid grid-cols-3 gap-x-8 gap-y-4 mt-4">
+                {[
+                  'No smoking inside the space',
+                  'No food or drinks allowed',
+                  'Clean up after use',
+                  "Respect others' work",
+                  'Use equipment responsibly',
+                  'Report any damages immediately',
+                ].map((instruction) => (
+                  <div
+                    key={instruction}
+                    className="flex items-center space-x-2"
+                  >
+                    <Checkbox id={`instruction-${instruction}`} />
+                    <Label
+                      htmlFor={`instruction-${instruction}`}
+                      className="text-sm font-normal"
+                    >
+                      {instruction}
+                    </Label>
+                  </div>
+                ))}
+              </div>
+
+              <div className="mt-6">
+                <Label htmlFor="additionalInfo" className="text-sm">
+                  Additional Information
+                </Label>
+                <Textarea
+                  id="additionalInfo"
+                  className="mt-1 min-h-[100px] rounded-2xl"
+                />
+              </div>
+            </div>
+          </AccordionContent>
+        </AccordionItem>
+
+        <AccordionItem value="item-6" className="border-0">
+          <div className="border-t border-gray-200">
+            <AccordionTrigger className="px-4 py-4 flex text-gray-800 font-medium hover:no-underline">
+              <span className="flex items-center text-xl font-bold">
+                6. How to reach your space
+              </span>
+            </AccordionTrigger>
+          </div>
+          <AccordionContent className="px-4 py-6">
+            <div className="space-y-4">
+              <div>
+                <Label
+                  htmlFor="locationAddress"
+                  className="text-sm font-medium"
+                >
+                  Complete Address
+                </Label>
+                <Input id="locationAddress" className="mt-1 rounded-2xl h-12" />
+              </div>
+
+              {[
+                'Nearest Airport',
+                'Nearest Railway Station',
+                'Nearest Metro',
+                'Nearest Bus stop',
+              ].map((label) => (
+                <div key={label}>
+                  <Label
+                    htmlFor={label.replace(/\s+/g, '-').toLowerCase()}
+                    className="text-sm"
+                  >
+                    {label}
+                  </Label>
+                  <Input
+                    id={label.replace(/\s+/g, '-').toLowerCase()}
+                    className="mt-1 rounded-2xl h-12"
+                  />
+                </div>
+              ))}
+
+              <div>
+                <Label className="text-sm font-medium">
+                  Mark exact location on Map
+                </Label>
+                <div className="mt-2 bg-amber-50 rounded-2xl overflow-hidden">
+                  <Image
+                    src="/world.svg"
+                    width={400}
+                    height={200}
+                    alt="World Map"
+                    className="w-full h-auto"
+                  />
+                </div>
+              </div>
+            </div>
+          </AccordionContent>
+        </AccordionItem>
+        <div className="border-t border-gray-200"></div>
+      </Accordion>
+
+      <div className="mt-8 flex justify-center">
+        <Button
+          className="rounded-full px-8 py-6 bg-black text-white text-base"
+          onClick={handleSubmit}
+          disabled={isLoading}
+        >
+          {isLoading ? 'Saving...' : 'Save and Preview'}
+        </Button>
       </div>
     </div>
   );
