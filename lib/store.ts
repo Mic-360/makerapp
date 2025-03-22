@@ -63,7 +63,7 @@ interface SignupStore {
   lastName: string;
   mobile: string;
   userType: string[];
-  industry: string;
+  industry: string[];  // Changed from string to string[]
   purpose: string[];
   setUserId: (userId: string) => void;
   setEmail: (email: string) => void;
@@ -74,7 +74,9 @@ interface SignupStore {
   setUserType: (userType: string) => void;
   addUserType: (type: string) => void;
   removeUserType: (type: string) => void;
-  setIndustry: (industry: string) => void;
+  setIndustry: (industry: string[]) => void;
+  addIndustry: (industry: string) => void;
+  removeIndustry: (industry: string) => void;
   setPurpose: (purpose: string) => void;
   addPurpose: (purpose: string) => void;
   removePurpose: (purpose: string) => void;
@@ -88,7 +90,7 @@ export const useSignupStore = create<SignupStore>((set) => ({
   lastName: '',
   mobile: '',
   userType: [],
-  industry: '',
+  industry: [],  // Changed from '' to []
   purpose: [],
   setUserId: (userId) => set({ userId }),
   setEmail: (email) => set({ email }),
@@ -107,6 +109,15 @@ export const useSignupStore = create<SignupStore>((set) => ({
     userType: state.userType.filter((t) => t !== type)
   })),
   setIndustry: (industry) => set({ industry }),
+  addIndustry: (industry) => set((state) => {
+    if (state.industry.length < 3 && !state.industry.includes(industry)) {
+      return { industry: [...state.industry, industry] };
+    }
+    return state;
+  }),
+  removeIndustry: (industry) => set((state) => ({
+    industry: state.industry.filter((i) => i !== industry)
+  })),
   setPurpose: (purpose) => set({ purpose: [purpose] }),
   addPurpose: (purpose) => set((state) => {
     if (state.purpose.length < 3 && !state.purpose.includes(purpose)) {

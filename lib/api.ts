@@ -92,10 +92,10 @@ export interface Makerspace {
     instructions: string;
     additionalInformation: string;
     rating: number;
-    status: 'active' | 'inactive';
+    status: string;
 }
 
-const BASE_URL = 'http://localhost:8080';
+export const BASE_URL = 'http://localhost:8080';
 
 export async function fetchMachines(): Promise<MakerSpace[]> {
     try {
@@ -110,44 +110,31 @@ export async function fetchMachines(): Promise<MakerSpace[]> {
     }
 }
 
-export async function fetchCityData(city: string) {
-    try {
-        const response = await fetch(`${BASE_URL}/api/city/${encodeURIComponent(city)}`);
-        if (!response.ok) {
-            throw new Error('Failed to fetch city data');
-        }
-        return await response.json();
-    } catch (error) {
-        console.error('Error fetching city data:', error);
-        return { machines: [], events: [] };
-    }
-}
+// export async function fetchMachinesByLocation(location: string) {
+//     try {
+//         const response = await fetch(`${BASE_URL}/api/machines/by-location/${encodeURIComponent(location)}`);
+//         if (!response.ok) {
+//             throw new Error('Failed to fetch machines for location');
+//         }
+//         return await response.json();
+//     } catch (error) {
+//         console.error('Error fetching machines by location:', error);
+//         return [];
+//     }
+// }
 
-export async function fetchMachinesByLocation(location: string) {
-    try {
-        const response = await fetch(`${BASE_URL}/api/machines/by-location/${encodeURIComponent(location)}`);
-        if (!response.ok) {
-            throw new Error('Failed to fetch machines for location');
-        }
-        return await response.json();
-    } catch (error) {
-        console.error('Error fetching machines by location:', error);
-        return [];
-    }
-}
-
-export async function fetchEventsByLocation(location: string) {
-    try {
-        const response = await fetch(`${BASE_URL}/api/events/by-location/${encodeURIComponent(location)}`);
-        if (!response.ok) {
-            throw new Error('Failed to fetch events for location');
-        }
-        return await response.json();
-    } catch (error) {
-        console.error('Error fetching events by location:', error);
-        return [];
-    }
-}
+// export async function fetchEventsByLocation(location: string) {
+//     try {
+//         const response = await fetch(`${BASE_URL}/api/events/by-location/${encodeURIComponent(location)}`);
+//         if (!response.ok) {
+//             throw new Error('Failed to fetch events for location');
+//         }
+//         return await response.json();
+//     } catch (error) {
+//         console.error('Error fetching events by location:', error);
+//         return [];
+//     }
+// }
 
 export async function fetchMachinesByMakerspace(makerspaceName: string) {
     try {
@@ -253,7 +240,7 @@ interface SignupData {
     name: string;
     number: string;
     usertype: string[];
-    industry: string;
+    industry: string[];
     purpose: string[];
     role?: string;
 }
@@ -413,7 +400,7 @@ export interface VerifyTokenResponse {
 
 export async function verifyMakerspaceToken(token: string): Promise<VerifyTokenResponse> {
     try {
-        const response = await fetch(`${BASE_URL}/api/makerspace/verify/${token}`, {
+        const response = await fetch(`${BASE_URL}/api/makerspaces/verify/${token}`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -436,5 +423,77 @@ export async function verifyMakerspaceToken(token: string): Promise<VerifyTokenR
             isValid: false,
             message: 'Error verifying token'
         };
+    }
+}
+
+interface MakerspaceFormData {
+    type: string;
+    usage: string[];
+    name: string;
+    email: string;
+    number: string;
+    inChargeName: string;
+    websiteLink: string;
+    timings: Record<string, string>;
+    city: string;
+    state: string;
+    address: string;
+    zipcode: string;
+    country: string;
+    organizationName?: string;
+    organizationEmail?: string;
+    imageLinks?: string[];
+    logoImageLinks?: string[];
+}
+
+export async function createMakerspace(token: string, data: MakerspaceFormData) {
+    try {
+        const response = await fetch(`${BASE_URL}/api/makerspaces`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(data),
+        });
+
+        const responseData = await response.json();
+
+        if (!response.ok) {
+            throw new Error(responseData.message || 'Failed to create makerspace');
+        }
+
+        return responseData;
+    } catch (error) {
+        if (error instanceof Error) {
+            throw error;
+        }
+        throw new Error('Failed to create makerspace');
+    }
+}
+
+export async function updateMakerspace(id: string, data: Partial<Makerspace>, token: string) {
+    try {
+        const response = await fetch(`${BASE_URL}/api/makerspaces/${id}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(data),
+        });
+
+        const responseData = await response.json();
+
+        if (!response.ok) {
+            throw new Error(responseData.message || 'Failed to update makerspace');
+        }
+
+        return responseData;
+    } catch (error) {
+        if (error instanceof Error) {
+            throw error;
+        }
+        throw new Error('Failed to update makerspace');
     }
 }
