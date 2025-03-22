@@ -2,10 +2,9 @@
 
 import AuthCard from '@/components/auth-card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { useSignupStore } from '@/lib/store';
-import { Check, Loader2 } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
@@ -24,14 +23,22 @@ const industries = [
 export default function IndustryPage() {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
-  const { industry, setIndustry, firstName, email } = useSignupStore();
+  const { industry, addIndustry, removeIndustry, firstName } = useSignupStore();
+
+  const handleIndustryClick = (ind: string) => {
+    if (industry.includes(ind)) {
+      removeIndustry(ind);
+    } else {
+      addIndustry(ind);
+    }
+  };
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setIsLoading(true);
 
     try {
-      if (industry) {
+      if (industry.length > 0) {
         router.push('/auth/signup/purpose');
       }
     } catch (error) {
@@ -60,18 +67,22 @@ export default function IndustryPage() {
             <Button
               key={type}
               type="button"
-              variant='outline'
-              className={`${industry === type ? 'bg-green-500 text-white font-semibold' : 'text-gray-900'} rounded-xl py-8 text-xs`}
-              onClick={() => setIndustry(type)}
+              variant="outline"
+              className={`${industry.includes(type) ? 'bg-green-500 text-white font-semibold' : 'text-gray-900'} rounded-xl py-8 text-xs`}
+              onClick={() => handleIndustryClick(type)}
+              disabled={industry.length >= 3 && !industry.includes(type)}
             >
               {type}
             </Button>
           ))}
         </div>
+        <p className="text-xs text-center text-muted-foreground">
+          Select up to 3 options that best describe your industry
+        </p>
         <Button
           type="submit"
-          className="rounded-full px-10 py-4"
-          disabled={isLoading || !industry}
+          className={`${industry.length > 0 ? 'bg-green-500' : 'bg-gray-500'} rounded-full px-10 py-4 hover:bg-green-400`}
+          disabled={isLoading || industry.length === 0}
         >
           {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
           Continue
