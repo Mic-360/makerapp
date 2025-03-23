@@ -20,12 +20,12 @@ import { createMakerspace, verifyMakerspaceToken } from '@/lib/api';
 import { Check, Info, Plus } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
+import { useParams, usePathname, useRouter } from 'next/navigation';
 import { ChangeEvent, useEffect, useState } from 'react';
 
 interface FormData {
   type: 'independent' | 'institution' | '';
-  purposes: ('rent' | 'membership' | 'events')[];
+  purposes: ('rent' | 'host')[];
   spaceDetails: {
     name: string;
     email: string;
@@ -55,7 +55,8 @@ const steps = [1, 2, 3, 4, 5];
 
 export default function SpaceSubmissionFlow() {
   const router = useRouter();
-  const pathname = usePathname();
+  const params = useParams();
+  console.log(params)
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(true);
   const [verifiedEmail, setVerifiedEmail] = useState<string | null>(null);
@@ -88,7 +89,7 @@ export default function SpaceSubmissionFlow() {
   useEffect(() => {
     const verifyToken = async () => {
       try {
-        const token = pathname.split('/').pop();
+        const token = params.id as string;
         if (!token) {
           router.push('/vendor-space');
           return;
@@ -119,7 +120,7 @@ export default function SpaceSubmissionFlow() {
     };
 
     verifyToken();
-  }, [pathname, router]);
+  }, [params.id, router]);
 
   if (loading) {
     return (
@@ -250,7 +251,7 @@ export default function SpaceSubmissionFlow() {
   const handleSubmit = async () => {
     try {
       setLoading(true);
-      const token = pathname.split('/').pop();
+      const token = params.id as string;
 
       if (!token) {
         throw new Error('No token found');
@@ -382,13 +383,7 @@ export default function SpaceSubmissionFlow() {
                     'Generate revenue by renting out underutilized machines to creators and hobbyists.',
                 },
                 {
-                  type: 'membership',
-                  title: 'Offer Memberships',
-                  description:
-                    'Establish a steady income stream and build community loyalty through membership plans.',
-                },
-                {
-                  type: 'events',
+                  type: 'host',
                   title: 'Host Events',
                   description:
                     'Increase exposure and revenue by organizing workshops, meetups, and special events.',
@@ -398,19 +393,17 @@ export default function SpaceSubmissionFlow() {
                   key={option.type}
                   onClick={() => {
                     const newPurposes = formData.purposes.includes(
-                      option.type as 'rent' | 'membership' | 'events'
+                      option.type as 'rent' | 'host'
                     )
                       ? formData.purposes.filter((p) => p !== option.type)
                       : [
                           ...formData.purposes,
-                          option.type as 'rent' | 'membership' | 'events',
+                          option.type as 'rent' | 'host',
                         ];
                     setFormData({ ...formData, purposes: newPurposes });
                   }}
                   className={`flex-1 p-8 rounded-3xl border text-left transition-all relative ${
-                    formData.purposes.includes(
-                      option.type as 'rent' | 'membership' | 'events'
-                    )
+                    formData.purposes.includes(option.type as 'rent' | 'host')
                       ? 'border-black'
                       : 'border-gray-200 hover:border-gray-300'
                   }`}
@@ -418,7 +411,7 @@ export default function SpaceSubmissionFlow() {
                   <div
                     className={`${
                       formData.purposes.includes(
-                        option.type as 'rent' | 'membership' | 'events'
+                        option.type as 'rent' | 'host'
                       )
                         ? 'border-green-500'
                         : 'border-gray-300'
@@ -427,7 +420,7 @@ export default function SpaceSubmissionFlow() {
                     <div
                       className={`h-2 w-2 rounded-full ${
                         formData.purposes.includes(
-                          option.type as 'rent' | 'membership' | 'events'
+                          option.type as 'rent' | 'host'
                         )
                           ? 'bg-green-500'
                           : 'border-gray-300'
