@@ -43,36 +43,11 @@ import {
 } from 'lucide-react';
 import Image from 'next/image';
 import React, { useState } from 'react';
-
-interface LabIncharge {
-  name: string;
-  number: string;
-}
-
-interface Machine {
-  id: number;
-  name: string;
-  price: string;
-  priceValue: string;
-  category: string;
-  timing: string;
-  startTime: string;
-  endTime: string;
-  status: string;
-  isOn: boolean;
-  description?: string;
-  brandName?: string;
-  modelNumber?: string;
-  location?: string;
-  specialInstructions?: string;
-  labIncharge?: LabIncharge[];
-}
+import { Machine } from '@/lib/api';
 
 interface MySpacePageProps {
   makerspace: Makerspace;
-  setMakerspace: {
-    (makerspace: Partial<Makerspace>): void;
-  };
+  setMakerspace: React.Dispatch<React.SetStateAction<Makerspace | null>>;
 }
 
 export default function MachinesPage({

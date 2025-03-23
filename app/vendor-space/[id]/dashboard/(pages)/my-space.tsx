@@ -29,9 +29,7 @@ import { useEffect, useState } from 'react';
 
 interface MySpacePageProps {
   makerspace: Makerspace;
-  setMakerspace: {
-    (makerspace: Partial<Makerspace>): void;
-  };
+  setMakerspace: React.Dispatch<React.SetStateAction<Makerspace | null>>;
 }
 
 export default function MySpacePage({
