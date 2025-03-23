@@ -50,7 +50,7 @@ export interface Event {
         number: string;
     }>;
     makerSpace: string;
-    status?: 'active' | 'inactive';
+    status?: string;
     rating?: number;
     createdAt?: Date;
 }
@@ -453,27 +453,7 @@ export async function updateEvent(id: string, eventData: Partial<Event>, token: 
     }
 }
 
-interface MakerspaceFormData {
-    type: string;
-    usage: string[];
-    name: string;
-    email: string;
-    number: string;
-    inChargeName: string;
-    websiteLink: string;
-    timings: Record<string, string>;
-    city: string;
-    state: string;
-    address: string;
-    zipcode: string;
-    country: string;
-    organizationName?: string;
-    organizationEmail?: string;
-    imageLinks?: string[];
-    logoImageLinks?: string[];
-}
-
-export async function createMakerspace(token: string, data: MakerspaceFormData) {
+export async function createMakerspace(token: string, data: Partial<Makerspace>) {
     try {
         const response = await fetch(`${BASE_URL}/api/makerspaces`, {
             method: 'POST',
