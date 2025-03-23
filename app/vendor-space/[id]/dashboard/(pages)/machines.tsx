@@ -28,6 +28,8 @@ import {
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
+import { Makerspace, updateMakerspace } from '@/lib/api';
+import { useAuthenticationStore } from '@/lib/store';
 import {
   ArrowUpDown,
   Check,
@@ -66,9 +68,22 @@ interface Machine {
   labIncharge?: LabIncharge[];
 }
 
-export default function MachinesPage() {
-  const [statusOpen, setStatusOpen] = useState<boolean>(true);
+interface MySpacePageProps {
+  makerspace: Makerspace;
+  setMakerspace: {
+    (makerspace: Partial<Makerspace>): void;
+  };
+}
+
+export default function MachinesPage({
+  makerspace: initialMakerspace,
+  setMakerspace,
+}: MySpacePageProps) {
+  const [statusOpen, setStatusOpen] = useState(
+    initialMakerspace.status === 'active'
+  );
   const [showSuccess, setShowSuccess] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [machines, setMachines] = useState<Machine[]>([
     {
       id: 1,
@@ -97,6 +112,7 @@ export default function MachinesPage() {
   const [currentMachine, setCurrentMachine] = useState<Machine | null>(null);
   const [viewMode, setViewMode] = useState<string>('manage');
   const [activeTab, setActiveTab] = useState<string>('all');
+  const { token } = useAuthenticationStore();
   const [showMachineTypeDropdown, setShowMachineTypeDropdown] =
     useState<boolean>(false);
 
@@ -111,6 +127,31 @@ export default function MachinesPage() {
     'Wood CNC',
     'Pick and Place',
   ];
+
+  const handleStatusChange = async (checked: boolean) => {
+    if (!token) return;
+
+    setIsLoading(true);
+    setStatusOpen(checked);
+    try {
+      const updatedData = {
+        status: checked ? 'active' : 'inactive',
+      };
+
+      await updateMakerspace(initialMakerspace._id, updatedData, token);
+
+      setMakerspace({
+        ...initialMakerspace,
+        status: checked ? 'active' : 'inactive',
+      });
+    } catch (error) {
+      console.error('Error updating makerspace status:', error);
+      // Revert the switch state if there's an error
+      setStatusOpen(!checked);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleAddMachine = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -245,7 +286,7 @@ export default function MachinesPage() {
   };
 
   return (
-    <div className="space-y-4 pt-2">
+    <div className="container space-y-4 pt-2">
       <div className="flex items-center justify-between">
         <Tabs value={viewMode} onValueChange={(value) => setViewMode(value)}>
           <TabsList className="bg-transparent space-x-2">
@@ -282,8 +323,9 @@ export default function MachinesPage() {
           <div className="flex flex-col items-center gap-1">
             <Switch
               checked={statusOpen}
-              onCheckedChange={setStatusOpen}
+              onCheckedChange={handleStatusChange}
               showStatus
+              disabled={isLoading}
             />
           </div>
         </div>

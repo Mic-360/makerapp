@@ -23,8 +23,7 @@ import {
 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
-import * as React from 'react';
+import { useParams, usePathname, useRouter } from 'next/navigation';
 import DashboardPage from './(pages)/dashboard';
 import EventsPage from './(pages)/events';
 import MachinesPage from './(pages)/machines';
@@ -32,20 +31,23 @@ import MembershipsPage from './(pages)/membership';
 import MessagesPage from './(pages)/messages';
 import MySpacePage from './(pages)/my-space';
 import RevenuePage from './(pages)/revenue';
+import { BASE_URL } from '@/lib/api';
+import { useEffect, useState } from 'react';
+import TopBar from '@/components/top-bar';
 
 export default function Page() {
-  const [activePage, setActivePage] = React.useState('My Space');
-  const [makerspace, setMakerspace] = React.useState<Makerspace | null>(null);
-  const [isLoading, setIsLoading] = React.useState(true);
-  const [openPopover, setOpenPopover] = React.useState<
+  const [activePage, setActivePage] = useState('My Space');
+  const [makerspace, setMakerspace] = useState<Makerspace | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [openPopover, setOpenPopover] = useState<
     'notifications' | 'profile' | null
   >(null);
 
-  const pathname = usePathname();
+  const params = useParams();
   const router = useRouter();
   const { user, token, logout } = useAuthenticationStore();
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (!user || !token) {
       router.replace('/auth/login');
       return;
@@ -53,8 +55,19 @@ export default function Page() {
 
     const fetchMakerspace = async () => {
       try {
-        const id = pathname.split('/')[2];
-        const response = await fetch(`/api/makerspaces/${id}`);
+        const id = params.id as string;
+        if (!id) {
+          router.replace('/vendor-space');
+          return;
+        }
+
+        const response = await fetch(`${BASE_URL}/api/makerspaces/${id}`, {
+          method: 'GET',
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        });
 
         if (!response.ok) {
           throw new Error('Failed to fetch makerspace');
@@ -62,8 +75,8 @@ export default function Page() {
 
         const data = await response.json();
         // Check if user's email matches makerspace email
-        if (data.email !== user.email) {
-          await logout();
+        if (data.vendormail !== user.email) {
+          logout();
           router.replace('/auth/login');
           return;
         }
@@ -78,7 +91,7 @@ export default function Page() {
     };
 
     fetchMakerspace();
-  }, [user, token, pathname, router, logout]);
+  }, [user, token, router, logout, params.id]);
 
   if (isLoading) {
     return (
@@ -94,13 +107,13 @@ export default function Page() {
 
   const navItems = [
     '',
-    'Dashboard',
+    // 'Dashboard',
     'Machines',
     'Events',
-    'Memberships',
+    // 'Memberships',
     'My Space',
-    'Revenue',
-    'Messages',
+    // 'Revenue',
+    // 'Messages',
     '',
   ];
 
@@ -108,126 +121,59 @@ export default function Page() {
 
   const renderPage = () => {
     switch (activePage) {
-      case 'Dashboard':
-        return <DashboardPage />;
+      // case 'Dashboard':
+      //   return <DashboardPage />;
       case 'Machines':
-        return <MachinesPage />;
+        return (
+          <MachinesPage makerspace={makerspace} setMakerspace={setMakerspace} />
+        );
       case 'Events':
-        return <EventsPage />;
-      case 'Memberships':
-        return <MembershipsPage />;
+        return (
+          <EventsPage makerspace={makerspace} setMakerspace={setMakerspace} />
+        );
+      // case 'Memberships':
+      //   return <MembershipsPage />;
       case 'My Space':
-        return <MySpacePage makerspace={makerspace} />;
-      case 'Revenue':
-        return <RevenuePage />;
-      case 'Messages':
-        return <MessagesPage />;
+        return (
+          <MySpacePage makerspace={makerspace} setMakerspace={setMakerspace} />
+        );
+      // case 'Revenue':
+      //   return <RevenuePage />;
+      // case 'Messages':
+      //   return <MessagesPage />;
       default:
-        return <MySpacePage makerspace={makerspace} />;
+        return (
+          <MySpacePage makerspace={makerspace} setMakerspace={setMakerspace} />
+        );
     }
   };
 
-  const notifications = [
-    {
-      title: 'Simran Arora sent you a message.',
-      time: '4 hrs ago',
-    },
-    {
-      title: 'You have a new booking request',
-      time: '4 hrs ago',
-    },
-  ];
+  // const notifications = [
+  //   {
+  //     title: 'Simran Arora sent you a message.',
+  //     time: '4 hrs ago',
+  //   },
+  //   {
+  //     title: 'You have a new booking request',
+  //     time: '4 hrs ago',
+  //   },
+  // ];
 
-  const menuItems = [
-    { label: 'Dashboard', icon: LayoutDashboard },
-    { label: 'All Bookings', icon: LayoutDashboard },
-    { label: 'Profile', icon: User },
-    { label: 'Account', icon: User },
-    { label: 'Language', icon: Globe },
-    { label: 'INR', icon: CreditCard },
-    { label: 'Help Centre', icon: HelpCircle },
-    { label: 'Settings', icon: Settings },
-  ];
+  // const menuItems = [
+  //   { label: 'Dashboard', icon: LayoutDashboard },
+  //   { label: 'All Bookings', icon: LayoutDashboard },
+  //   { label: 'Profile', icon: User },
+  //   { label: 'Account', icon: User },
+  //   { label: 'Language', icon: Globe },
+  //   { label: 'INR', icon: CreditCard },
+  //   { label: 'Help Centre', icon: HelpCircle },
+  //   { label: 'Settings', icon: Settings },
+  // ];
 
   return (
     <div className="min-h-screen bg-white">
-      <header className="flex items-center justify-between px-12 p-6 mb-4">
-        <Link href="/" className="flex items-center">
-          <Image
-            src="/logo.svg"
-            alt="Karkhana Logo"
-            width={170}
-            height={40}
-            className="h-10 w-auto"
-          />
-        </Link>
-        <div className="flex items-center gap-x-4">
-          <Popover
-            open={openPopover === 'notifications'}
-            onOpenChange={(open) =>
-              setOpenPopover(open ? 'notifications' : null)
-            }
-          >
-            <PopoverTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-8 w-8">
-                <Bell className="h-4 w-4" />
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-80 p-0 rounded-2xl" align="end">
-              <div className="p-4">
-                <h3 className="font-semibold">Notifications</h3>
-              </div>
-              <Separator />
-              <div className="space-y-2 p-2">
-                {notifications.map((notification, index) => (
-                  <div
-                    key={index}
-                    className="flex items-start gap-3 rounded-lg p-2 hover:bg-gray-100 cursor-pointer"
-                  >
-                    <div className="h-2 w-2 mt-2 rounded-full bg-gray-400" />
-                    <div className="flex-1">
-                      <p className="text-sm">{notification.title}</p>
-                      <p className="text-xs text-gray-500">
-                        {notification.time}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </PopoverContent>
-          </Popover>
-
-          <Popover
-            open={openPopover === 'profile'}
-            onOpenChange={(open) => setOpenPopover(open ? 'profile' : null)}
-          >
-            <PopoverTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-8 w-8">
-                <Avatar>
-                  <AvatarImage src="https://randomuser.me/api/portraits" />
-                  <AvatarFallback>U</AvatarFallback>
-                </Avatar>
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-56 p-2 rounded-2xl" align="end">
-              {menuItems.map((item, index) => {
-                const Icon = item.icon;
-                return (
-                  <Button
-                    key={index}
-                    variant="ghost"
-                    className="w-full justify-start gap-2 rounded-lg"
-                  >
-                    <Icon className="h-4 w-4" />
-                    {item.label}
-                  </Button>
-                );
-              })}
-            </PopoverContent>
-          </Popover>
-        </div>
-      </header>
-      <main className="flex gap-x-2 p-4 items-start">
+      <TopBar search={false} button={false} theme="light" />
+      <main className="flex gap-x-2 p-4 items-start pt-20">
         <aside className="bg-blue-600 w-52 rounded-3xl py-4 pl-8 flex flex-col justify-between">
           <div>
             <div className="flex items-center gap-x-4 my-6">

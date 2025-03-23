@@ -43,6 +43,8 @@ import {
   SlidersHorizontal,
 } from 'lucide-react';
 import { useState } from 'react';
+import { Makerspace, updateMakerspace } from '@/lib/api';
+import { useAuthenticationStore } from '@/lib/store';
 
 interface TicketType {
   type: string;
@@ -76,9 +78,22 @@ interface Event {
   experts?: Expert[];
 }
 
-export default function EventsPage() {
-  const [statusOpen, setStatusOpen] = useState<boolean>(true);
+interface MySpacePageProps {
+  makerspace: Makerspace;
+  setMakerspace: {
+    (makerspace: Partial<Makerspace>): void;
+  };
+}
+
+export default function EventsPage({
+  makerspace: initialMakerspace,
+  setMakerspace,
+}: MySpacePageProps) {
+  const [statusOpen, setStatusOpen] = useState(
+    initialMakerspace.status === 'active'
+  );
   const [showSuccess, setShowSuccess] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [events, setEvents] = useState<Event[]>([
     {
       id: 1,
@@ -113,6 +128,7 @@ export default function EventsPage() {
   const [currentEvent, setCurrentEvent] = useState<Event | null>(null);
   const [viewMode, setViewMode] = useState<string>('manage');
   const [activeTab, setActiveTab] = useState<string>('all');
+  const { token } = useAuthenticationStore();
   const [showEventTypeDropdown, setShowEventTypeDropdown] =
     useState<boolean>(false);
 
@@ -126,6 +142,31 @@ export default function EventsPage() {
     'Competition',
     'Conference',
   ];
+
+  const handleStatusChange = async (checked: boolean) => {
+    if (!token) return;
+
+    setIsLoading(true);
+    setStatusOpen(checked);
+    try {
+      const updatedData = {
+        status: checked ? 'active' : 'inactive',
+      };
+
+      await updateMakerspace(initialMakerspace._id, updatedData, token);
+
+      setMakerspace({
+        ...initialMakerspace,
+        status: checked ? 'active' : 'inactive',
+      });
+    } catch (error) {
+      console.error('Error updating makerspace status:', error);
+      // Revert the switch state if there's an error
+      setStatusOpen(!checked);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleAddEvent = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -307,8 +348,9 @@ export default function EventsPage() {
           <div className="flex flex-col items-center gap-1">
             <Switch
               checked={statusOpen}
-              onCheckedChange={setStatusOpen}
+              onCheckedChange={handleStatusChange}
               showStatus
+              disabled={isLoading}
             />
           </div>
         </div>
