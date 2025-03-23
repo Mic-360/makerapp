@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { Suspense, useEffect } from 'react';
 import { useAuthenticationStore } from '@/lib/store';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
@@ -21,15 +21,14 @@ export default function AuthProvider({
   const resetToken = pathname.startsWith('/auth/reset') ? searchParams.get('token') : null;
 
   useEffect(() => {
-    // Initial authentication check
-    reauth();
 
-    // Set up periodic reauth (e.g., every 15 minutes)
+    reauth()
+    // Set up periodic reauth (e.g., every 30 minutes)
     const interval = setInterval(() => {
       if (token) {
         reauth();
       }
-    }, 15 * 60 * 1000);
+    }, 30 * 60 * 1000);
 
     return () => clearInterval(interval);
   }, [reauth, token]);
@@ -59,9 +58,14 @@ export default function AuthProvider({
   }, [token, pathname, router, isLoading, resetToken]);
 
   if (isLoading) {
-    // You can create a proper loading component
     return <div>Loading...</div>;
   }
 
-  return children;
+  return (
+    <div className="min-h-screen min-w-screen bg-white relative">
+      <Suspense fallback={<div>Loading...</div>}>
+        {children}
+      </Suspense>
+    </div>
+  );
 }
