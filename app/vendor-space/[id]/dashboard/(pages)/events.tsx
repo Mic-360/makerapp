@@ -1,9 +1,8 @@
 'use client';
 
-import React from 'react';
-
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Calendar as DatePicker } from '@/components/ui/calendar';
 import { Card } from '@/components/ui/card';
 import {
   Dialog,
@@ -21,6 +20,11 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -31,117 +35,64 @@ import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import {
+  createEvent,
+  fetchEventsByMakerspace,
+  Makerspace,
+  updateEvent,
+  updateMakerspace,
+} from '@/lib/api';
+import { useAuthenticationStore } from '@/lib/store';
+import { cn } from '@/lib/utils';
+import { format } from 'date-fns';
+import {
+  AlertCircle,
   ArrowUpDown,
   Calendar,
+  CalendarIcon,
   Check,
   ChevronDown,
+  ChevronsUpDown,
   Edit,
   Filter,
+  ImageIcon,
   ImagePlus,
   Plus,
   PlusCircle,
   SlidersHorizontal,
+  X,
 } from 'lucide-react';
-import { useState } from 'react';
-import { Makerspace, updateMakerspace } from '@/lib/api';
-import { useAuthenticationStore } from '@/lib/store';
-
-interface TicketType {
-  type: string;
-  price: string;
-}
-
-interface Expert {
-  name: string;
-  number: string;
-}
-
-interface Event {
-  id: number;
-  name: string;
-  price: string;
-  priceValue: string;
-  category: string;
-  timing: string;
-  startDate: string;
-  endDate: string;
-  startTime: string;
-  endTime: string;
-  status: string;
-  isOn: boolean;
-  description?: string;
-  agenda?: string;
-  terms?: string;
-  location?: string;
-  ticketTypes?: TicketType[];
-  totalTickets?: string;
-  experts?: Expert[];
-}
+import React, { useEffect, useState } from 'react';
+import { Event } from '@/lib/api';
+import Image from 'next/image';
 
 interface MySpacePageProps {
   makerspace: Makerspace;
-  setMakerspace: {
-    (makerspace: Partial<Makerspace>): void;
-  };
+  setMakerspace: React.Dispatch<React.SetStateAction<Makerspace | null>>;
 }
 
 export default function EventsPage({
   makerspace: initialMakerspace,
   setMakerspace,
 }: MySpacePageProps) {
+  const { token } = useAuthenticationStore();
+  const [error, setError] = useState<string | null>(null);
   const [statusOpen, setStatusOpen] = useState(
     initialMakerspace.status === 'active'
   );
   const [showSuccess, setShowSuccess] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [events, setEvents] = useState<Event[]>([
-    {
-      id: 1,
-      name: '3D Printing workshop',
-      price: '₹ 500/hr',
-      priceValue: '500',
-      category: '3D Printer',
-      timing: '10 AM - 3 AM',
-      startDate: '25 Jun',
-      endDate: '28 Jun, 2024',
-      startTime: '10:00 a.m.',
-      endTime: '12:00 p.m.',
-      status: 'OFF',
-      isOn: false,
-      description: 'Learn 3D printing basics and techniques',
-      agenda: 'Introduction to 3D printing, hands-on practice',
-      terms: 'No refunds, participants must follow safety guidelines',
-      location: 'Room 101, Main Building',
-      ticketTypes: [
-        { type: 'Standard', price: '500' },
-        { type: 'Premium', price: '1000' },
-      ],
-      totalTickets: '50',
-      experts: [
-        { name: 'John Doe', number: '9876543210' },
-        { name: 'Jane Smith', number: '8765432109' },
-      ],
-    },
-  ]);
+  const [events, setEvents] = useState<Event[]>([]);
   const [addDialogOpen, setAddDialogOpen] = useState<boolean>(false);
   const [editDialogOpen, setEditDialogOpen] = useState<boolean>(false);
   const [currentEvent, setCurrentEvent] = useState<Event | null>(null);
   const [viewMode, setViewMode] = useState<string>('manage');
-  const [activeTab, setActiveTab] = useState<string>('all');
-  const { token } = useAuthenticationStore();
-  const [showEventTypeDropdown, setShowEventTypeDropdown] =
-    useState<boolean>(false);
+  const [activeTab, setActiveTab] = useState<string>('active');
+  const [startDate, setStartDate] = useState<Date>();
+  const [endDate, setEndDate] = useState<Date>();
+  const [selectedCategory, setSelectedCategory] =
+    useState<string>('All Events');
 
-  const eventCategories = [
-    'Workshops',
-    'Webinar',
-    'Meet Ups',
-    'Boot Camp',
-    'Seminar',
-    'Training',
-    'Competition',
-    'Conference',
-  ];
+  const [selectedImages, setSelectedImages] = useState<FileList | null>(null);
 
   const handleStatusChange = async (checked: boolean) => {
     if (!token) return;
@@ -168,122 +119,241 @@ export default function EventsPage({
     }
   };
 
-  const handleAddEvent = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const formData = new FormData(e.currentTarget);
+  const handleImageUpload = async (files: FileList | null) => {
+    if (!files) return [];
 
-    // Extract ticket types and prices
-    const ticketTypes: TicketType[] = [];
-    for (let i = 1; i <= 4; i++) {
-      const type = formData.get(`ticketType${i}`)?.toString();
-      const price = formData.get(`price${i}`)?.toString();
-      if (type && price) {
-        ticketTypes.push({ type, price });
-      }
-    }
-
-    // Extract experts
-    const experts: Expert[] = [];
-    for (let i = 1; i <= 2; i++) {
-      const name = formData.get(`expertName${i}`)?.toString();
-      const number = formData.get(`expertNumber${i}`)?.toString();
-      if (name && number) {
-        experts.push({ name, number });
-      }
-    }
-
-    const startDate = formData.get('startDate')?.toString() || '';
-    const endDate = formData.get('endDate')?.toString() || '';
-    const startTime = formData.get('startTime')?.toString() || '';
-    const endTime = formData.get('endTime')?.toString() || '';
-
-    const newEvent: Event = {
-      id: events.length + 1,
-      name: formData.get('name')?.toString() || '',
-      price: ticketTypes.length > 0 ? `₹ ${ticketTypes[0].price}` : '₹ 0',
-      priceValue: ticketTypes.length > 0 ? ticketTypes[0].price : '0',
-      category: formData.get('category')?.toString() || '',
-      timing: `${startDate} - ${endDate}`,
-      startDate,
-      endDate,
-      startTime,
-      endTime,
-      status: 'OFF',
-      isOn: false,
-      description: formData.get('about')?.toString(),
-      agenda: formData.get('agenda')?.toString(),
-      terms: formData.get('terms')?.toString(),
-      location: formData.get('location')?.toString(),
-      ticketTypes,
-      totalTickets: formData.get('totalTickets')?.toString(),
-      experts,
-    };
-
-    setEvents([...events, newEvent]);
-    setAddDialogOpen(false);
-    setShowSuccess(true);
-
-    setTimeout(() => {
-      setShowSuccess(false);
-    }, 3000);
+    // TODO: Implement image upload to storage service
+    // For now, we'll just store the file names
+    const imageUrls = Array.from(files).map((file) =>
+      URL.createObjectURL(file)
+    );
+    return imageUrls;
   };
 
-  const handleEditEvent = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleAddEvent = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!currentEvent) return;
-
     const formData = new FormData(e.currentTarget);
+    setError(null);
 
-    // Extract ticket types and prices
-    const ticketTypes: TicketType[] = [];
-    for (let i = 1; i <= 4; i++) {
-      const type = formData.get(`ticketType${i}`)?.toString();
-      const price = formData.get(`price${i}`)?.toString();
-      if (type && price) {
-        ticketTypes.push({ type, price });
+    if (!token) return;
+
+    try {
+      // Basic required fields
+      const name = formData.get('name')?.toString();
+      const category = formData.get('category')?.toString();
+      const description = formData.get('about')?.toString();
+      const location = formData.get('location')?.toString();
+      const ticketType = formData.get('ticketType1')?.toString();
+      const ticketPrice = parseFloat(formData.get('price1')?.toString() || '0');
+      const ticketLimit = parseInt(
+        formData.get('totalTickets')?.toString() || '0',
+        10
+      );
+
+      // Validate required fields
+      if (
+        !name ||
+        !category ||
+        !description ||
+        !location ||
+        !ticketType ||
+        !ticketPrice
+      ) {
+        setError('Please fill in all required fields');
+        return;
       }
+
+      if (ticketLimit <= 0) {
+        setError('Ticket limit must be greater than zero');
+        return;
+      }
+
+      if (!startDate || !endDate) {
+        setError('Please select both start and end dates');
+        return;
+      }
+
+      // Handle image upload
+      const imageLinks = await handleImageUpload(selectedImages);
+
+      // Format dates
+      const startTime = formData.get('startTime')?.toString() || '';
+      const endTime = formData.get('endTime')?.toString() || '';
+
+      // Extract experts
+      const experts = [];
+      for (let i = 1; i <= 2; i++) {
+        const name = formData.get(`expertName${i}`)?.toString();
+        const number = formData.get(`expertNumber${i}`)?.toString();
+        if (name && number) {
+          experts.push({ name, number });
+        }
+      }
+
+      const newEventData = {
+        name,
+        category,
+        date: {
+          start: format(startDate, 'yyyy-MM-dd'),
+          end: format(endDate, 'yyyy-MM-dd'),
+        },
+        time: {
+          start: startTime,
+          end: endTime,
+        },
+        ticket: {
+          type: ticketType,
+          price: ticketPrice,
+        },
+        ticketLimit,
+        description,
+        agenda: formData.get('agenda')?.toString(),
+        terms: formData.get('terms')?.toString(),
+        location,
+        experts,
+        makerSpace: initialMakerspace.name,
+        imageLinks,
+      };
+
+      const createdEvent = await createEvent(newEventData, token);
+      setEvents([...events, createdEvent]);
+      setAddDialogOpen(false);
+      setShowSuccess(true);
+
+      // Reset form state
+      setStartDate(undefined);
+      setEndDate(undefined);
+      setSelectedImages(null);
+
+      setTimeout(() => {
+        setShowSuccess(false);
+      }, 3000);
+    } catch (error) {
+      console.error('Error creating event:', error);
+      setError('Failed to create event. Please try again.');
     }
+  };
 
-    // Extract experts
-    const experts: Expert[] = [];
-    for (let i = 1; i <= 2; i++) {
-      const name = formData.get(`expertName${i}`)?.toString();
-      const number = formData.get(`expertNumber${i}`)?.toString();
-      if (name && number) {
-        experts.push({ name, number });
+  const handleEditEvent = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!currentEvent?._id) return;
+    setError(null);
+
+    if (!token) return;
+
+    try {
+      const formData = new FormData(e.currentTarget);
+
+      // Basic required fields
+      const name = formData.get('name')?.toString();
+      const category = formData.get('category')?.toString();
+      const description = formData.get('about')?.toString();
+      const location = formData.get('location')?.toString();
+      const ticketType = formData.get('ticketType1')?.toString();
+      const ticketPrice = parseFloat(formData.get('price1')?.toString() || '0');
+      const ticketLimit = parseInt(
+        formData.get('totalTickets')?.toString() || '0',
+        10
+      );
+
+      // Validate required fields
+      if (
+        !name ||
+        !category ||
+        !description ||
+        !location ||
+        !ticketType ||
+        !ticketPrice
+      ) {
+        setError('Please fill in all required fields');
+        return;
       }
+
+      if (ticketLimit <= 0) {
+        setError('Ticket limit must be greater than zero');
+        return;
+      }
+
+      // Format dates
+      const startDate = formData.get('startDate')?.toString() || '';
+      const endDate = formData.get('endDate')?.toString() || '';
+      const startTime = formData.get('startTime')?.toString() || '';
+      const endTime = formData.get('endTime')?.toString() || '';
+
+      // Extract experts
+      const experts = [];
+      for (let i = 1; i <= 2; i++) {
+        const name = formData.get(`expertName${i}`)?.toString();
+        const number = formData.get(`expertNumber${i}`)?.toString();
+        if (name && number) {
+          experts.push({ name, number });
+        }
+      }
+
+      const updatedEventData = {
+        name,
+        category,
+        date: {
+          start: startDate,
+          end: endDate,
+        },
+        time: {
+          start: startTime,
+          end: endTime,
+        },
+        ticket: {
+          type: ticketType,
+          price: ticketPrice,
+        },
+        ticketLimit,
+        description,
+        agenda: formData.get('agenda')?.toString(),
+        terms: formData.get('terms')?.toString(),
+        location,
+        experts,
+      };
+
+      const updatedEvent = await updateEvent(
+        currentEvent._id,
+        updatedEventData,
+        token
+      );
+      setEvents(
+        events.map((event) =>
+          event._id === currentEvent._id ? { ...event, ...updatedEvent } : event
+        )
+      );
+
+      setEditDialogOpen(false);
+      setShowSuccess(true);
+
+      setTimeout(() => {
+        setShowSuccess(false);
+      }, 3000);
+    } catch (error) {
+      console.error('Error updating event:', error);
+      setError('Failed to update event. Please try again.');
     }
+  };
 
-    const startDate = formData.get('startDate')?.toString() || '';
-    const endDate = formData.get('endDate')?.toString() || '';
+  const toggleEventStatus = async (id: string) => {
+    if (!token) return;
+    try {
+      const event = events.find((e) => e._id === id);
+      if (!event) return;
 
-    const updatedEvents = events.map((event) => {
-      if (event.id === currentEvent.id) {
-        return {
-          ...event,
-          name: formData.get('name')?.toString() || '',
-          price: ticketTypes.length > 0 ? `₹ ${ticketTypes[0].price}` : '₹ 0',
-          priceValue: ticketTypes.length > 0 ? ticketTypes[0].price : '0',
-          category: formData.get('category')?.toString() || '',
-          timing: `${startDate} - ${endDate}`,
-          startDate,
-          endDate,
-          startTime: formData.get('startTime')?.toString() || '',
-          endTime: formData.get('endTime')?.toString() || '',
-          description: formData.get('about')?.toString(),
-          agenda: formData.get('agenda')?.toString(),
-          terms: formData.get('terms')?.toString(),
-          location: formData.get('location')?.toString(),
-          ticketTypes,
-          totalTickets: formData.get('totalTickets')?.toString(),
-          experts,
-        };
-      }
-      return event;
-    });
+      const newStatus = event.status === 'active' ? 'inactive' : 'active';
+      const updatedEvent = await updateEvent(id, { status: newStatus }, token);
 
-    setEvents(updatedEvents);
-    setEditDialogOpen(false);
+      setEvents(
+        events.map((event) =>
+          event._id === id ? { ...event, ...updatedEvent } : event
+        )
+      );
+    } catch (error) {
+      console.error('Error toggling event status:', error);
+      setError('Failed to update event status');
+    }
   };
 
   const openEditDialog = (event: Event) => {
@@ -291,27 +361,57 @@ export default function EventsPage({
     setEditDialogOpen(true);
   };
 
-  const toggleEventStatus = (id: number) => {
-    setEvents(
-      events.map((event) =>
-        event.id === id
-          ? {
-              ...event,
-              isOn: !event.isOn,
-              status: !event.isOn ? 'ON' : 'OFF',
-            }
-          : event
-      )
-    );
-  };
-
-  const deleteEvent = (id: number) => {
-    setEvents(events.filter((event) => event.id !== id));
+  const deleteEvent = (id: string) => {
+    setEvents(events.filter((event) => event._id !== id));
     setEditDialogOpen(false);
   };
 
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        setIsLoading(true);
+        const fetchedEvents = await fetchEventsByMakerspace(
+          initialMakerspace.name
+        );
+        setEvents(fetchedEvents);
+      } catch (err) {
+        console.error('Error fetching events:', err);
+        setError('Failed to load events');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    if (initialMakerspace.name) {
+      fetchEvents();
+    }
+  }, [initialMakerspace.name]);
+
+  const eventCategories = [
+    'All Events',
+    ...Array.from(new Set(events.map((event) => event.category))).filter(
+      Boolean
+    ),
+  ];
+
+  const filteredEvents = events.filter((event) => {
+    if (selectedCategory === 'All Events') return true;
+    return event.category === selectedCategory;
+  });
+
   return (
     <div className="space-y-4 pt-2">
+      {error && (
+        <Card className="p-4 mb-4 bg-white border-red-200">
+          <div className="flex items-center gap-2">
+            <div className="rounded-full bg-red-100 p-2">
+              <AlertCircle className="h-5 w-5 text-red-600" />
+            </div>
+            <p className="text-red-600">{error}</p>
+          </div>
+        </Card>
+      )}
+
       <div className="flex items-center justify-between">
         <Tabs value={viewMode} onValueChange={(value) => setViewMode(value)}>
           <TabsList className="bg-transparent space-x-2">
@@ -357,34 +457,33 @@ export default function EventsPage({
       </div>
 
       {viewMode === 'manage' && (
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <div className="flex items-center mb-4 justify-between">
+        <Tabs
+          value={activeTab}
+          onValueChange={(value) => setActiveTab(value)}
+          className="w-full"
+        >
+          <div className="flex items-center mb-2 justify-between">
             <div className="flex items-center">
               <div className="relative">
-                <DropdownMenu
-                  open={showEventTypeDropdown}
-                  onOpenChange={setShowEventTypeDropdown}
+                <Select
+                  value={selectedCategory}
+                  onValueChange={setSelectedCategory}
+                  defaultValue="All Events"
                 >
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      className="flex items-center gap-2 font-medium"
-                    >
-                      All Events
-                      <ChevronDown className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent className="w-56">
+                  <SelectTrigger className="border-none text-sm space-x-2 shadow-none">
+                    <SelectValue placeholder="All Events" />
+                  </SelectTrigger>
+                  <SelectContent>
                     {eventCategories.map((category) => (
-                      <DropdownMenuItem key={category}>
+                      <SelectItem key={category} value={category}>
                         {category}
-                      </DropdownMenuItem>
+                      </SelectItem>
                     ))}
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                  </SelectContent>
+                </Select>
               </div>
 
-              <TabsList className="bg-transparent ml-4">
+              <TabsList className="bg-transparent">
                 <TabsTrigger
                   value="active"
                   className="data-[state=active]:bg-black data-[state=active]:text-white"
@@ -449,39 +548,55 @@ export default function EventsPage({
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label htmlFor="startDate">Start Date</Label>
-                        <div className="relative">
-                          <Select name="startDate" defaultValue="">
-                            <SelectTrigger className="w-full">
-                              <SelectValue placeholder="Select date" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="25 Jun">25 Jun</SelectItem>
-                              <SelectItem value="26 Jun">26 Jun</SelectItem>
-                              <SelectItem value="27 Jun">27 Jun</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <Button
+                              variant="outline"
+                              className={cn(
+                                'w-full justify-start text-left font-normal',
+                                !startDate && 'text-muted-foreground'
+                              )}
+                            >
+                              <CalendarIcon className="mr-2 h-4 w-4" />
+                              {startDate
+                                ? format(startDate, 'PPP')
+                                : 'Pick a date'}
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-0" align="start">
+                            <DatePicker
+                              mode="single"
+                              selected={startDate}
+                              onSelect={setStartDate}
+                              initialFocus
+                            />
+                          </PopoverContent>
+                        </Popover>
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="endDate">End Date</Label>
-                        <div className="relative">
-                          <Select name="endDate" defaultValue="">
-                            <SelectTrigger className="w-full">
-                              <SelectValue placeholder="Select date" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="28 Jun, 2024">
-                                28 Jun, 2024
-                              </SelectItem>
-                              <SelectItem value="29 Jun, 2024">
-                                29 Jun, 2024
-                              </SelectItem>
-                              <SelectItem value="30 Jun, 2024">
-                                30 Jun, 2024
-                              </SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <Button
+                              variant="outline"
+                              className={cn(
+                                'w-full justify-start text-left font-normal',
+                                !endDate && 'text-muted-foreground'
+                              )}
+                            >
+                              <CalendarIcon className="mr-2 h-4 w-4" />
+                              {endDate ? format(endDate, 'PPP') : 'Pick a date'}
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-0" align="start">
+                            <DatePicker
+                              mode="single"
+                              selected={endDate}
+                              onSelect={setEndDate}
+                              initialFocus
+                            />
+                          </PopoverContent>
+                        </Popover>
                       </div>
                     </div>
 
@@ -603,22 +718,53 @@ export default function EventsPage({
                     <div className="space-y-2">
                       <Label>Add event posters/images</Label>
                       <div className="grid grid-cols-4 gap-2">
-                        {[
-                          'Banner Image',
-                          'Display Image',
-                          'Event Logo',
-                          'Other',
-                        ].map((type, i) => (
-                          <div
-                            key={i}
-                            className="border rounded-md aspect-square flex flex-col items-center justify-center cursor-pointer hover:bg-gray-50 p-2 text-center"
-                          >
-                            <ImagePlus className="h-6 w-6 text-gray-400 mb-1" />
-                            <span className="text-xs text-gray-400">
-                              {type}
-                            </span>
+                        <input
+                          type="file"
+                          multiple
+                          accept="image/*"
+                          onChange={(e) => setSelectedImages(e.target.files)}
+                          className="hidden"
+                          id="image-upload"
+                        />
+                        <label
+                          htmlFor="image-upload"
+                          className="col-span-4 border-2 border-dashed rounded-md p-4 cursor-pointer hover:bg-gray-50 text-center"
+                        >
+                          <ImagePlus className="h-6 w-6 text-gray-400 mx-auto mb-2" />
+                          <span className="text-sm text-gray-600">
+                            Click to upload images
+                          </span>
+                        </label>
+                        {selectedImages && (
+                          <div className="col-span-4 space-y-2">
+                            {Array.from(selectedImages).map((file, index) => (
+                              <div
+                                key={index}
+                                className="flex items-center gap-2"
+                              >
+                                <span className="text-sm truncate">
+                                  {file.name}
+                                </span>
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => {
+                                    const dt = new DataTransfer();
+                                    Array.from(selectedImages).forEach(
+                                      (f, i) => {
+                                        if (i !== index) dt.items.add(f);
+                                      }
+                                    );
+                                    setSelectedImages(dt.files);
+                                  }}
+                                >
+                                  <X className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            ))}
                           </div>
-                        ))}
+                        )}
                       </div>
                     </div>
 
@@ -732,167 +878,67 @@ export default function EventsPage({
             </div>
           </div>
 
-          <div>
-            <TabsContent value="all" className="mt-0">
-              {showSuccess && (
-                <Card className="p-4 mb-4 bg-white border-green-200">
-                  <div className="flex items-center gap-2">
-                    <div className="rounded-full bg-green-100 p-2">
-                      <Check className="h-5 w-5 text-green-600" />
-                    </div>
-                    <p>
-                      Congratulations, your event has been submitted for review.
-                    </p>
-                  </div>
-                </Card>
-              )}
-
-              <div className="rounded-md border">
-                <div className="grid grid-cols-12 bg-red-300 p-3 text-sm font-medium">
-                  <div className="col-span-3 flex items-center">
-                    Name
-                    <ArrowUpDown className="ml-1 h-4 w-4" />
-                  </div>
-                  <div className="col-span-2 flex items-center">
-                    Price
-                    <ArrowUpDown className="ml-1 h-4 w-4" />
-                  </div>
-                  <div className="col-span-3 flex items-center">
-                    Category
-                    <ArrowUpDown className="ml-1 h-4 w-4" />
-                  </div>
-                  <div className="col-span-2 flex items-center">
-                    Timing
-                    <ArrowUpDown className="ml-1 h-4 w-4" />
-                  </div>
-                  <div className="col-span-1 flex items-center">
-                    Status
-                    <ArrowUpDown className="ml-1 h-4 w-4" />
-                  </div>
-                  <div className="col-span-1 text-center">Edit</div>
-                </div>
-
-                {events.length > 0 ? (
-                  <div>
-                    {events.map((event) => (
-                      <div
-                        key={event.id}
-                        className="grid grid-cols-12 p-3 text-sm border-t"
-                      >
-                        <div className="col-span-3 flex items-center gap-2">
-                          <div className="h-10 w-10 rounded bg-gray-200 overflow-hidden flex items-center justify-center">
-                            <Calendar className="h-6 w-6 text-gray-500" />
-                          </div>
-                          <span>{event.name}</span>
-                        </div>
-                        <div className="col-span-2 flex items-center">
-                          {event.price}
-                        </div>
-                        <div className="col-span-3 flex items-center">
-                          {event.category}
-                        </div>
-                        <div className="col-span-2 flex items-center">
-                          {event.timing}
-                        </div>
-                        <div className="col-span-1 flex items-center gap-2">
-                          <Switch
-                            checked={event.isOn}
-                            onCheckedChange={() => toggleEventStatus(event.id)}
-                          />
-                          <Badge
-                            variant="outline"
-                            className={`${
-                              event.isOn
-                                ? 'bg-green-100 text-green-800 hover:bg-green-100'
-                                : 'bg-gray-100 text-gray-800 hover:bg-gray-100'
-                            }`}
-                          >
-                            {event.isOn ? 'ON' : 'OFF'}
-                          </Badge>
-                        </div>
-                        <div className="col-span-1 flex items-center justify-center">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => openEditDialog(event)}
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="p-20 flex flex-col items-center justify-center">
-                    <div className="h-16 w-16 rounded-full border-2 border-gray-200 flex items-center justify-center mb-4">
-                      <Plus className="h-8 w-8 text-gray-400" />
-                    </div>
-                    <div className="text-gray-500">Add events</div>
-                  </div>
-                )}
-              </div>
-            </TabsContent>
-
+          <div className="rounded-md shadow-xl bg-white">
             <TabsContent value="active" className="mt-0">
               <div className="rounded-md border">
                 <div className="grid grid-cols-12 bg-orange-100 p-3 text-sm font-medium">
-                  <div className="col-span-3 flex items-center">
+                  <div className="col-span-1 flex items-center">
+                    <ImageIcon className="ml-1 h-4 w-4" />
+                  </div>
+                  <div className="col-span-4 flex items-center">
                     Name
-                    <ArrowUpDown className="ml-1 h-4 w-4" />
+                    <ChevronsUpDown className="ml-2.5 h-4 w-4" />
+                  </div>
+                  <div className="col-span-1 flex items-center">
+                    Price
+                    <ChevronsUpDown className="ml-2.5 h-4 w-4" />
                   </div>
                   <div className="col-span-2 flex items-center">
-                    Price
-                    <ArrowUpDown className="ml-1 h-4 w-4" />
-                  </div>
-                  <div className="col-span-3 flex items-center">
                     Category
-                    <ArrowUpDown className="ml-1 h-4 w-4" />
+                    <ChevronsUpDown className="ml-2.5 h-4 w-4" />
                   </div>
                   <div className="col-span-2 flex items-center">
                     Timing
-                    <ArrowUpDown className="ml-1 h-4 w-4" />
+                    <ChevronsUpDown className="ml-2.5 h-4 w-4" />
                   </div>
-                  <div className="col-span-1 flex items-center">
-                    Status
-                    <ArrowUpDown className="ml-1 h-4 w-4" />
-                  </div>
+                  <div className="col-span-1 flex items-center">Status</div>
                   <div className="col-span-1 text-center">Edit</div>
                 </div>
 
                 <div>
-                  {events
-                    .filter((e) => e.isOn)
+                  {filteredEvents
+                    .filter((e) => e.status === 'active')
                     .map((event) => (
                       <div
-                        key={event.id}
+                        key={event._id}
                         className="grid grid-cols-12 p-3 text-sm border-t"
                       >
-                        <div className="col-span-3 flex items-center gap-2">
-                          <div className="h-10 w-10 rounded bg-gray-200 overflow-hidden flex items-center justify-center">
-                            <Calendar className="h-6 w-6 text-gray-500" />
-                          </div>
+                        <div className="col-span-1 flex items-center gap-2">
+                          <Image
+                            src={event?.imageLinks?.[0] || ''}
+                            alt="Event"
+                            width={200}
+                            height={200}
+                            className="object-cover h-10 w-10 rounded"
+                          />
+                        </div>
+                        <div className="col-span-4 flex items-center gap-2">
                           <span>{event.name}</span>
                         </div>
-                        <div className="col-span-2 flex items-center">
-                          {event.price}
+                        <div className="col-span-1 flex items-center">
+                          Rs{event.ticket.price}/hr
                         </div>
-                        <div className="col-span-3 flex items-center">
+                        <div className="col-span-2 flex items-center">
                           {event.category}
                         </div>
                         <div className="col-span-2 flex items-center">
-                          {event.timing}
+                          {event.time.start} - {event.time.end}
                         </div>
                         <div className="col-span-1 flex items-center gap-2">
                           <Switch
-                            checked={event.isOn}
-                            onCheckedChange={() => toggleEventStatus(event.id)}
+                            checked={event.status === 'active'}
+                            onCheckedChange={() => toggleEventStatus(event._id)}
                           />
-                          <Badge
-                            variant="outline"
-                            className="bg-green-100 text-green-800 hover:bg-green-100"
-                          >
-                            ON
-                          </Badge>
                         </div>
                         <div className="col-span-1 flex items-center justify-center">
                           <Button
@@ -906,23 +952,131 @@ export default function EventsPage({
                       </div>
                     ))}
                 </div>
-                {events.filter((e) => e.isOn).length === 0 && (
+                {filteredEvents.filter((e) => e.status === 'active').length ===
+                  0 && (
                   <div className="p-20 flex flex-col items-center justify-center">
-                    <div className="text-gray-500">No active events</div>
+                    <div className="text-gray-500 flex flex-col items-center gap-4">
+                      <Plus className="h-8 w-8 text-gray-500" />
+                      <p className="text-sm">Add Events</p>
+                    </div>
                   </div>
                 )}
               </div>
             </TabsContent>
 
             <TabsContent value="draft" className="mt-0">
-              <div className="rounded-md border p-20 flex flex-col items-center justify-center">
-                <div className="text-gray-500">No draft events</div>
+              <div className="rounded-md border">
+                <div className="grid grid-cols-12 bg-orange-100 p-3 text-sm font-medium">
+                  <div className="col-span-1 flex items-center">
+                    <ImageIcon className="ml-1 h-4 w-4" />
+                  </div>
+                  <div className="col-span-4 flex items-center">
+                    Name
+                    <ChevronsUpDown className="ml-2.5 h-4 w-4" />
+                  </div>
+                  <div className="col-span-1 flex items-center">
+                    Price
+                    <ChevronsUpDown className="ml-2.5 h-4 w-4" />
+                  </div>
+                  <div className="col-span-2 flex items-center">
+                    Category
+                    <ChevronsUpDown className="ml-2.5 h-4 w-4" />
+                  </div>
+                  <div className="col-span-2 flex items-center">
+                    Timing
+                    <ChevronsUpDown className="ml-2.5 h-4 w-4" />
+                  </div>
+                  <div className="col-span-1 flex items-center">Status</div>
+                  <div className="col-span-1 text-center">Edit</div>
+                </div>
+
+                <div>
+                  {filteredEvents
+                    .filter((e) => e.status === 'draft')
+                    .map((event) => (
+                      <div
+                        key={event._id}
+                        className="grid grid-cols-12 p-3 text-sm border-t"
+                      >
+                        <div className="col-span-1 flex items-center gap-2">
+                          <Image
+                            src={event?.imageLinks?.[0] || ''}
+                            alt="Event"
+                            width={200}
+                            height={200}
+                            className="object-cover h-10 w-10 rounded"
+                          />
+                        </div>
+                        <div className="col-span-4 flex items-center gap-2">
+                          <span>{event.name}</span>
+                        </div>
+                        <div className="col-span-1 flex items-center">
+                          Rs{event.ticket.price}/hr
+                        </div>
+                        <div className="col-span-2 flex items-center">
+                          {event.category}
+                        </div>
+                        <div className="col-span-2 flex items-center">
+                          {event.time.start} - {event.time.end}
+                        </div>
+                        <div className="col-span-1 flex items-center gap-2">
+                          <Switch
+                            checked={event.status === 'active'}
+                            onCheckedChange={() => toggleEventStatus(event._id)}
+                          />
+                        </div>
+                        <div className="col-span-1 flex items-center justify-center">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => openEditDialog(event)}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                </div>
+                {events.filter((e) => e.status === 'draft').length === 0 && (
+                  <div className="p-20 flex flex-col items-center justify-center">
+                    <div className="text-gray-500 flex flex-col items-center gap-4">
+                      <Plus className="h-8 w-8 text-gray-500" />
+                      <p className="text-sm">No Pending Events</p>
+                    </div>
+                  </div>
+                )}
               </div>
             </TabsContent>
 
             <TabsContent value="trash" className="mt-0">
-              <div className="rounded-md border p-20 flex flex-col items-center justify-center">
-                <div className="text-gray-500">No events in trash</div>
+              <div className="rounded-md border">
+                <div className="grid grid-cols-12 bg-orange-100 p-3 text-sm font-medium">
+                  <div className="col-span-1 flex items-center">
+                    <ImageIcon className="ml-1 h-4 w-4" />
+                  </div>
+                  <div className="col-span-5 flex items-center">
+                    Name
+                    <ChevronsUpDown className="ml-2.5 h-4 w-4" />
+                  </div>
+                  <div className="col-span-1 flex items-center">
+                    Price
+                    <ChevronsUpDown className="ml-2.5 h-4 w-4" />
+                  </div>
+                  <div className="col-span-2 flex items-center">
+                    Category
+                    <ChevronsUpDown className="ml-2.5 h-4 w-4" />
+                  </div>
+                  <div className="col-span-2 flex items-center">
+                    Timing
+                    <ChevronsUpDown className="ml-2.5 h-4 w-4" />
+                  </div>
+                  <div className="col-span-1 text-center">Edit</div>
+                </div>
+                <div className="p-20 flex flex-col items-center justify-center">
+                  <div className="text-gray-500 flex flex-col items-center gap-4">
+                    <p className="text-sm">No Pending Events</p>
+                  </div>
+                </div>
               </div>
             </TabsContent>
           </div>
@@ -930,148 +1084,52 @@ export default function EventsPage({
       )}
 
       {viewMode === 'monitor' && (
-        <div>
-          <div className="flex items-center mb-4 justify-between">
+        <Tabs
+          value={activeTab}
+          onValueChange={(value) => setActiveTab(value)}
+          className="w-full"
+        >
+          <div className="flex items-center mb-2 justify-between">
             <div className="flex items-center">
               <div className="relative">
-                <DropdownMenu
-                  open={showEventTypeDropdown}
-                  onOpenChange={setShowEventTypeDropdown}
+                <Select
+                  value={selectedCategory}
+                  onValueChange={setSelectedCategory}
+                  defaultValue="All Events"
                 >
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      className="flex items-center gap-2 font-medium"
-                    >
-                      All Events
-                      <ChevronDown className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent className="w-56">
+                  <SelectTrigger className="border-none text-sm space-x-2 shadow-none">
+                    <SelectValue placeholder="All Events" />
+                  </SelectTrigger>
+                  <SelectContent>
                     {eventCategories.map((category) => (
-                      <DropdownMenuItem key={category}>
+                      <SelectItem key={category} value={category}>
                         {category}
-                      </DropdownMenuItem>
+                      </SelectItem>
                     ))}
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                  </SelectContent>
+                </Select>
               </div>
 
-              <Tabs value={activeTab} onValueChange={setActiveTab}>
-                <TabsList className="bg-transparent ml-4">
-                  <TabsTrigger
-                    value="active"
-                    className="data-[state=active]:bg-black data-[state=active]:text-white"
-                  >
-                    Active
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="draft"
-                    className="data-[state=active]:bg-black data-[state=active]:text-white"
-                  >
-                    Draft
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="trash"
-                    className="data-[state=active]:bg-black data-[state=active]:text-white"
-                  >
-                    Trash
-                  </TabsTrigger>
-                </TabsList>
-
-                <TabsContent value="active">
-                  <div className="rounded-md border">
-                    <div className="grid grid-cols-12 bg-orange-100 p-3 text-sm font-medium">
-                      <div className="col-span-3 flex items-center">
-                        Name
-                        <ArrowUpDown className="ml-1 h-4 w-4" />
-                      </div>
-                      <div className="col-span-2 flex items-center">
-                        Price
-                        <ArrowUpDown className="ml-1 h-4 w-4" />
-                      </div>
-                      <div className="col-span-3 flex items-center">
-                        Category
-                        <ArrowUpDown className="ml-1 h-4 w-4" />
-                      </div>
-                      <div className="col-span-2 flex items-center">
-                        Timing
-                        <ArrowUpDown className="ml-1 h-4 w-4" />
-                      </div>
-                      <div className="col-span-1 flex items-center">
-                        Status
-                        <ArrowUpDown className="ml-1 h-4 w-4" />
-                      </div>
-                      <div className="col-span-1 text-center">Edit</div>
-                    </div>
-
-                    <div>
-                      {events
-                        .filter((e) => e.isOn)
-                        .map((event) => (
-                          <div
-                            key={event.id}
-                            className="grid grid-cols-12 p-3 text-sm border-t"
-                          >
-                            <div className="col-span-3 flex items-center gap-2">
-                              <div className="h-10 w-10 rounded bg-gray-200 overflow-hidden flex items-center justify-center">
-                                <Calendar className="h-6 w-6 text-gray-500" />
-                              </div>
-                              <span>{event.name}</span>
-                            </div>
-                            <div className="col-span-2 flex items-center">
-                              {event.price}
-                            </div>
-                            <div className="col-span-3 flex items-center">
-                              {event.category}
-                            </div>
-                            <div className="col-span-2 flex items-center">
-                              {event.timing}
-                            </div>
-                            <div className="col-span-1 flex items-center gap-2">
-                              <Switch
-                                checked={event.isOn}
-                                onCheckedChange={() =>
-                                  toggleEventStatus(event.id)
-                                }
-                              />
-                              <Badge
-                                variant="outline"
-                                className="bg-green-100 text-green-800 hover:bg-green-100"
-                              >
-                                ON
-                              </Badge>
-                            </div>
-                            <div className="col-span-1 flex items-center justify-center">
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => openEditDialog(event)}
-                              >
-                                <Edit className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          </div>
-                        ))}
-                    </div>
-                    {events.filter((e) => e.isOn).length === 0 && (
-                      <div className="p-20 flex flex-col items-center justify-center">
-                        <div className="text-gray-500">No active events</div>
-                      </div>
-                    )}
-                  </div>
-                </TabsContent>
-                <TabsContent value="draft">
-                  <div className="rounded-md border p-20 flex flex-col items-center justify-center">
-                    <div className="text-gray-500">No draft events</div>
-                  </div>
-                </TabsContent>
-                <TabsContent value="trash">
-                  <div className="rounded-md border p-20 flex flex-col items-center justify-center">
-                    <div className="text-gray-500">No events in trash</div>
-                  </div>
-                </TabsContent>
-              </Tabs>
+              <TabsList className="bg-transparent">
+                <TabsTrigger
+                  value="active"
+                  className="data-[state=active]:bg-black data-[state=active]:text-white"
+                >
+                  Active
+                </TabsTrigger>
+                <TabsTrigger
+                  value="draft"
+                  className="data-[state=active]:bg-black data-[state=active]:text-white"
+                >
+                  Draft
+                </TabsTrigger>
+                <TabsTrigger
+                  value="trash"
+                  className="data-[state=active]:bg-black data-[state=active]:text-white"
+                >
+                  Trash
+                </TabsTrigger>
+              </TabsList>
 
               <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
                 <DialogTrigger asChild>
@@ -1117,39 +1175,55 @@ export default function EventsPage({
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label htmlFor="startDate">Start Date</Label>
-                        <div className="relative">
-                          <Select name="startDate" defaultValue="">
-                            <SelectTrigger className="w-full">
-                              <SelectValue placeholder="Select date" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="25 Jun">25 Jun</SelectItem>
-                              <SelectItem value="26 Jun">26 Jun</SelectItem>
-                              <SelectItem value="27 Jun">27 Jun</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <Button
+                              variant="outline"
+                              className={cn(
+                                'w-full justify-start text-left font-normal',
+                                !startDate && 'text-muted-foreground'
+                              )}
+                            >
+                              <CalendarIcon className="mr-2 h-4 w-4" />
+                              {startDate
+                                ? format(startDate, 'PPP')
+                                : 'Pick a date'}
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-0" align="start">
+                            <DatePicker
+                              mode="single"
+                              selected={startDate}
+                              onSelect={setStartDate}
+                              initialFocus
+                            />
+                          </PopoverContent>
+                        </Popover>
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="endDate">End Date</Label>
-                        <div className="relative">
-                          <Select name="endDate" defaultValue="">
-                            <SelectTrigger className="w-full">
-                              <SelectValue placeholder="Select date" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="28 Jun, 2024">
-                                28 Jun, 2024
-                              </SelectItem>
-                              <SelectItem value="29 Jun, 2024">
-                                29 Jun, 2024
-                              </SelectItem>
-                              <SelectItem value="30 Jun, 2024">
-                                30 Jun, 2024
-                              </SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <Button
+                              variant="outline"
+                              className={cn(
+                                'w-full justify-start text-left font-normal',
+                                !endDate && 'text-muted-foreground'
+                              )}
+                            >
+                              <CalendarIcon className="mr-2 h-4 w-4" />
+                              {endDate ? format(endDate, 'PPP') : 'Pick a date'}
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-0" align="start">
+                            <DatePicker
+                              mode="single"
+                              selected={endDate}
+                              onSelect={setEndDate}
+                              initialFocus
+                            />
+                          </PopoverContent>
+                        </Popover>
                       </div>
                     </div>
 
@@ -1271,22 +1345,53 @@ export default function EventsPage({
                     <div className="space-y-2">
                       <Label>Add event posters/images</Label>
                       <div className="grid grid-cols-4 gap-2">
-                        {[
-                          'Banner Image',
-                          'Display Image',
-                          'Event Logo',
-                          'Other',
-                        ].map((type, i) => (
-                          <div
-                            key={i}
-                            className="border rounded-md aspect-square flex flex-col items-center justify-center cursor-pointer hover:bg-gray-50 p-2 text-center"
-                          >
-                            <ImagePlus className="h-6 w-6 text-gray-400 mb-1" />
-                            <span className="text-xs text-gray-400">
-                              {type}
-                            </span>
+                        <input
+                          type="file"
+                          multiple
+                          accept="image/*"
+                          onChange={(e) => setSelectedImages(e.target.files)}
+                          className="hidden"
+                          id="image-upload"
+                        />
+                        <label
+                          htmlFor="image-upload"
+                          className="col-span-4 border-2 border-dashed rounded-md p-4 cursor-pointer hover:bg-gray-50 text-center"
+                        >
+                          <ImagePlus className="h-6 w-6 text-gray-400 mx-auto mb-2" />
+                          <span className="text-sm text-gray-600">
+                            Click to upload images
+                          </span>
+                        </label>
+                        {selectedImages && (
+                          <div className="col-span-4 space-y-2">
+                            {Array.from(selectedImages).map((file, index) => (
+                              <div
+                                key={index}
+                                className="flex items-center gap-2"
+                              >
+                                <span className="text-sm truncate">
+                                  {file.name}
+                                </span>
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => {
+                                    const dt = new DataTransfer();
+                                    Array.from(selectedImages).forEach(
+                                      (f, i) => {
+                                        if (i !== index) dt.items.add(f);
+                                      }
+                                    );
+                                    setSelectedImages(dt.files);
+                                  }}
+                                >
+                                  <X className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            ))}
                           </div>
-                        ))}
+                        )}
                       </div>
                     </div>
 
@@ -1389,7 +1494,6 @@ export default function EventsPage({
                 className="flex items-center gap-1"
               >
                 <Filter className="h-4 w-4" />
-                Filter
               </Button>
               <Button
                 variant="ghost"
@@ -1397,90 +1501,212 @@ export default function EventsPage({
                 className="flex items-center gap-1"
               >
                 <SlidersHorizontal className="h-4 w-4" />
-                Sort
               </Button>
             </div>
           </div>
 
-          <div className="rounded-md border">
-            <div className="grid grid-cols-11 bg-orange-100 p-3 text-sm font-medium">
-              <div className="col-span-3 flex items-center">
-                Name
-                <ArrowUpDown className="ml-1 h-4 w-4" />
-              </div>
-              <div className="col-span-2 flex items-center">
-                Price
-                <ArrowUpDown className="ml-1 h-4 w-4" />
-              </div>
-              <div className="col-span-2 flex items-center">
-                Category
-                <ArrowUpDown className="ml-1 h-4 w-4" />
-              </div>
-              <div className="col-span-2 flex items-center">
-                Attendees
-                <ArrowUpDown className="ml-1 h-4 w-4" />
-              </div>
-              <div className="col-span-2 flex items-center">
-                Status
-                <ArrowUpDown className="ml-1 h-4 w-4" />
-              </div>
-            </div>
+          <div className="rounded-md shadow-xl bg-white">
+            <TabsContent value="active" className="mt-0">
+              <div className="rounded-md border">
+                <div className="grid grid-cols-12 bg-orange-100 p-3 text-sm font-medium">
+                  <div className="col-span-1 flex items-center">
+                    <ImageIcon className="ml-1 h-4 w-4" />
+                  </div>
+                  <div className="col-span-4 flex items-center">
+                    Name
+                    <ChevronsUpDown className="ml-2.5 h-4 w-4" />
+                  </div>
+                  <div className="col-span-1 flex items-center">
+                    Price
+                    <ChevronsUpDown className="ml-2.5 h-4 w-4" />
+                  </div>
+                  <div className="col-span-2 flex items-center">
+                    Category
+                    <ChevronsUpDown className="ml-2.5 h-4 w-4" />
+                  </div>
+                  <div className="col-span-2 flex items-center">
+                    Timing
+                    <ChevronsUpDown className="ml-2.5 h-4 w-4" />
+                  </div>
+                  <div className="col-span-1 flex items-center">Status</div>
+                  <div className="col-span-1 text-center">Edit</div>
+                </div>
 
-            {events.length > 0 ? (
-              <div>
-                {events.map((event) => (
-                  <div
-                    key={event.id}
-                    className="grid grid-cols-11 p-3 text-sm border-t"
-                  >
-                    <div className="col-span-3 flex items-center gap-2">
-                      <div className="h-10 w-10 rounded bg-gray-200 overflow-hidden flex items-center justify-center">
-                        <Calendar className="h-6 w-6 text-gray-500" />
+                <div>
+                  {filteredEvents
+                    .filter((e) => e.status === 'active')
+                    .map((event) => (
+                      <div
+                        key={event._id}
+                        className="grid grid-cols-12 p-3 text-sm border-t"
+                      >
+                        <div className="col-span-1 flex items-center gap-2">
+                          <Image
+                            src={event?.imageLinks?.[0] || ''}
+                            alt="Event"
+                            width={200}
+                            height={200}
+                            className="object-cover h-10 w-10 rounded"
+                          />
+                        </div>
+                        <div className="col-span-4 flex items-center gap-2">
+                          <span>{event.name}</span>
+                        </div>
+                        <div className="col-span-1 flex items-center">
+                          Rs{event.ticket.price}/hr
+                        </div>
+                        <div className="col-span-2 flex items-center">
+                          {event.category}
+                        </div>
+                        <div className="col-span-2 flex items-center">
+                          {event.time.start} - {event.time.end}
+                        </div>
+                        <div className="col-span-1 flex items-center gap-2">
+                          <Switch
+                            checked={event.status === 'active'}
+                            onCheckedChange={() => toggleEventStatus(event._id)}
+                          />
+                        </div>
+                        <div className="col-span-1 flex items-center justify-center">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => openEditDialog(event)}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </div>
-                      <span>{event.name}</span>
-                    </div>
-                    <div className="col-span-2 flex items-center">
-                      {event.price}
-                    </div>
-                    <div className="col-span-2 flex items-center">
-                      {event.category}
-                    </div>
-                    <div className="col-span-2 flex items-center">
-                      0 registered
-                    </div>
-                    <div className="col-span-2 flex items-center gap-2">
-                      <Switch
-                        checked={event.isOn}
-                        onCheckedChange={() => toggleEventStatus(event.id)}
-                      />
-                      <span
-                        className={
-                          event.isOn ? 'text-green-600' : 'text-gray-500'
-                        }
-                      >
-                        {event.isOn ? 'Online' : 'Offline'}
-                      </span>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => openEditDialog(event)}
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
+                    ))}
+                </div>
+                {events.filter((e) => e.status === 'active').length === 0 && (
+                  <div className="p-20 flex flex-col items-center justify-center">
+                    <div className="text-gray-500 flex flex-col items-center gap-4">
+                      <Plus className="h-8 w-8 text-gray-500" />
+                      <p className="text-sm">Add Events</p>
                     </div>
                   </div>
-                ))}
+                )}
               </div>
-            ) : (
-              <div className="p-20 flex flex-col items-center justify-center">
-                <div className="h-16 w-16 rounded-full border-2 border-gray-200 flex items-center justify-center mb-4">
-                  <Plus className="h-8 w-8 text-gray-400" />
+            </TabsContent>
+
+            <TabsContent value="draft" className="mt-0">
+              <div className="rounded-md border">
+                <div className="grid grid-cols-12 bg-orange-100 p-3 text-sm font-medium">
+                  <div className="col-span-1 flex items-center">
+                    <ImageIcon className="ml-1 h-4 w-4" />
+                  </div>
+                  <div className="col-span-4 flex items-center">
+                    Name
+                    <ChevronsUpDown className="ml-2.5 h-4 w-4" />
+                  </div>
+                  <div className="col-span-1 flex items-center">
+                    Price
+                    <ChevronsUpDown className="ml-2.5 h-4 w-4" />
+                  </div>
+                  <div className="col-span-2 flex items-center">
+                    Category
+                    <ChevronsUpDown className="ml-2.5 h-4 w-4" />
+                  </div>
+                  <div className="col-span-2 flex items-center">
+                    Timing
+                    <ChevronsUpDown className="ml-2.5 h-4 w-4" />
+                  </div>
+                  <div className="col-span-1 flex items-center">Status</div>
+                  <div className="col-span-1 text-center">Edit</div>
                 </div>
-                <div className="text-gray-500">Add events</div>
+
+                <div>
+                  {filteredEvents
+                    .filter((e) => e.status === 'draft')
+                    .map((event) => (
+                      <div
+                        key={event._id}
+                        className="grid grid-cols-12 p-3 text-sm border-t"
+                      >
+                        <div className="col-span-1 flex items-center gap-2">
+                          <Image
+                            src={event?.imageLinks?.[0] || ''}
+                            alt="Event"
+                            width={200}
+                            height={200}
+                            className="object-cover h-10 w-10 rounded"
+                          />
+                        </div>
+                        <div className="col-span-4 flex items-center gap-2">
+                          <span>{event.name}</span>
+                        </div>
+                        <div className="col-span-1 flex items-center">
+                          Rs{event.ticket.price}/hr
+                        </div>
+                        <div className="col-span-2 flex items-center">
+                          {event.category}
+                        </div>
+                        <div className="col-span-2 flex items-center">
+                          {event.time.start} - {event.time.end}
+                        </div>
+                        <div className="col-span-1 flex items-center gap-2">
+                          <Switch
+                            checked={event.status === 'active'}
+                            onCheckedChange={() => toggleEventStatus(event._id)}
+                          />
+                        </div>
+                        <div className="col-span-1 flex items-center justify-center">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => openEditDialog(event)}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                </div>
+                {events.filter((e) => e.status === 'draft').length === 0 && (
+                  <div className="p-20 flex flex-col items-center justify-center">
+                    <div className="text-gray-500 flex flex-col items-center gap-4">
+                      <Plus className="h-8 w-8 text-gray-500" />
+                      <p className="text-sm">No Pending Events</p>
+                    </div>
+                  </div>
+                )}
               </div>
-            )}
+            </TabsContent>
+
+            <TabsContent value="trash" className="mt-0">
+              <div className="rounded-md border">
+                <div className="grid grid-cols-12 bg-orange-100 p-3 text-sm font-medium">
+                  <div className="col-span-1 flex items-center">
+                    <ImageIcon className="ml-1 h-4 w-4" />
+                  </div>
+                  <div className="col-span-5 flex items-center">
+                    Name
+                    <ChevronsUpDown className="ml-2.5 h-4 w-4" />
+                  </div>
+                  <div className="col-span-1 flex items-center">
+                    Price
+                    <ChevronsUpDown className="ml-2.5 h-4 w-4" />
+                  </div>
+                  <div className="col-span-2 flex items-center">
+                    Category
+                    <ChevronsUpDown className="ml-2.5 h-4 w-4" />
+                  </div>
+                  <div className="col-span-2 flex items-center">
+                    Timing
+                    <ChevronsUpDown className="ml-2.5 h-4 w-4" />
+                  </div>
+                  <div className="col-span-1 text-center">Edit</div>
+                </div>
+                <div className="p-20 flex flex-col items-center justify-center">
+                  <div className="text-gray-500 flex flex-col items-center gap-4">
+                    <p className="text-sm">No Pending Events</p>
+                  </div>
+                </div>
+              </div>
+            </TabsContent>
           </div>
-        </div>
+        </Tabs>
       )}
 
       {/* Edit Event Dialog */}
@@ -1523,7 +1749,7 @@ export default function EventsPage({
                   <div className="relative">
                     <Select
                       name="startDate"
-                      defaultValue={currentEvent.startDate}
+                      defaultValue={currentEvent.date.start}
                     >
                       <SelectTrigger className="w-full">
                         <SelectValue placeholder="Select date" />
@@ -1535,44 +1761,46 @@ export default function EventsPage({
                       </SelectContent>
                     </Select>
                   </div>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="edit-endDate">End Date</Label>
-                  <div className="relative">
-                    <Select name="endDate" defaultValue={currentEvent.endDate}>
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Select date" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="28 Jun, 2024">
-                          28 Jun, 2024
-                        </SelectItem>
-                        <SelectItem value="29 Jun, 2024">
-                          29 Jun, 2024
-                        </SelectItem>
-                        <SelectItem value="30 Jun, 2024">
-                          30 Jun, 2024
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-endDate">End Date</Label>
+                    <div className="relative">
+                      <Select
+                        name="endDate"
+                        defaultValue={currentEvent.date.end}
+                      >
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Select date" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="28 Jun, 2024">
+                            28 Jun, 2024
+                          </SelectItem>
+                          <SelectItem value="29 Jun, 2024">
+                            29 Jun, 2024
+                          </SelectItem>
+                          <SelectItem value="30 Jun, 2024">
+                            30 Jun, 2024
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
                 </div>
               </div>
-
               <div className="space-y-2">
                 <Label>Select Timings</Label>
                 <div className="flex items-center gap-2">
                   <Input
                     id="edit-startTime"
                     name="startTime"
-                    defaultValue={currentEvent.startTime}
+                    defaultValue={currentEvent.time.start}
                     className="flex-1"
                   />
                   <span className="text-sm">to</span>
                   <Input
                     id="edit-endTime"
                     name="endTime"
-                    defaultValue={currentEvent.endTime}
+                    defaultValue={currentEvent.time.end}
                     className="flex-1"
                   />
                 </div>
@@ -1589,8 +1817,8 @@ export default function EventsPage({
                           name={`ticketType${i}`}
                           placeholder="Ticket type"
                           defaultValue={
-                            currentEvent.ticketTypes &&
-                            currentEvent.ticketTypes[i - 1]?.type
+                            currentEvent.ticket.type &&
+                            currentEvent.ticket.type[i - 1]
                           }
                           className="flex-1"
                         />
@@ -1603,8 +1831,8 @@ export default function EventsPage({
                           name={`price${i}`}
                           placeholder="Price"
                           defaultValue={
-                            currentEvent.ticketTypes &&
-                            currentEvent.ticketTypes[i - 1]?.price
+                            currentEvent.ticket.type &&
+                            currentEvent.ticket.type[i - 1]
                           }
                           className="pl-7"
                         />
@@ -1619,7 +1847,7 @@ export default function EventsPage({
                 <Input
                   id="edit-totalTickets"
                   name="totalTickets"
-                  defaultValue={currentEvent.totalTickets}
+                  defaultValue={currentEvent.ticketLimit}
                 />
               </div>
 
@@ -1719,7 +1947,7 @@ export default function EventsPage({
                     type="button"
                     variant="outline"
                     className="flex-1"
-                    onClick={() => deleteEvent(currentEvent.id)}
+                    onClick={() => deleteEvent(currentEvent._id)}
                   >
                     YES
                   </Button>
