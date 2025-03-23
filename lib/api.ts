@@ -1,7 +1,6 @@
-import { MakerSpace } from "./constants";
 
 export interface Machine {
-    id: string;
+    _id: string;
     category: string;
     brand: string;
     model: string;
@@ -13,18 +12,19 @@ export interface Machine {
     imageLinks?: string[];
     description: string;
     location: string;
-    instruction?: string | null;
+    instruction?: string;
     inCharge?: Array<{
         name: string;
         number: string;
     }>;
     makerSpace: string;
-    status?: 'active' | 'inactive';
+    status: string;
     rating?: number;
+    createdAt?: Date;
 }
 
 export interface Event {
-    id: string;
+    _id: string;
     name: string;
     category: string;
     date: {
@@ -43,6 +43,7 @@ export interface Event {
     imageLinks?: string[];
     description: string;
     agenda?: string;
+    terms?: string;
     location: string;
     experts: Array<{
         name: string;
@@ -50,10 +51,12 @@ export interface Event {
     }>;
     makerSpace: string;
     status?: 'active' | 'inactive';
+    rating?: number;
+    createdAt?: Date;
 }
 
 export interface Makerspace {
-    id: string;
+    _id: string;
     type: string;
     usage: string[];
     name: string;
@@ -81,7 +84,12 @@ export interface Makerspace {
     imageLinks: string[];
     logoImageLinks: string[];
     googleMapLink: string;
-    howToReach: string[];
+    howToReach?: {
+        airport?: string;
+        railway?: string;
+        metro?: string;
+        bus?: string;
+    };
     amenities: string[];
     mentors: Array<{
         name: string;
@@ -89,52 +97,19 @@ export interface Makerspace {
         linkedin: string;
         image: string;
     }>;
-    instructions: string;
+    instructions: string[];
     additionalInformation: string;
+    seating: Array<{
+        category: string;
+        room: string;
+        seats: number;
+    }>;
     rating: number;
     status: string;
+    createdAt?: Date;
 }
 
 export const BASE_URL = 'http://localhost:8080';
-
-export async function fetchMachines(): Promise<MakerSpace[]> {
-    try {
-        const response = await fetch(`${BASE_URL}/api/machines`);
-        if (!response.ok) {
-            throw new Error('Failed to fetch machines');
-        }
-        return await response.json();
-    } catch (error) {
-        console.error('Error fetching makerspaces:', error);
-        return [];
-    }
-}
-
-// export async function fetchMachinesByLocation(location: string) {
-//     try {
-//         const response = await fetch(`${BASE_URL}/api/machines/by-location/${encodeURIComponent(location)}`);
-//         if (!response.ok) {
-//             throw new Error('Failed to fetch machines for location');
-//         }
-//         return await response.json();
-//     } catch (error) {
-//         console.error('Error fetching machines by location:', error);
-//         return [];
-//     }
-// }
-
-// export async function fetchEventsByLocation(location: string) {
-//     try {
-//         const response = await fetch(`${BASE_URL}/api/events/by-location/${encodeURIComponent(location)}`);
-//         if (!response.ok) {
-//             throw new Error('Failed to fetch events for location');
-//         }
-//         return await response.json();
-//     } catch (error) {
-//         console.error('Error fetching events by location:', error);
-//         return [];
-//     }
-// }
 
 export async function fetchMachinesByMakerspace(makerspaceName: string) {
     try {
@@ -164,7 +139,7 @@ export async function fetchEventsByMakerspace(makerspaceName: string) {
 
 export async function fetchMakerspaceByName(name: string) {
     try {
-        const response = await fetch(`${BASE_URL}/api/makerspace/by-name/${encodeURIComponent(name)}`);
+        const response = await fetch(`${BASE_URL}/api/makerspaces/by-name/${encodeURIComponent(name)}`);
         if (!response.ok) {
             throw new Error('Failed to fetch makerspace details');
         }
@@ -177,7 +152,7 @@ export async function fetchMakerspaceByName(name: string) {
 
 export async function fetchMakerspaces(city: string): Promise<string[]> {
     try {
-        const response = await fetch(`${BASE_URL}/api/makerspace/by-city/${encodeURIComponent(city)}`);
+        const response = await fetch(`${BASE_URL}/api/makerspaces/by-city/${encodeURIComponent(city)}`);
         if (!response.ok) {
             throw new Error('Failed to fetch makerspaces');
         }
@@ -227,11 +202,16 @@ export async function fetchEventsByMakerspaces(makerSpaces: string[]) {
 }
 
 interface User {
-    id: string;
-    name: string;
+    _id: string;
     email: string;
-    image?: string;
-    phone?: string;
+    password: string;
+    name: string;
+    number: string;
+    usertype: string[];
+    industry: string[];
+    purpose: string[];
+    role: string;
+    createdAt?: Date;
 }
 
 interface SignupData {
@@ -290,6 +270,7 @@ export async function loginUser(email: string, password: string): Promise<LoginR
         if (!response.ok) {
             throw new Error(data.message || 'Invalid credentials');
         }
+        console.log('Login successful:', data);
 
         return data;
     } catch (error) {
@@ -423,6 +404,52 @@ export async function verifyMakerspaceToken(token: string): Promise<VerifyTokenR
             isValid: false,
             message: 'Error verifying token'
         };
+    }
+}
+
+export async function createEvent(eventData: Partial<Event>, token: string) {
+    try {
+        const response = await fetch(`${BASE_URL}/api/events`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(eventData),
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || 'Failed to create event');
+        }
+
+        return await response.json();
+    } catch (error) {
+        console.error('Error creating event:', error);
+        throw error;
+    }
+}
+
+export async function updateEvent(id: string, eventData: Partial<Event>, token: string) {
+    try {
+        const response = await fetch(`${BASE_URL}/api/events/${id}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(eventData),
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || 'Failed to update event');
+        }
+
+        return await response.json();
+    } catch (error) {
+        console.error('Error updating event:', error);
+        throw error;
     }
 }
 

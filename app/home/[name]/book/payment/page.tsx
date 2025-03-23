@@ -63,96 +63,6 @@ export default function BookingFlow() {
       setBookingState('failed');
       setTimeout(() => setBookingState('initial'), 500);
     }
-
-
-      // Call backend to create an order
-    //   const { data } = await axios.post(
-    //     'http://localhost:3001/api/payment/createOrder',
-    //     {
-    //       hour: 10,
-    //       machineId: '678bb5a4ff7fb5bb2220a5bf',
-    //       email: 'khand8914@gmail.com',
-    //     }
-    //   );
-
-    //   if (!data.order) {
-    //     throw new Error('Failed to create order');
-    //   }
-    //   const { id: orderId, amount } = data.order;
-
-    //   const options = {
-    //     key_id: 'rzp_test_puRPV1TmFcFfp2',
-    //     amount,
-    //     currency: 'INR',
-    //     name: 'Booking Payment',
-    //     description: 'Machine Booking',
-    //     order_id: orderId,
-    //     handler: async (response: any) => {
-    //       const { razorpay_order_id, razorpay_payment_id, razorpay_signature } =
-    //         response;
-
-    //       const verificationResponse = await axios.post(
-    //         'http://localhost:3001/api/payment/verifyPayment',
-    //         {
-    //           order_id: razorpay_order_id,
-    //           payment_id: razorpay_payment_id,
-    //           signature: razorpay_signature,
-    //         }
-    //       );
-
-    //       if (verificationResponse.data.message === 'Payment successful') {
-    //         setBookingState('success');
-    //         setTimeout(() => setBookingState('confirmed'), 500);
-    //       } else {
-    //         setBookingState('failed');
-    //       }
-    //     },
-    //     modal: {
-    //       ondismiss: () => {
-    //         setBookingState('initial');
-    //       },
-    //     },
-    //     prefill: {
-    //       name: 'User Name', // Replace with user name
-    //       email: 'user@example.com', // Replace with user email
-    //     },
-    //     notes: {
-    //       address: 'User Address',
-    //     },
-    //     theme: {
-    //       color: '#3399cc',
-    //     },
-    //   };
-    //   //@ts-expect-error
-    //   const razorpay = new window.Razorpay(options);
-    //   //@ts-expect-error
-    //   razorpay.open();
-
-    //   //@ts-expect-error
-    //   razorpay.on('payment.failed', () => {
-    //     setBookingState('failed');
-    //     setTimeout(() => setBookingState('initial'), 500);
-    //   });
-
-    //   razorpay.on('payment.success', () => {
-    //     setBookingState('success');
-    //     setTimeout(() => setBookingState('confirmed'), 500);
-    //   });
-
-    //   razorpay.on('payment.error', () => {
-    //     setBookingState('failed');
-    //     setTimeout(() => setBookingState('initial'), 500);
-    //   });
-
-    //   razorpay.on('payment.cancel', () => {
-    //     setBookingState('failed');
-    //     setTimeout(() => setBookingState('initial'), 500);
-    //   });
-    // } catch (error) {
-    //   console.error('Payment processing error:', error);
-    //   setBookingState('failed');
-    //   setTimeout(() => setBookingState('initial'), 500);
-    // }
   };
 
   const renderPaymentStatus = () => {
@@ -789,7 +699,7 @@ export default function BookingFlow() {
         src="https://checkout.razorpay.com/v1/checkout.js"
       />
       <TopBar theme="light" />
-      <div className="max-w-7xl mx-auto px-4 pt-20">
+      <div className="max-w-6xl mx-auto pt-20">
         {bookingState === 'initial' && renderInitialForm()}
         {bookingState === 'confirmed' && renderBookingRequest()}
         {bookingState === 'approved' && renderBookingConfirmation()}

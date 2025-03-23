@@ -242,3 +242,70 @@ export const useAuthenticationStore = create<AuthenticationState>((set) => ({
     }
   },
 }));
+
+interface BookingItem {
+  type: 'machine' | 'event';
+  id: string;
+  name: string;
+  price: number;
+  quantity: number;
+  specifications?: {
+    [key: string]: string;
+  };
+  imageUrl?: string;
+  location: string;
+  timeSlot: {
+    start: string;
+    end: string;
+  };
+  date?: {
+    start: string;
+    end: string;
+  };
+  inCharge?: Array<{
+    name: string;
+    number: string;
+  }>;
+  experts?: Array<{
+    name: string;
+    number: string;
+  }>;
+  makerSpace: string;
+}
+
+interface BookingState {
+  items: BookingItem[];
+  date?: Date;
+  timeSlot?: string;
+  addItem: (item: Omit<BookingItem, 'quantity'>, quantity: number) => void;
+  removeItem: (id: string) => void;
+  clearItems: () => void;
+  setDate: (date: Date) => void;
+  setTimeSlot: (timeSlot: string) => void;
+  getTotal: () => number;
+}
+
+export const useBookingStore = create<BookingState>((set, get) => ({
+  items: [],
+  date: undefined,
+  timeSlot: undefined,
+  addItem: (item, quantity) => set((state) => {
+    const existingItemIndex = state.items.findIndex((i) => i.id === item.id);
+    if (existingItemIndex > -1) {
+      const newItems = [...state.items];
+      newItems[existingItemIndex] = { ...newItems[existingItemIndex], quantity };
+      return { items: newItems };
+    }
+    return { items: [...state.items, { ...item, quantity }] };
+  }),
+  removeItem: (id) => set((state) => ({
+    items: state.items.filter((item) => item.id !== id),
+  })),
+  clearItems: () => set({ items: [] }),
+  setDate: (date) => set({ date }),
+  setTimeSlot: (timeSlot) => set({ timeSlot }),
+  getTotal: () => {
+    const state = get();
+    return state.items.reduce((total, item) => total + item.price * item.quantity, 0);
+  },
+}));
