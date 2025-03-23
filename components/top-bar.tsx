@@ -22,15 +22,18 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Tooltip, TooltipProvider } from './ui/tooltip';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 export default function TopBar({
   theme = 'dark',
   isBg = false,
   button = true,
+  search = true
 }: {
   theme?: 'dark' | 'light';
   isBg?: boolean;
   button?: boolean;
+  search?: boolean;
 }) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -72,7 +75,7 @@ export default function TopBar({
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 200);
+      setIsScrolled(window.scrollY > 10);
     };
 
     window.addEventListener('scroll', handleScroll);
@@ -193,50 +196,52 @@ export default function TopBar({
           </Link>
         </div>
 
-        <div className="flex-1 max-w-2xl hidden sm:block">
-          <div className="flex items-center bg-white rounded-xl border">
-            <div
-              className="relative p-3 cursor-pointer flex items-center text-black rounded-xl shrink-0"
-              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-            >
-              <MapPin className="w-4 h-4 mr-2" />
-              <span>{selectedCity}</span>
-              <ChevronDown className="w-4 h-4 ml-1" />
+        {search && (
+          <div className="flex-1 max-w-2xl hidden sm:block">
+            <div className="flex items-center bg-white rounded-xl border">
+              <div
+                className="relative p-3 cursor-pointer flex items-center text-black rounded-xl shrink-0"
+                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+              >
+                <MapPin className="w-4 h-4 mr-2" />
+                <span>{selectedCity}</span>
+                <ChevronDown className="w-4 h-4 ml-1" />
 
-              {isDropdownOpen && (
-                <div className="absolute top-full left-0 w-48 mt-2 bg-white rounded-xl shadow-lg border">
-                  {cities.map((city) => (
-                    <div
-                      key={city}
-                      className="px-4 py-2 hover:bg-gray-100 cursor-pointer text-sm"
-                      onClick={() => handleCitySelect(city)}
-                    >
-                      {city}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-            <div className="h-6 w-px bg-gray-300 mx-2" />
-            <div className="flex items-center flex-1 min-w-0">
-              <Search className="h-4 w-4 text-black shrink-0 mx-2" />
-              <input
-                type="text"
-                placeholder="Search"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="flex-1 bg-transparent border-none focus:outline-none text-black w-full min-w-0"
-              />
-              {searchTerm && (
-                <X
-                  size={24}
-                  className="text-black shrink-0 cursor-pointer mx-2"
-                  onClick={() => setSearchTerm('')}
+                {isDropdownOpen && (
+                  <div className="absolute top-full left-0 w-48 mt-2 bg-white rounded-xl shadow-lg border">
+                    {cities.map((city) => (
+                      <div
+                        key={city}
+                        className="px-4 py-2 hover:bg-gray-100 cursor-pointer text-sm"
+                        onClick={() => handleCitySelect(city)}
+                      >
+                        {city}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <div className="h-6 w-px bg-gray-300 mx-2" />
+              <div className="flex items-center flex-1 min-w-0">
+                <Search className="h-4 w-4 text-black shrink-0 mx-2" />
+                <input
+                  type="text"
+                  placeholder="Search"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="flex-1 bg-transparent border-none focus:outline-none text-black w-full min-w-0"
                 />
-              )}
+                {searchTerm && (
+                  <X
+                    size={24}
+                    className="text-black shrink-0 cursor-pointer mx-2"
+                    onClick={() => setSearchTerm('')}
+                  />
+                )}
+              </div>
             </div>
           </div>
-        </div>
+        )}
 
         <div className="flex items-center gap-4">
           <div className="hidden lg:flex items-center gap-4">
@@ -277,35 +282,21 @@ export default function TopBar({
                 href="/profile"
                 className="flex items-center gap-2 hover:opacity-80 transition-opacity"
               >
-                <span
-                  className={`${isDark ? 'text-white' : 'text-black'} font-medium`}
-                >
-                  {user.name.split(' ')[0]}
-                </span>
-                {user.image && (
-                  <Image
-                    src={user.image}
-                    alt="Profile"
-                    width={30}
-                    height={30}
-                    className={`rounded-full border-2 ${
-                      isDark ? 'border-gray-400' : 'border-black'
-                    }`}
-                  />
-                )}
+                <Avatar className="h-8 w-8">
+                  <AvatarImage src="/user.png" alt="@maker" />
+                  <AvatarFallback className="bg-green-400 text-sm">
+                    {user.name.split(' ')[0].charAt(0).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
               </Link>
-              <TooltipProvider>
-                <Tooltip>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={handleLogout}
-                    className={`${isDark ? 'text-white' : 'text-black'} hover:opacity-80`}
-                  >
-                    <LogOut className="h-4 w-4" />
-                  </Button>
-                </Tooltip>
-              </TooltipProvider>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleLogout}
+                className={`${isDark ? 'text-white' : 'text-black'} hover:opacity-80`}
+              >
+                <LogOut className="h-4 w-4" />
+              </Button>
             </div>
           ) : (
             <div className="hidden md:flex items-center gap-2">
