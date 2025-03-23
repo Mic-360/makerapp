@@ -117,7 +117,7 @@ export default function Event() {
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {events.map((event: Event) => (
                   <div
-                    key={event.id}
+                    key={event._id}
                     className="border rounded-xl overflow-hidden hover:shadow-xl transition-shadow duration-300 h-fit bg-white"
                   >
                     <div className="relative aspect-video">
@@ -177,14 +177,14 @@ export default function Event() {
                           </p>
                           <button
                             type="button"
-                            onClick={() => toggleDescription(event.id)}
+                            onClick={() => toggleDescription(event._id)}
                             className="text-xs text-gray-500 hover:text-gray-700 underline"
                           >
-                            {expandedDescriptions[event.id]
+                            {expandedDescriptions[event._id]
                               ? 'Show Less'
                               : 'Show More'}
                           </button>
-                          {expandedDescriptions[event.id] && (
+                          {expandedDescriptions[event._id] && (
                             <p className="text-sm text-gray-600 pr-2">
                               {event.description}
                             </p>
@@ -192,7 +192,7 @@ export default function Event() {
                         </div>
 
                         <Link
-                          href={`/home/${encodeURIComponent(event.makerSpace)}/book?eventId=${event.id}`}
+                          href={`/home/${encodeURIComponent(event.makerSpace)}/book?eventId=${event._id}`}
                         >
                           <Button
                             variant="default"

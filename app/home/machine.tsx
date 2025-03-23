@@ -12,15 +12,10 @@ import { Separator } from '@/components/ui/separator';
 import type { Machine } from '@/lib/api';
 import { sortOptions } from '@/lib/constants';
 import { useCategoryStore, useCityDataStore } from '@/lib/store';
-import { formatPrice } from '@/lib/utils';
 import {
   ArrowUpDown,
-  Clock,
-  Info,
-  MapPin,
   SlidersHorizontal,
   Star,
-  Users,
 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -120,7 +115,7 @@ export default function Machine() {
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-min">
                 {filteredMachines.map((machine: Machine) => (
                   <div
-                    key={machine.id}
+                    key={machine._id}
                     className="border rounded-xl overflow-hidden hover:shadow-xl shadow-inner h-fit bg-white"
                   >
                     <div className="relative aspect-video">
@@ -165,14 +160,14 @@ export default function Machine() {
                           </p>
                           <button
                             type="button"
-                            onClick={() => toggleDescription(machine.id)}
+                            onClick={() => toggleDescription(machine._id)}
                             className="text-xs text-gray-500 hover:text-gray-700 underline"
                           >
-                            {expandedDescriptions[machine.id]
+                            {expandedDescriptions[machine._id]
                               ? 'Show Less'
                               : 'Show More'}
                           </button>
-                          {expandedDescriptions[machine.id] && (
+                          {expandedDescriptions[machine._id] && (
                             <div className="mt-2 space-y-2">
                               <p className="text-sm text-gray-600">
                                 {machine.description}
@@ -181,7 +176,7 @@ export default function Machine() {
                           )}
                         </div>
                         <Link
-                          href={`/home/${encodeURIComponent(machine.makerSpace)}/book?machineId=${machine.id}`}
+                          href={`/home/${encodeURIComponent(machine.makerSpace)}/book?machineId=${machine._id}`}
                         >
                           <Button
                             variant="default"
