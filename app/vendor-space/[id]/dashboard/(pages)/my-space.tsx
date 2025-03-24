@@ -45,38 +45,6 @@ export default function MySpacePage({
   const { token } = useAuthenticationStore();
   const [isLoading, setIsLoading] = useState(false);
 
-  const defaultSeatingCategories = [
-    {
-      category: '3D Printing Lab',
-      room: '3D Lab 1',
-      seats: 10,
-    },
-    {
-      category: 'CNC Workshop',
-      room: 'CNC Room 3',
-      seats: 8,
-    },
-    {
-      category: 'Electronics Lab',
-      room: 'Electronics Lab 2',
-      seats: 15,
-    },
-    {
-      category: 'Laser Cutting Zone',
-      room: 'Laser Lab 1',
-      seats: 6,
-    },
-  ];
-
-  useEffect(() => {
-    if (!formData.seating || formData.seating.length === 0) {
-      setFormData((prev) => ({
-        ...prev,
-        seating: defaultSeatingCategories,
-      }));
-    }
-  }, [formData.seating, defaultSeatingCategories]); // Added missing dependency
-
   useEffect(() => {
     if (initialMakerspace.description) {
       const words =
