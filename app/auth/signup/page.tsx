@@ -9,34 +9,16 @@ import { Check, Loader2 } from 'lucide-react';
 import { signIn } from 'next-auth/react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 export default function SignupPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [isValidEmail, setIsValidEmail] = useState(false);
   const [isValidPassword, setIsValidPassword] = useState(false);
-  const { email, password, setEmail, setPassword, setFirstName, setLastName } =
-    useSignupStore();
   const router = useRouter();
-
-  const oauthemail = useSearchParams().get('email');
-  const oauthfname = useSearchParams().get('firstName');
-  const oauthlname = useSearchParams().get('lastName');
-
-  if (oauthemail) {
-    setEmail(oauthemail);
-  }
-  if (oauthfname) {
-    setFirstName(oauthfname);
-  }
-  if (oauthlname) {
-    setLastName(oauthlname);
-  }
-
-  if (oauthemail && oauthfname && oauthlname) {
-    router.push('/auth/signup/name');
-  }
+  const { email, password, setEmail, setPassword } =
+    useSignupStore();
 
   const validateEmail = (input: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -54,7 +36,6 @@ export default function SignupPage() {
     setIsLoading(true);
 
     try {
-      // Store credentials in signup store
       if (email && password) {
         setEmail(email);
         setPassword(password);

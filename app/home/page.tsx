@@ -11,14 +11,13 @@ import {
 } from '@/lib/api';
 import { useCityDataStore, useCityStore } from '@/lib/store';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
-import { useCallback, useEffect, useState } from 'react';
+import { Suspense, useCallback, useEffect, useState } from 'react';
 import Event from './events';
 import Machine from './machine';
+import Loading from '../loading';
 
 export default function Page() {
   const [activeSegment, setActiveSegment] = useState('machines');
-  const router = useRouter();
   const { selectedCity } = useCityStore();
   const { setMachines, setEvents } = useCityDataStore();
 
@@ -49,7 +48,7 @@ export default function Page() {
   }, [fetchData]);
 
   return (
-    <div>
+    <Suspense fallback={<Loading />}>
       <div className="min-h-screen min-w-screen bg-white relative">
         <TopBar theme="dark" />
         <div className="relative h-[400px] sm:h-[500px] flex flex-col items-center justify-end text-center">
@@ -110,6 +109,6 @@ export default function Page() {
         </div>
       </div>
       <Footer />
-    </div>
+    </Suspense>
   );
 }

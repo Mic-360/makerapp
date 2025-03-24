@@ -3,6 +3,7 @@
 import { Suspense, useEffect } from 'react';
 import { useAuthenticationStore } from '@/lib/store';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import Loading from '@/app/loading';
 
 const publicPaths = ['/auth/login', '/auth/signup', '/home', '/']; // Add other public paths
 const protectedPaths = ['/home/onboarding']; // Add other protected paths
@@ -18,17 +19,21 @@ export default function AuthProvider({
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const resetToken = pathname.startsWith('/auth/reset') ? searchParams.get('token') : null;
+  const resetToken = pathname.startsWith('/auth/reset')
+    ? searchParams.get('token')
+    : null;
 
   useEffect(() => {
+    reauth();
 
-    reauth()
-    // Set up periodic reauth (e.g., every 30 minutes)
-    const interval = setInterval(() => {
-      if (token) {
-        reauth();
-      }
-    }, 30 * 60 * 1000);
+    const interval = setInterval(
+      () => {
+        if (token) {
+          reauth();
+        }
+      },
+      30 * 60 * 1000
+    );
 
     return () => clearInterval(interval);
   }, [reauth, token]);
@@ -36,10 +41,12 @@ export default function AuthProvider({
   useEffect(() => {
     if (isLoading) return;
 
-    const isPublicPath = publicPaths.some(path => pathname.startsWith(path));
-    const isProtectedPath = protectedPaths.some(path => pathname.startsWith(path));
-    const isAuthPath = authPaths.some(path => pathname.startsWith(path));
-    const isResetPath = resetPaths.some(path => pathname.startsWith(path));
+    const isPublicPath = publicPaths.some((path) => pathname.startsWith(path));
+    const isProtectedPath = protectedPaths.some((path) =>
+      pathname.startsWith(path)
+    );
+    const isAuthPath = authPaths.some((path) => pathname.startsWith(path));
+    const isResetPath = resetPaths.some((path) => pathname.startsWith(path));
 
     // Handle reset password paths
     if (isResetPath && !resetToken && !pathname.includes('password-changed')) {
@@ -62,10 +69,10 @@ export default function AuthProvider({
   }
 
   return (
-    <div className="min-h-screen min-w-screen bg-white relative">
-      <Suspense fallback={<div>Loading...</div>}>
+    <Suspense fallback={<Loading />}>
+      <div className="min-h-screen min-w-screen bg-white relative">
         {children}
-      </Suspense>
-    </div>
+      </div>
+    </Suspense>
   );
 }

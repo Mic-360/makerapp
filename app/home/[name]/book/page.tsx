@@ -1,5 +1,6 @@
 'use client';
 
+import Loading from '@/app/loading';
 import Footer from '@/components/footer';
 import TopBar from '@/components/top-bar';
 import { Badge } from '@/components/ui/badge';
@@ -54,7 +55,7 @@ import {
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 
 interface Review {
   userName: string;
@@ -92,6 +93,7 @@ const mockReviews: Review[] = [
 export default function LabSpacePage({ params }: { params: { name: string } }) {
   const router = useRouter();
   const bookingStore = useBookingStore();
+  const urlSearchParams = useSearchParams();
   const [machines, setMachines] = useState<Machine[]>([]);
   const [events, setEvents] = useState<Event[]>([]);
   const [makerspace, setMakerspace] = useState<Makerspace | null>(null);
@@ -102,7 +104,6 @@ export default function LabSpacePage({ params }: { params: { name: string } }) {
   }>({});
   const [eventDate, setEventDate] = useState<Date | undefined>();
   const [machineDate, setMachineDate] = useState<Date | undefined>(new Date());
-  const urlSearchParams = useSearchParams();
 
   const [machineQuantities, setMachineQuantities] = useState<number[]>([]);
   const [eventQuantities, setEventQuantities] = useState<number[]>([]);
@@ -127,6 +128,7 @@ export default function LabSpacePage({ params }: { params: { name: string } }) {
     'Nov',
     'Dec',
   ];
+
   const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
   const timeSlots = ['10:00 am', '12:00 pm'];
@@ -407,7 +409,7 @@ export default function LabSpacePage({ params }: { params: { name: string } }) {
   }
 
   return (
-    <div>
+    <Suspense fallback={<Loading />}>
       <TopBar theme="light" />
       <div className="min-h-screen bg-white pt-20">
         <div className="max-w-6xl mx-auto">
@@ -1057,6 +1059,6 @@ export default function LabSpacePage({ params }: { params: { name: string } }) {
         </div>
         <Footer />
       </div>
-    </div>
+    </Suspense>
   );
 }
