@@ -145,7 +145,7 @@ export const useCityDataStore = create<CityDataState>((set) => ({
 }));
 
 interface User {
-  id: string;
+  _id: string;
   name: string;
   email: string;
   image?: string;
