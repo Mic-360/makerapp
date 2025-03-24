@@ -1,4 +1,3 @@
-
 export interface Machine {
     _id: string;
     category: string;
@@ -502,5 +501,51 @@ export async function updateMakerspace(id: string, data: Partial<Makerspace>, to
             throw error;
         }
         throw new Error('Failed to update makerspace');
+    }
+}
+
+export async function createMachine(machineData: Partial<Machine>, token: string) {
+    try {
+        const response = await fetch(`${BASE_URL}/api/machines`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(machineData),
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || 'Failed to create machine');
+        }
+
+        return await response.json();
+    } catch (error) {
+        console.error('Error creating machine:', error);
+        throw error;
+    }
+}
+
+export async function updateMachine(id: string, machineData: Partial<Machine>, token: string) {
+    try {
+        const response = await fetch(`${BASE_URL}/api/machines/${id}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(machineData),
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || 'Failed to update machine');
+        }
+
+        return await response.json();
+    } catch (error) {
+        console.error('Error updating machine:', error);
+        throw error;
     }
 }
