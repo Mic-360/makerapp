@@ -271,10 +271,19 @@ export default function SpaceSubmissionFlow() {
         : undefined; // Replace with actual upload
       const orgLogoUrl = formData.media.orgLogo ? '/assetlist.png' : undefined; // Replace with actual upload
 
-      // Convert timings to required format
-      const processedTimings: Record<string, string> = {};
+      // Convert timings to required format with specific day properties
+      const processedTimings = {
+        monday: '',
+        tuesday: '',
+        wednesday: '',
+        thursday: '',
+        friday: '',
+        saturday: '',
+        sunday: '',
+      };
       Object.entries(formData.spaceDetails.timings).forEach(([day, timing]) => {
-        processedTimings[day.toLowerCase()] = `${timing.from}-${timing.to}`;
+        const lowercaseDay = day.toLowerCase() as keyof typeof processedTimings;
+        processedTimings[lowercaseDay] = `${timing.from}-${timing.to}`;
       });
 
       const makerspaceData = {
