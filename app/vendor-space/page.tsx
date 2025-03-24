@@ -205,7 +205,7 @@ export default function Page() {
             Become a part of the largest network of makerspaces
           </h2>
           <Link
-            href="https://calendly.com/roshanbiswanathpatra/karkahana-onboarding"
+            href="https://calendly.com/karkhanaclub/30min"
             className="rounded-full bg-gray-500 py-4 px-12 text-white hover:bg-gray-400"
           >
             Request a Demo
