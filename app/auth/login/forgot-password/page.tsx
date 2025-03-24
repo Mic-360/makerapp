@@ -71,9 +71,7 @@ export default function ForgotPasswordPage() {
               />
               <Check className="absolute right-3 top-6 transform -translate-y-1/2 text-green-500" />
             </div>
-            {error && (
-              <p className="text-sm text-red-500 pl-3">{error}</p>
-            )}
+            {error && <p className="text-sm text-red-500 pl-3">{error}</p>}
             {isSubmitted && (
               <div className="text-center">
                 <p className="text-sm">Didn&apos;t receive a code yet?</p>

@@ -12,11 +12,7 @@ import { Separator } from '@/components/ui/separator';
 import type { Machine } from '@/lib/api';
 import { sortOptions } from '@/lib/constants';
 import { useCategoryStore, useCityDataStore } from '@/lib/store';
-import {
-  ArrowUpDown,
-  SlidersHorizontal,
-  Star,
-} from 'lucide-react';
+import { ArrowUpDown, SlidersHorizontal, Star } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useMemo, useState } from 'react';

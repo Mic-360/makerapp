@@ -1,66 +1,66 @@
-import React from "react";
+import React from 'react';
 
 const BookingComponent = () => {
   const bookings = [
     {
       id: 1,
-      orderId: "KAHR-3D000X001",
-      machine: "3d Printer Creality 333XP",
-      location: "at SOA Fab Lab",
-      amount: "₹100",
+      orderId: 'KAHR-3D000X001',
+      machine: '3d Printer Creality 333XP',
+      location: 'at SOA Fab Lab',
+      amount: '₹100',
       rating: 4.5,
-      status: "COMPLETED",
-      statusColor: "green",
-      paymentStatus: "Pending Payment",
-      date: "10 Oct 2024",
+      status: 'COMPLETED',
+      statusColor: 'green',
+      paymentStatus: 'Pending Payment',
+      date: '10 Oct 2024',
     },
     {
       id: 2,
-      orderId: "KAHR-3D000X001",
-      machine: "3d Printer Creality 333XP",
-      location: "at SOA Fab Lab",
-      amount: "₹100",
+      orderId: 'KAHR-3D000X001',
+      machine: '3d Printer Creality 333XP',
+      location: 'at SOA Fab Lab',
+      amount: '₹100',
       rating: null,
-      status: "ONGOING",
-      statusColor: "gray",
-      paymentStatus: "Paid by UPI",
-      date: "10 Oct 2024",
+      status: 'ONGOING',
+      statusColor: 'gray',
+      paymentStatus: 'Paid by UPI',
+      date: '10 Oct 2024',
     },
     {
       id: 3,
-      orderId: "KAHR-3D000X001",
-      machine: "3d Printer Creality 333XP",
-      location: "at SOA Fab Lab",
-      amount: "₹350",
+      orderId: 'KAHR-3D000X001',
+      machine: '3d Printer Creality 333XP',
+      location: 'at SOA Fab Lab',
+      amount: '₹350',
       rating: null,
-      status: "UPCOMING",
-      statusColor: "yellow",
-      paymentStatus: "Paid by Card",
-      date: "25 Oct 2024",
+      status: 'UPCOMING',
+      statusColor: 'yellow',
+      paymentStatus: 'Paid by Card',
+      date: '25 Oct 2024',
     },
     {
       id: 4,
-      orderId: "KAHR-3D000X001",
-      machine: "3d Printer Creality 333XP",
-      location: "at SOA Fab Lab",
-      amount: "₹250",
+      orderId: 'KAHR-3D000X001',
+      machine: '3d Printer Creality 333XP',
+      location: 'at SOA Fab Lab',
+      amount: '₹250',
       rating: null,
-      status: "REQUESTED",
-      statusColor: "blue",
-      paymentStatus: "Paid by UPI",
-      date: "25 Oct 2024",
+      status: 'REQUESTED',
+      statusColor: 'blue',
+      paymentStatus: 'Paid by UPI',
+      date: '25 Oct 2024',
     },
     {
       id: 5,
-      orderId: "KAHR-3D000X001",
-      machine: "3d Printer Creality 333XP",
-      location: "at SOA Fab Lab",
-      amount: "₹250",
+      orderId: 'KAHR-3D000X001',
+      machine: '3d Printer Creality 333XP',
+      location: 'at SOA Fab Lab',
+      amount: '₹250',
       rating: null,
-      status: "CANCELLED",
-      statusColor: "red",
-      paymentStatus: "Refund Processed",
-      date: "25 Oct 2024",
+      status: 'CANCELLED',
+      statusColor: 'red',
+      paymentStatus: 'Refund Processed',
+      date: '25 Oct 2024',
     },
   ];
 
@@ -105,15 +105,19 @@ const BookingComponent = () => {
               </div>
             </div>
             <p className="font-semibold">{booking.amount}</p>
-            <p className="text-red-500">{booking.rating ? `${booking.rating}★` : "-"}</p>
+            <p className="text-red-500">
+              {booking.rating ? `${booking.rating}★` : '-'}
+            </p>
             <div className="flex items-center">
               <span
                 className={`px-3 py-1 rounded-lg text-white text-sm bg-${booking.statusColor}-500`}
               >
                 {booking.status}
               </span>
-              {["ONGOING", "UPCOMING"].includes(booking.status) && (
-                <button className="ml-4 text-blue-500 text-sm">Add Hours</button>
+              {['ONGOING', 'UPCOMING'].includes(booking.status) && (
+                <button className="ml-4 text-blue-500 text-sm">
+                  Add Hours
+                </button>
               )}
             </div>
             <p className="text-sm text-gray-500">{booking.date}</p>

@@ -55,8 +55,8 @@ export default function BookingFlow() {
       // Simulate successful payment response
       setBookingState('success');
       setTimeout(() => {
-      setBookingState('confirmed');
-      setTimeout(() => setBookingState('approved'), 3000); // Set booking state to approved after 3 seconds
+        setBookingState('confirmed');
+        setTimeout(() => setBookingState('approved'), 3000); // Set booking state to approved after 3 seconds
       }, 500);
     } catch (error) {
       console.error('Payment processing error:', error);
@@ -208,7 +208,9 @@ export default function BookingFlow() {
             <hr className="border-t border-gray-200" />
             <div className="space-y-4 my-6">
               <div className="grid grid-cols-3 gap-4">
-                <Label className="font-semibold col-span-2">SELECTED DATE</Label>
+                <Label className="font-semibold col-span-2">
+                  SELECTED DATE
+                </Label>
                 <Select value={selectedDate} onValueChange={setSelectedDate}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select date" />
@@ -231,7 +233,9 @@ export default function BookingFlow() {
                 </Select>
               </div>
               <div className="grid grid-cols-3 gap-4">
-                <Label className="font-semibold col-span-2">SELECTED TIME</Label>
+                <Label className="font-semibold col-span-2">
+                  SELECTED TIME
+                </Label>
                 <Select value={selectedTime} onValueChange={setSelectedTime}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select time" />

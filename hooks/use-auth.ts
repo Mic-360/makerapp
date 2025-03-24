@@ -13,4 +13,4 @@ export function useAuth() {
   }, [isLoading, token, router]);
 
   return { user, isLoading };
-} 
+}

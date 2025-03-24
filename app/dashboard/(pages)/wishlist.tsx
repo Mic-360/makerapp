@@ -1,34 +1,31 @@
-import Image from "next/image";
-import React from "react";
+import Image from 'next/image';
+import React from 'react';
 
 const Wishlist = () => {
   const machines = [
     {
       id: 1,
-      name: "Creality, 3-D Printer",
-      location: "SOA Fab Lab, Bhubaneswar",
-      specs: "PLA, ABS, Volume",
+      name: 'Creality, 3-D Printer',
+      location: 'SOA Fab Lab, Bhubaneswar',
+      specs: 'PLA, ABS, Volume',
       rating: 2.5,
-      image:
-        "https://via.placeholder.com/300x200.png?text=3D+Printer", // Placeholder image
+      image: 'https://via.placeholder.com/300x200.png?text=3D+Printer', // Placeholder image
     },
     {
       id: 2,
-      name: "Creality, 3-D Printer",
-      location: "SOA Fab Lab, Bhubaneswar",
-      specs: "PLA, ABS, Volume",
+      name: 'Creality, 3-D Printer',
+      location: 'SOA Fab Lab, Bhubaneswar',
+      specs: 'PLA, ABS, Volume',
       rating: 2.5,
-      image:
-        "https://via.placeholder.com/300x200.png?text=3D+Printer", // Placeholder image
+      image: 'https://via.placeholder.com/300x200.png?text=3D+Printer', // Placeholder image
     },
     {
       id: 3,
-      name: "Creality, 3-D Printer",
-      location: "SOA Fab Lab, Bhubaneswar",
-      specs: "PLA, ABS, Volume",
+      name: 'Creality, 3-D Printer',
+      location: 'SOA Fab Lab, Bhubaneswar',
+      specs: 'PLA, ABS, Volume',
       rating: 2.5,
-      image:
-        "https://via.placeholder.com/300x200.png?text=3D+Printer", // Placeholder image
+      image: 'https://via.placeholder.com/300x200.png?text=3D+Printer', // Placeholder image
     },
   ];
 

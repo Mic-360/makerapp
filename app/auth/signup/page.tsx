@@ -17,8 +17,7 @@ export default function SignupPage() {
   const [isValidEmail, setIsValidEmail] = useState(false);
   const [isValidPassword, setIsValidPassword] = useState(false);
   const router = useRouter();
-  const { email, password, setEmail, setPassword } =
-    useSignupStore();
+  const { email, password, setEmail, setPassword } = useSignupStore();
 
   const validateEmail = (input: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;

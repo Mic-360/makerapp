@@ -25,7 +25,6 @@ import Footer from '@/components/footer';
 import { Separator } from '@/components/ui/separator';
 
 export default function Sidebar() {
-  
   const [isSidebarOpen, setIsSidebarOpen] = React.useState(true);
 
   const sections = [

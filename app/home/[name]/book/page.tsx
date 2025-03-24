@@ -374,7 +374,8 @@ export default function LabSpacePage({ params }: { params: { name: string } }) {
       <>
         {transportModes.map(({ key }) => {
           const value =
-            makerspace?.howToReach && makerspace.howToReach[key as keyof typeof makerspace.howToReach];
+            makerspace?.howToReach &&
+            makerspace.howToReach[key as keyof typeof makerspace.howToReach];
           if (!value) return null;
 
           return (

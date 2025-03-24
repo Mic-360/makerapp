@@ -23,8 +23,8 @@ import MembershipsPage from './(pages)/membership';
 import MySpacePage from './(pages)/my-space';
 import RevenuePage from './(pages)/revenue';
 import MessagesPage from './(pages)/messages';
-import Wishlist from './(pages)/wishlist'
-import BookingComponent from './(pages)/bookings'
+import Wishlist from './(pages)/wishlist';
+import BookingComponent from './(pages)/bookings';
 import {
   Settings,
   User,
@@ -48,7 +48,7 @@ export default function Page() {
     'Bookings',
     'Messages',
     'Wishlist',
-   
+
     'Dashboard',
     'My Profile',
     '',
@@ -97,7 +97,7 @@ export default function Page() {
     { label: 'Messages', icon: LayoutDashboard },
     { label: 'Wishlist', icon: User },
     { label: 'Dashboard', icon: User },
-    { label: 'My profile', icon: Globe }
+    { label: 'My profile', icon: Globe },
   ];
 
   return (
@@ -251,8 +251,6 @@ export default function Page() {
         </aside>
 
         <section className="w-4/5 mb-36 mt-4 max-w-6xl mx-auto my-auto">
-          
-
           <div className="h-auto ">{renderPage()}</div>
         </section>
       </main>

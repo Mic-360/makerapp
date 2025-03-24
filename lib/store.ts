@@ -63,7 +63,7 @@ interface SignupStore {
   lastName: string;
   mobile: string;
   userType: string[];
-  industry: string[];  // Changed from string to string[]
+  industry: string[]; // Changed from string to string[]
   purpose: string[];
   setUserId: (userId: string) => void;
   setEmail: (email: string) => void;
@@ -90,7 +90,7 @@ export const useSignupStore = create<SignupStore>((set) => ({
   lastName: '',
   mobile: '',
   userType: [],
-  industry: [],  // Changed from '' to []
+  industry: [], // Changed from '' to []
   purpose: [],
   setUserId: (userId) => set({ userId }),
   setEmail: (email) => set({ email }),
@@ -99,35 +99,41 @@ export const useSignupStore = create<SignupStore>((set) => ({
   setLastName: (lastName) => set({ lastName }),
   setMobile: (mobile) => set({ mobile }),
   setUserType: (userType) => set({ userType: [userType] }),
-  addUserType: (type) => set((state) => {
-    if (state.userType.length < 2 && !state.userType.includes(type)) {
-      return { userType: [...state.userType, type] };
-    }
-    return state;
-  }),
-  removeUserType: (type) => set((state) => ({
-    userType: state.userType.filter((t) => t !== type)
-  })),
+  addUserType: (type) =>
+    set((state) => {
+      if (state.userType.length < 2 && !state.userType.includes(type)) {
+        return { userType: [...state.userType, type] };
+      }
+      return state;
+    }),
+  removeUserType: (type) =>
+    set((state) => ({
+      userType: state.userType.filter((t) => t !== type),
+    })),
   setIndustry: (industry) => set({ industry }),
-  addIndustry: (industry) => set((state) => {
-    if (state.industry.length < 3 && !state.industry.includes(industry)) {
-      return { industry: [...state.industry, industry] };
-    }
-    return state;
-  }),
-  removeIndustry: (industry) => set((state) => ({
-    industry: state.industry.filter((i) => i !== industry)
-  })),
+  addIndustry: (industry) =>
+    set((state) => {
+      if (state.industry.length < 3 && !state.industry.includes(industry)) {
+        return { industry: [...state.industry, industry] };
+      }
+      return state;
+    }),
+  removeIndustry: (industry) =>
+    set((state) => ({
+      industry: state.industry.filter((i) => i !== industry),
+    })),
   setPurpose: (purpose) => set({ purpose: [purpose] }),
-  addPurpose: (purpose) => set((state) => {
-    if (state.purpose.length < 3 && !state.purpose.includes(purpose)) {
-      return { purpose: [...state.purpose, purpose] };
-    }
-    return state;
-  }),
-  removePurpose: (purpose) => set((state) => ({
-    purpose: state.purpose.filter((p) => p !== purpose)
-  })),
+  addPurpose: (purpose) =>
+    set((state) => {
+      if (state.purpose.length < 3 && !state.purpose.includes(purpose)) {
+        return { purpose: [...state.purpose, purpose] };
+      }
+      return state;
+    }),
+  removePurpose: (purpose) =>
+    set((state) => ({
+      purpose: state.purpose.filter((p) => p !== purpose),
+    })),
 }));
 
 interface CityDataState {
@@ -289,23 +295,31 @@ export const useBookingStore = create<BookingState>((set, get) => ({
   items: [],
   date: undefined,
   timeSlot: undefined,
-  addItem: (item, quantity) => set((state) => {
-    const existingItemIndex = state.items.findIndex((i) => i.id === item.id);
-    if (existingItemIndex > -1) {
-      const newItems = [...state.items];
-      newItems[existingItemIndex] = { ...newItems[existingItemIndex], quantity };
-      return { items: newItems };
-    }
-    return { items: [...state.items, { ...item, quantity }] };
-  }),
-  removeItem: (id) => set((state) => ({
-    items: state.items.filter((item) => item.id !== id),
-  })),
+  addItem: (item, quantity) =>
+    set((state) => {
+      const existingItemIndex = state.items.findIndex((i) => i.id === item.id);
+      if (existingItemIndex > -1) {
+        const newItems = [...state.items];
+        newItems[existingItemIndex] = {
+          ...newItems[existingItemIndex],
+          quantity,
+        };
+        return { items: newItems };
+      }
+      return { items: [...state.items, { ...item, quantity }] };
+    }),
+  removeItem: (id) =>
+    set((state) => ({
+      items: state.items.filter((item) => item.id !== id),
+    })),
   clearItems: () => set({ items: [] }),
   setDate: (date) => set({ date }),
   setTimeSlot: (timeSlot) => set({ timeSlot }),
   getTotal: () => {
     const state = get();
-    return state.items.reduce((total, item) => total + item.price * item.quantity, 0);
+    return state.items.reduce(
+      (total, item) => total + item.price * item.quantity,
+      0
+    );
   },
 }));

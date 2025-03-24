@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 
 const DashboardPage = () => {
   return (
@@ -47,7 +47,11 @@ const DashboardPage = () => {
               <div
                 key={index}
                 className={`w-6 h-24 bg-gray-300 rounded-lg ${
-                  index === 4 ? "bg-red-500" : index === 8 ? "bg-orange-500" : ""
+                  index === 4
+                    ? 'bg-red-500'
+                    : index === 8
+                      ? 'bg-orange-500'
+                      : ''
                 }`}
               ></div>
             ))}

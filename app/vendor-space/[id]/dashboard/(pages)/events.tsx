@@ -845,7 +845,7 @@ export default function EventsPage({
               ))}
             </div>
             <Button
-              type='button'
+              type="button"
               variant="link"
               className="text-xs h-auto pl-4"
               onClick={() => setExperts([...experts, { name: '', number: '' }])}

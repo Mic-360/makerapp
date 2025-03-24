@@ -28,7 +28,7 @@ export default function TopBar({
   theme = 'dark',
   isBg = false,
   button = true,
-  search = true
+  search = true,
 }: {
   theme?: 'dark' | 'light';
   isBg?: boolean;

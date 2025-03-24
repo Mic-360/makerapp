@@ -56,7 +56,7 @@ const steps = [1, 2, 3, 4, 5];
 export default function SpaceSubmissionFlow() {
   const router = useRouter();
   const params = useParams();
-  console.log(params)
+  console.log(params);
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(true);
   const [verifiedEmail, setVerifiedEmail] = useState<string | null>(null);
@@ -405,10 +405,7 @@ export default function SpaceSubmissionFlow() {
                       option.type as 'rent' | 'host'
                     )
                       ? formData.purposes.filter((p) => p !== option.type)
-                      : [
-                          ...formData.purposes,
-                          option.type as 'rent' | 'host',
-                        ];
+                      : [...formData.purposes, option.type as 'rent' | 'host'];
                     setFormData({ ...formData, purposes: newPurposes });
                   }}
                   className={`flex-1 p-8 rounded-3xl border text-left transition-all relative ${
@@ -419,9 +416,7 @@ export default function SpaceSubmissionFlow() {
                 >
                   <div
                     className={`${
-                      formData.purposes.includes(
-                        option.type as 'rent' | 'host'
-                      )
+                      formData.purposes.includes(option.type as 'rent' | 'host')
                         ? 'border-green-500'
                         : 'border-gray-300'
                     } absolute top-4 right-4 w-4 h-4 rounded-full border-2 flex justify-center items-center`}

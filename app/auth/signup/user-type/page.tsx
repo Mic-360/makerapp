@@ -61,7 +61,9 @@ setting up your Karkhana account`}
               type="button"
               variant="outline"
               className={`${
-                userType.includes(type) ? 'bg-green-500 text-white font-semibold' : 'text-gray-900'
+                userType.includes(type)
+                  ? 'bg-green-500 text-white font-semibold'
+                  : 'text-gray-900'
               } rounded-xl py-12 text-md`}
               onClick={() => handleUserTypeClick(type)}
               disabled={userType.length >= 2 && !userType.includes(type)}

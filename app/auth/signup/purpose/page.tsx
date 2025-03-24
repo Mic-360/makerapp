@@ -93,7 +93,7 @@ export default function PurposePage() {
             <Button
               key={field}
               type="button"
-              variant='outline'
+              variant="outline"
               className={`${purpose.includes(field) ? 'bg-green-500 text-white font-semibold' : 'text-gray-900'} rounded-xl py-8 text-sm`}
               onClick={() => handlePurposeClick(field)}
               disabled={purpose.length >= 3 && !purpose.includes(field)}
