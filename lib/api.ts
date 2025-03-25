@@ -426,15 +426,15 @@ export async function verifyMakerspaceToken(
   }
 }
 
-export async function createEvent(eventData: Partial<Event>, token: string) {
+export async function createEvent(eventData: FormData | Partial<Event>, token: string) {
   try {
     const response = await fetch(`${BASE_URL}/api/events`, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`,
+        ...(eventData instanceof FormData ? {} : { 'Content-Type': 'application/json' })
       },
-      body: JSON.stringify(eventData),
+      body: eventData instanceof FormData ? eventData : JSON.stringify(eventData),
     });
 
     if (!response.ok) {
@@ -451,17 +451,17 @@ export async function createEvent(eventData: Partial<Event>, token: string) {
 
 export async function updateEvent(
   id: string,
-  eventData: Partial<Event>,
+  eventData: FormData | Partial<Event>,
   token: string
 ) {
   try {
     const response = await fetch(`${BASE_URL}/api/events/${id}`, {
       method: 'PUT',
       headers: {
-        'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`,
+        ...(eventData instanceof FormData ? {} : { 'Content-Type': 'application/json' })
       },
-      body: JSON.stringify(eventData),
+      body: eventData instanceof FormData ? eventData : JSON.stringify(eventData),
     });
 
     if (!response.ok) {
@@ -537,17 +537,17 @@ export async function updateMakerspace(
 }
 
 export async function createMachine(
-  machineData: Partial<Machine>,
+  machineData: FormData | Partial<Machine>,
   token: string
 ) {
   try {
     const response = await fetch(`${BASE_URL}/api/machines`, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`,
+        ...(machineData instanceof FormData ? {} : { 'Content-Type': 'application/json' }),
       },
-      body: JSON.stringify(machineData),
+      body: machineData instanceof FormData ? machineData : JSON.stringify(machineData),
     });
 
     if (!response.ok) {
@@ -564,17 +564,17 @@ export async function createMachine(
 
 export async function updateMachine(
   id: string,
-  machineData: Partial<Machine>,
+  machineData: FormData | Partial<Machine>,
   token: string
 ) {
   try {
     const response = await fetch(`${BASE_URL}/api/machines/${id}`, {
       method: 'PUT',
       headers: {
-        'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`,
+        ...(machineData instanceof FormData ? {} : { 'Content-Type': 'application/json' }),
       },
-      body: JSON.stringify(machineData),
+      body: machineData instanceof FormData ? machineData : JSON.stringify(machineData),
     });
 
     if (!response.ok) {

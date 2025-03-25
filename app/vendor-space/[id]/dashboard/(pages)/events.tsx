@@ -54,11 +54,9 @@ import {
   Edit,
   Filter,
   ImageIcon,
-  ImagePlus,
   Plus,
   PlusCircle,
   SlidersHorizontal,
-  X,
 } from 'lucide-react';
 import Image from 'next/image';
 import React, { useEffect, useState } from 'react';
@@ -143,58 +141,7 @@ export default function EventsPage({
     if (!token) return;
 
     try {
-      // Basic required fields validation
-      const name = formData.get('name')?.toString();
-      const category = formData.get('category')?.toString();
-      const description = formData.get('description')?.toString();
-      const location = formData.get('location')?.toString();
-      const ticketType = formData.get('ticketType')?.toString();
-      const ticketPrice = parseFloat(formData.get('price')?.toString() || '0');
-      const ticketLimit = parseInt(
-        formData.get('totalTickets')?.toString() || '0',
-        10
-      );
-      const startTime = formData.get('startTime')?.toString() || '';
-      const endTime = formData.get('endTime')?.toString() || '';
-
-      // Validate required fields
-      if (
-        !name ||
-        !category ||
-        !description ||
-        !location ||
-        !ticketType ||
-        !ticketPrice ||
-        !startDate ||
-        !endDate ||
-        !startTime ||
-        !endTime
-      ) {
-        console.log('Missing required fields:', {
-          name,
-          category,
-          description,
-          location,
-          ticketType,
-          ticketPrice,
-          startDate,
-          endDate,
-          startTime,
-          endTime,
-        });
-        setError('Please fill in all required fields');
-        return;
-      }
-
-      if (ticketLimit <= 0) {
-        setError('Ticket limit must be greater than zero');
-        return;
-      }
-
-      // Handle image upload
-      const imageLinks = await handleImageUpload(selectedImages);
-
-      // Extract experts
+      // Parse and add experts array
       const experts = [];
       for (let i = 1; i <= 2; i++) {
         const name = formData.get(`expertName${i}`)?.toString();
@@ -203,33 +150,27 @@ export default function EventsPage({
           experts.push({ name, number });
         }
       }
+      formData.set('experts', JSON.stringify(experts));
 
-      const newEventData = {
-        name,
-        category,
-        date: {
-          start: format(startDate, 'yyyy-MM-dd'),
-          end: format(endDate, 'yyyy-MM-dd'),
-        },
-        time: {
-          start: startTime,
-          end: endTime,
-        },
-        ticket: {
-          type: ticketType,
-          price: ticketPrice,
-        },
-        ticketLimit,
-        imageLinks,
-        description,
-        agenda: formData.get('agenda')?.toString() || '',
-        terms: formData.get('terms')?.toString() || '',
-        location,
-        experts,
-        makerSpace: initialMakerspace.name,
-      };
+      // Add dates in required format
+      if (startDate && endDate) {
+        formData.set(
+          'date',
+          JSON.stringify({
+            start: format(startDate, 'yyyy-MM-dd'),
+            end: format(endDate, 'yyyy-MM-dd'),
+          })
+        );
+      }
 
-      const createdEvent = await createEvent(newEventData, token);
+      // Add images if selected
+      if (selectedImages) {
+        Array.from(selectedImages).forEach((file) => {
+          formData.append('images', file);
+        });
+      }
+
+      const createdEvent = await createEvent(formData, token);
       setEvents([...events, createdEvent]);
       setAddDialogOpen(false);
       setShowSuccess(true);
@@ -258,52 +199,10 @@ export default function EventsPage({
     if (!currentEvent?._id || !token) return;
     setError(null);
 
+    const formData = new FormData(e.currentTarget);
+
     try {
-      const formData = new FormData(e.currentTarget);
-      // Basic required fields validation
-      const name = formData.get('name')?.toString();
-      const category = formData.get('category')?.toString();
-      const description = formData.get('about')?.toString();
-      const location = formData.get('location')?.toString();
-      const ticketType = formData.get('ticketType1')?.toString();
-      const ticketPrice = parseFloat(formData.get('price1')?.toString() || '0');
-      const ticketLimit = parseInt(
-        formData.get('totalTickets')?.toString() || '0',
-        10
-      );
-      const startTime = formData.get('startTime')?.toString() || '';
-      const endTime = formData.get('endTime')?.toString() || '';
-
-      // Validate required fields
-      if (
-        !name ||
-        !category ||
-        !description ||
-        !location ||
-        !ticketType ||
-        !ticketPrice ||
-        !startDate ||
-        !endDate ||
-        !startTime ||
-        !endTime
-      ) {
-        setError('Please fill in all required fields');
-        return;
-      }
-
-      if (ticketLimit <= 0) {
-        setError('Ticket limit must be greater than zero');
-        return;
-      }
-
-      // Handle image upload if new images were selected
-      let imageLinks = currentEvent.imageLinks || [];
-      if (selectedImages) {
-        const newImageLinks = await handleImageUpload(selectedImages);
-        imageLinks = [...imageLinks, ...newImageLinks];
-      }
-
-      // Extract experts
+      // Parse and add experts array
       const experts = [];
       for (let i = 1; i <= 2; i++) {
         const name = formData.get(`expertName${i}`)?.toString();
@@ -312,45 +211,34 @@ export default function EventsPage({
           experts.push({ name, number });
         }
       }
+      formData.set('experts', JSON.stringify(experts));
 
-      const updatedEventData = {
-        name,
-        category,
-        date: {
-          start: format(startDate, 'yyyy-MM-dd'),
-          end: format(endDate, 'yyyy-MM-dd'),
-        },
-        time: {
-          start: startTime,
-          end: endTime,
-        },
-        ticket: {
-          type: ticketType,
-          price: ticketPrice,
-        },
-        ticketLimit,
-        imageLinks,
-        description,
-        agenda: formData.get('agenda')?.toString() || '',
-        terms: formData.get('terms')?.toString() || '',
-        location,
-        experts,
-        makerSpace: initialMakerspace.name,
-      };
+      // Add dates in required format
+      if (startDate && endDate) {
+        formData.set(
+          'date',
+          JSON.stringify({
+            start: format(startDate, 'yyyy-MM-dd'),
+            end: format(endDate, 'yyyy-MM-dd'),
+          })
+        );
+      }
 
-      const updatedEvent = await updateEvent(
-        currentEvent._id,
-        updatedEventData,
-        token
-      );
+      // Add images if selected
+      if (selectedImages) {
+        Array.from(selectedImages).forEach((file) => {
+          formData.append('images', file);
+        });
+      }
+
+      const updatedEvent = await updateEvent(currentEvent._id, formData, token);
 
       setEvents(
         events.map((event) =>
-          event._id === currentEvent._id ? { ...event, ...updatedEvent } : event
+          event._id === currentEvent._id ? updatedEvent : event
         )
       );
 
-      // Reset form state
       setEditDialogOpen(false);
       setShowSuccess(true);
       setSelectedImages(null);

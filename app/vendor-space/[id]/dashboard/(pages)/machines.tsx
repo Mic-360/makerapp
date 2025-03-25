@@ -147,7 +147,7 @@ const MachinesPage = ({
     const formData = new FormData(e.currentTarget);
 
     try {
-      // Extract lab incharge details
+      // Parse and add inCharge array
       const inCharge = [];
       for (let i = 1; i <= 2; i++) {
         const name = formData.get(`inchargeName${i}`)?.toString();
@@ -156,56 +156,16 @@ const MachinesPage = ({
           inCharge.push({ name, number });
         }
       }
+      formData.set('inCharge', JSON.stringify(inCharge));
 
-      const startTime = formData.get('startTime')?.toString();
-      const endTime = formData.get('endTime')?.toString();
-
-      if (!startTime || !endTime) {
-        throw new Error('Start and end time are required');
+      // Add images if selected
+      if (selectedImages) {
+        Array.from(selectedImages).forEach((file) => {
+          formData.append('images', file);
+        });
       }
 
-      const category = formData.get('category')?.toString();
-      const brand = formData.get('brandName')?.toString();
-      const model = formData.get('modelNumber')?.toString();
-      const priceStr = formData.get('price')?.toString();
-      const description = formData.get('description')?.toString();
-      const location = formData.get('location')?.toString();
-
-      // Validate required fields
-      if (
-        !category ||
-        !brand ||
-        !model ||
-        !priceStr ||
-        !description ||
-        !location
-      ) {
-        throw new Error('Please fill in all required fields');
-      }
-
-      const price = parseFloat(priceStr);
-
-      // Prepare machine data according to backend requirements
-      const newMachineData: Partial<Machine> = {
-        category,
-        brand,
-        model,
-        price,
-        time: {
-          start: startTime,
-          end: endTime,
-        },
-        description,
-        location,
-        instruction:
-          formData.get('specialInstructions')?.toString() || undefined,
-        inCharge,
-        makerSpace: initialMakerspace.name,
-        status: 'inactive',
-        imageLinks: [], // We'll update image handling in a separate PR
-      };
-
-      const createdMachine = await createMachine(newMachineData, token);
+      const createdMachine = await createMachine(formData, token);
       setMachines([...machines, createdMachine]);
       setAddDialogOpen(false);
       setShowSuccess(true);
@@ -229,6 +189,7 @@ const MachinesPage = ({
     const formData = new FormData(e.currentTarget);
 
     try {
+      // Parse and add inCharge array
       const inCharge = [];
       for (let i = 1; i <= 2; i++) {
         const name = formData.get(`inchargeName${i}`)?.toString();
@@ -237,55 +198,18 @@ const MachinesPage = ({
           inCharge.push({ name, number });
         }
       }
+      formData.set('inCharge', JSON.stringify(inCharge));
 
-      const startTime = formData.get('startTime')?.toString();
-      const endTime = formData.get('endTime')?.toString();
-
-      if (!startTime || !endTime) {
-        throw new Error('Start and end time are required');
+      // Add images if selected
+      if (selectedImages) {
+        Array.from(selectedImages).forEach((file) => {
+          formData.append('images', file);
+        });
       }
-
-      const category = formData.get('category')?.toString();
-      const brand = formData.get('brandName')?.toString();
-      const model = formData.get('modelNumber')?.toString();
-      const priceStr = formData.get('price')?.toString();
-      const description = formData.get('description')?.toString();
-      const location = formData.get('location')?.toString();
-
-      // Validate required fields
-      if (
-        !category ||
-        !brand ||
-        !model ||
-        !priceStr ||
-        !description ||
-        !location
-      ) {
-        throw new Error('Please fill in all required fields');
-      }
-
-      const price = parseFloat(priceStr);
-
-      const updatedMachineData: Partial<Machine> = {
-        category,
-        brand,
-        model,
-        price,
-        time: {
-          start: startTime,
-          end: endTime,
-        },
-        description,
-        location,
-        instruction:
-          formData.get('specialInstructions')?.toString() || undefined,
-        inCharge,
-        // Don't update makerSpace or status here as they should be handled separately
-      };
 
       const updatedMachine = await updateMachine(
         currentMachine._id,
-        updatedMachineData,
+        formData,
         token
       );
 
