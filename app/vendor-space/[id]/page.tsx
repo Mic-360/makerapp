@@ -20,7 +20,7 @@ import { createMakerspace, verifyMakerspaceToken } from '@/lib/api';
 import { Check, Info, Plus } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useParams, usePathname, useRouter } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { ChangeEvent, useEffect, useState } from 'react';
 
 interface FormData {
@@ -56,7 +56,6 @@ const steps = [1, 2, 3, 4, 5];
 export default function SpaceSubmissionFlow() {
   const router = useRouter();
   const params = useParams();
-  console.log(params);
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(true);
   const [verifiedEmail, setVerifiedEmail] = useState<string | null>(null);
@@ -79,6 +78,7 @@ export default function SpaceSubmissionFlow() {
       address: '',
       zipCode: '',
       orgName: '',
+      orgEmail: '',
       country: '',
     },
     media: {
@@ -257,21 +257,37 @@ export default function SpaceSubmissionFlow() {
         throw new Error('No token found');
       }
 
-      // Process uploaded images and logos to get URLs
-      const imageUrls = await Promise.all(
-        formData.media.images.map(async (file) => {
-          // Here you would implement your image upload logic
-          // and return the URL of the uploaded image
-          return '/assetlist.png'; // Replace with actual upload logic
-        })
+      // Create a FormData object
+      const makerspaceFormData = new FormData();
+
+      // Append text fields
+      makerspaceFormData.append('type', formData.type);
+      formData.purposes.forEach((purpose) =>
+        makerspaceFormData.append('usage', purpose)
+      );
+      makerspaceFormData.append('name', formData.spaceDetails.name);
+      makerspaceFormData.append('email', formData.spaceDetails.email);
+      makerspaceFormData.append(
+        'number',
+        selectedCountryCode + formData.spaceDetails.contact
+      );
+      makerspaceFormData.append(
+        'inChargeName',
+        formData.spaceDetails.inchargeName
+      );
+      makerspaceFormData.append('websiteLink', formData.spaceDetails.website);
+      makerspaceFormData.append('city', formData.address.city);
+      makerspaceFormData.append('state', formData.address.state);
+      makerspaceFormData.append('address', formData.address.address);
+      makerspaceFormData.append('zipcode', formData.address.zipCode);
+      makerspaceFormData.append('country', formData.address.country);
+      makerspaceFormData.append('organizationName', formData.address.orgName);
+      makerspaceFormData.append(
+        'organizationEmail',
+        formData.address.orgEmail || ''
       );
 
-      const spaceLogoUrl = formData.media.spaceLogo
-        ? '/assetlist.png'
-        : undefined; // Replace with actual upload
-      const orgLogoUrl = formData.media.orgLogo ? '/assetlist.png' : undefined; // Replace with actual upload
-
-      // Convert timings to required format with specific day properties
+      // Process and append timings
       const processedTimings = {
         monday: '',
         tuesday: '',
@@ -285,28 +301,24 @@ export default function SpaceSubmissionFlow() {
         const lowercaseDay = day.toLowerCase() as keyof typeof processedTimings;
         processedTimings[lowercaseDay] = `${timing.from}-${timing.to}`;
       });
+      makerspaceFormData.append('timings', JSON.stringify(processedTimings));
 
-      const makerspaceData = {
-        type: formData.type,
-        usage: formData.purposes,
-        name: formData.spaceDetails.name,
-        email: formData.spaceDetails.email,
-        number: selectedCountryCode + formData.spaceDetails.contact,
-        inChargeName: formData.spaceDetails.inchargeName,
-        websiteLink: formData.spaceDetails.website || '',
-        timings: processedTimings,
-        city: formData.address.city,
-        state: formData.address.state,
-        address: formData.address.address,
-        zipcode: formData.address.zipCode,
-        country: formData.address.country,
-        organizationName: formData.address.orgName || undefined,
-        organizationEmail: formData.address.orgEmail || undefined,
-        imageLinks: imageUrls,
-        logoImageLinks: [spaceLogoUrl, orgLogoUrl].filter(Boolean) as string[],
-      };
+      // Append image files
+      formData.media.images.forEach((file, index) => {
+        if (file) {
+          makerspaceFormData.append('images', file);
+        }
+      });
 
-      const response = await createMakerspace(token, makerspaceData);
+      // Append logo files, checking if they exist
+      if (formData.media.spaceLogo) {
+        makerspaceFormData.append('images', formData.media.spaceLogo);
+      }
+      if (formData.media.orgLogo) {
+        makerspaceFormData.append('images', formData.media.orgLogo);
+      }
+
+      const response = await createMakerspace(token, makerspaceFormData);
 
       // Redirect to the dashboard page for the created makerspace
       router.push(`/vendor-space/${response._id}/dashboard`);
@@ -1232,7 +1244,11 @@ export default function SpaceSubmissionFlow() {
                       key={index}
                       className={`
                         aspect-[16/9] rounded-2xl border-2 border-dashed
-                        ${formData.media.images[index] ? 'border-none p-0' : 'border-gray-400 p-4'}
+                        ${
+                          formData.media.images[index]
+                            ? 'border-none p-0'
+                            : 'border-gray-400 p-4'
+                        }
                         flex items-center justify-center cursor-pointer
                         hover:border-gray-300 transition-colors overflow-hidden relative group
                       `}
@@ -1271,7 +1287,7 @@ export default function SpaceSubmissionFlow() {
                 <div className="flex flex-col items-center text-center space-y-4">
                   <div className="flex items-center justify-center gap-2">
                     <Label className="text-base font-normal text-gray-600">
-                      Upload logo of your space
+                      Upload logo of your space*
                     </Label>
                     <TooltipProvider>
                       <Tooltip>
@@ -1287,7 +1303,11 @@ export default function SpaceSubmissionFlow() {
                   <label
                     className={`
                       w-32 h-32 rounded-full border-2 border-dashed
-                      ${formData.media.spaceLogo ? 'border-none p-0' : 'border-gray-400 p-4'}
+                      ${
+                        formData.media.spaceLogo
+                          ? 'border-none p-0'
+                          : 'border-gray-400 p-4'
+                      }
                       flex items-center justify-center cursor-pointer
                       hover:border-gray-300 transition-colors overflow-hidden relative group
                     `}
@@ -1323,7 +1343,11 @@ export default function SpaceSubmissionFlow() {
                   <label
                     className={`
                       w-32 h-32 rounded-full border-2 border-dashed
-                      ${formData.media.orgLogo ? 'border-none p-0' : 'border-gray-400 p-4'}
+                      ${
+                        formData.media.orgLogo
+                          ? 'border-none p-0'
+                          : 'border-gray-400 p-4'
+                      }
                       flex items-center justify-center cursor-pointer
                       hover:border-gray-300 transition-colors overflow-hidden relative group
                     `}

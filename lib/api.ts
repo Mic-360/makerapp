@@ -478,16 +478,15 @@ export async function updateEvent(
 
 export async function createMakerspace(
   token: string,
-  data: Partial<Makerspace>
+  data: FormData // Changed parameter type to FormData
 ) {
   try {
     const response = await fetch(`${BASE_URL}/api/makerspaces`, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
+        Authorization: `Bearer ${token}`, // Removed 'Content-Type': 'application/json'
       },
-      body: JSON.stringify(data),
+      body: data, // Send FormData directly
     });
 
     const responseData = await response.json();
