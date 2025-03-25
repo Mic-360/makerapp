@@ -99,16 +99,28 @@ export default function MySpacePage({
     }
   };
 
+  const handleImageUpload = async (files: File[], isLogo: boolean = false) => {
+    const formData = new FormData();
+    files.forEach((file) => {
+      formData.append('images', file);
+    });
+    formData.append('isLogoUpload', isLogo.toString());
+
+    return formData;
+  };
+
   const handleSubmit = async () => {
     if (!token || !formData) return;
 
     setIsLoading(true);
     try {
-      const updatedData = {
-        ...formData,
+      // Handle regular form data
+      const updatedData: Partial<Makerspace> = {
         status: statusOpen ? 'active' : 'inactive',
         type: formData.type || 'fabrication',
         usage: formData.usage || ['education', 'prototyping', 'manufacturing'],
+        name: formData.name || '',
+        description: formData.description || '',
         email: formData.email || '',
         number: formData.number || '',
         inChargeName: formData.inChargeName || '',
@@ -122,20 +134,62 @@ export default function MySpacePage({
           saturday: '9:00 AM - 2:00 PM',
           sunday: 'Closed',
         },
+        city: formData.city || '',
+        state: formData.state || '',
+        address: formData.address || '',
+        zipcode: formData.zipcode || '',
+        country: formData.country || '',
+        organizationName: formData.organizationName || '',
+        organizationEmail: formData.organizationEmail || '',
         rating: formData.rating || 0,
+        seating: formData.seating || [],
+        mentors: formData.mentors || [],
+        amenities: formData.amenities || [],
         instructions: formData.instructions || [],
+        howToReach: formData.howToReach || {},
         additionalInformation: formData.additionalInformation || '',
       };
 
-      const result = await updateMakerspace(
-        initialMakerspace._id,
-        updatedData,
-        token
+      // First update the text data
+      await updateMakerspace(initialMakerspace._id, updatedData, token);
+
+      // Handle regular images if changed
+      const changedImages = document.querySelectorAll<HTMLInputElement>(
+        'input[type="file"][id^="spaceImage_"]'
       );
-      // Update local state after successful API call
-      setFormData(result);
+      const imageFiles: File[] = [];
+      changedImages.forEach((input) => {
+        if (input.files?.[0]) {
+          imageFiles.push(input.files[0]);
+        }
+      });
+
+      if (imageFiles.length > 0) {
+        const imageFormData = await handleImageUpload(imageFiles, false);
+        await updateMakerspace(initialMakerspace._id, imageFormData, token);
+      }
+
+      // Handle logo images if changed
+      const logoFiles: File[] = [];
+      const spaceLogo = document.getElementById(
+        'spaceLogo_input'
+      ) as HTMLInputElement;
+      const orgLogo = document.getElementById(
+        'orgLogo_input'
+      ) as HTMLInputElement;
+
+      if (spaceLogo?.files?.[0]) logoFiles.push(spaceLogo.files[0]);
+      if (orgLogo?.files?.[0]) logoFiles.push(orgLogo.files[0]);
+
+      if (logoFiles.length > 0) {
+        const logoFormData = await handleImageUpload(logoFiles, true);
+        await updateMakerspace(initialMakerspace._id, logoFormData, token);
+      }
+
+      // Refresh the data
+      setFormData(updatedData);
     } catch (error) {
-      console.error('Error updating makerspace status:', error);
+      console.error('Error updating makerspace:', error);
     } finally {
       setIsLoading(false);
     }

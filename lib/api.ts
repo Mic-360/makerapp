@@ -478,15 +478,17 @@ export async function updateEvent(
 
 export async function createMakerspace(
   token: string,
-  data: FormData // Changed parameter type to FormData
+  data: FormData | Partial<Makerspace>
 ) {
   try {
+
     const response = await fetch(`${BASE_URL}/api/makerspaces`, {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${token}`, // Removed 'Content-Type': 'application/json'
+        Authorization: `Bearer ${token}`,
+        ...(data instanceof FormData ? {} : { 'Content-Type': 'application/json' }),
       },
-      body: data, // Send FormData directly
+      body: data instanceof FormData ? data : JSON.stringify(data),
     });
 
     const responseData = await response.json();
@@ -506,17 +508,17 @@ export async function createMakerspace(
 
 export async function updateMakerspace(
   id: string,
-  data: Partial<Makerspace>,
+  data: FormData | Partial<Makerspace>,
   token: string
 ) {
   try {
     const response = await fetch(`${BASE_URL}/api/makerspaces/${id}`, {
       method: 'PUT',
       headers: {
-        'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`,
+        ...(data instanceof FormData ? {} : { 'Content-Type': 'application/json' }),
       },
-      body: JSON.stringify(data),
+      body: data instanceof FormData ? data : JSON.stringify(data),
     });
 
     const responseData = await response.json();
