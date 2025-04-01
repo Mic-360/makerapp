@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
-
+import { SocialIcon } from 'react-social-icons';
 export default function Footer() {
   return (
     <footer className="bg-gray-800 text-white py-8 px-4 sm:px-6 lg:px-8">
@@ -67,18 +67,34 @@ export default function Footer() {
             <div className="text-center sm:text-left">
               <h3 className="font-semibold mb-2 text-start">Find us on</h3>
               <div className="flex justify-center sm:justify-start space-x-4">
-                {['instagram', 'facebook', 'twitter', 'linkedin'].map(
-                  (social) => (
-                    <Link
-                      key={social}
-                      href={`#${social}`}
-                      className="text-gray-600 hover:text-gray-900"
-                    >
-                      <span className="sr-only">{social}</span>
-                      <div className="w-8 h-8 bg-gray-300 rounded-full"></div>
-                    </Link>
-                  )
-                )}
+                {[
+                  {
+                    name: 'facebook',
+                    url: 'https://www.facebook.com/karkhanahub/',
+                  },
+                  { name: 'twitter', url: 'https://x.com/karkhanahub' },
+                  {
+                    name: 'instagram',
+                    url: 'https://www.instagram.com/karkhanahub/',
+                  },
+                  {
+                    name: 'youtube',
+                    url: 'https://www.youtube.com/@karkhanahub',
+                  },
+                  {
+                    name: 'linkedin',
+                    url: 'https://www.linkedin.com/company/karkhanahub/',
+                  },
+                ].map((social) => (
+                  <Link
+                    key={social.name}
+                    href={social.url}
+                    className="text-gray-600 hover:text-gray-900"
+                  >
+                    <span className="sr-only">{social.name}</span>
+                    <SocialIcon url={new URL(social.url).origin} />
+                  </Link>
+                ))}
               </div>
             </div>
           </div>
