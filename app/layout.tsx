@@ -1,17 +1,48 @@
+import AuthProvider from '@/components/auth-provider';
 import type { Metadata } from 'next';
 import localFont from 'next/font/local';
 import './globals.css';
-import AuthProvider from '@/components/auth-provider';
 
-const geistSans = localFont({
-  src: './fonts/GeistVF.woff',
-  variable: '--font-geist-sans',
-  weight: '100 900',
+const grokRegular = localFont({
+  src: './fonts/NHaasGroteskTXPro-55Rg.ttf',
+  variable: '--font-grok-regular',
+  display: 'swap',
+  style: 'normal',
 });
-const geistMono = localFont({
-  src: './fonts/GeistMonoVF.woff',
-  variable: '--font-geist-mono',
-  weight: '100 900',
+
+const grokItalic = localFont({
+  src: './fonts/NHaasGroteskTXPro-56It.ttf',
+  variable: '--font-grok-italic',
+  display: 'swap',
+  style: 'italic',
+});
+
+const grokMedium = localFont({
+  src: './fonts/NHaasGroteskTXPro-65Md.ttf',
+  variable: '--font-grok-medium',
+  display: 'swap',
+  style: 'normal',
+});
+
+const grokMediumItalic = localFont({
+  src: './fonts/NHaasGroteskTXPro-66MdIt.ttf',
+  variable: '--font-grok-medium-italic',
+  display: 'swap',
+  style: 'italic',
+});
+
+const grokBold = localFont({
+  src: './fonts/NHaasGroteskTXPro-75Bd.ttf',
+  variable: '--font-grok-bold',
+  display: 'swap',
+  style: 'normal',
+});
+
+const grokBoldItalic = localFont({
+  src: './fonts/NHaasGroteskTXPro-76BdIt.ttf',
+  variable: '--font-grok-bold-italic',
+  display: 'swap',
+  style: 'italic',
 });
 
 export const metadata: Metadata = {
@@ -28,7 +59,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="scrollbar-hide">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${grokRegular.variable} ${grokItalic.variable} ${grokMedium.variable} ${grokMediumItalic.variable} ${grokBold.variable} ${grokBoldItalic.variable} font-sans antialiased`}
       >
         <AuthProvider>{children}</AuthProvider>
       </body>

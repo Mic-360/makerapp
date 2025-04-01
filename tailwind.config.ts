@@ -9,6 +9,16 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        sans: [
+          'var(--font-grok-regular)',
+          'var(--font-grok-italic)',
+          'var(--font-grok-medium)',
+          'var(--font-grok-medium-italic)',
+          'var(--font-grok-bold)',
+          'var(--font-grok-bold-italic)',
+        ],
+      },
       colors: {
         background: 'hsl(var(--background))',
         foreground: 'hsl(var(--foreground))',
