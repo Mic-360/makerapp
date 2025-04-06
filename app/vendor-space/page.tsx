@@ -53,7 +53,7 @@ export default function Page() {
                 Makerspace Potential
               </h1>
               <Link
-                href="https://calendly.com/roshanbiswanathpatra/karkahana-onboarding"
+                href="https://calendly.com/karkhanaclub/30min"
                 className="hover:text-white text-yellow-500 text-xl"
               >
                 Request a Demo now! &nbsp;&nbsp;&nbsp;→

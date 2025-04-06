@@ -917,6 +917,7 @@ export default function MySpacePage({
                     height={200}
                     alt="World Map"
                     className="w-full h-auto"
+                    onClick={() => window.open(initialMakerspace.googleMapLink)}
                   />
                 </div>
               </div>
