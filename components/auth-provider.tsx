@@ -25,7 +25,6 @@ export default function AuthProvider({
 
   useEffect(() => {
     reauth();
-
     const interval = setInterval(
       () => {
         if (token) {

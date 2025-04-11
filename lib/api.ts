@@ -280,7 +280,6 @@ export async function loginUser(
     if (!response.ok) {
       throw new Error(data.message || 'Invalid credentials');
     }
-    console.log('Login successful:', data);
 
     return data;
   } catch (error) {
