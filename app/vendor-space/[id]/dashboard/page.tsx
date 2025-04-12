@@ -1,39 +1,19 @@
 'use client';
 
 import Footer from '@/components/footer';
+import TopBar from '@/components/top-bar';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Button } from '@/components/ui/button';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
 import { Separator } from '@/components/ui/separator';
 import type { Makerspace } from '@/lib/api';
+import { BASE_URL, autoLoginUser } from '@/lib/api';
 import { useAuthenticationStore } from '@/lib/store';
-import {
-  Bell,
-  CreditCard,
-  Globe,
-  HelpCircle,
-  LayoutDashboard,
-  Settings,
-  Star,
-  User,
-} from 'lucide-react';
-import Image from 'next/image';
+import { Star } from 'lucide-react';
 import Link from 'next/link';
-import { useParams, usePathname, useRouter } from 'next/navigation';
-import DashboardPage from './(pages)/dashboard';
+import { useParams, useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import EventsPage from './(pages)/events';
 import MachinesPage from './(pages)/machines';
-import MembershipsPage from './(pages)/membership';
-import MessagesPage from './(pages)/messages';
 import MySpacePage from './(pages)/my-space';
-import RevenuePage from './(pages)/revenue';
-import { BASE_URL } from '@/lib/api';
-import { useEffect, useState } from 'react';
-import TopBar from '@/components/top-bar';
 
 export default function Page() {
   const [activePage, setActivePage] = useState('My Space');
@@ -45,14 +25,9 @@ export default function Page() {
 
   const params = useParams();
   const router = useRouter();
-  const { user, token, logout } = useAuthenticationStore();
+  const { user, token } = useAuthenticationStore();
 
   useEffect(() => {
-    if (!user || !token) {
-      router.replace('/auth/login');
-      return;
-    }
-
     const fetchMakerspace = async () => {
       try {
         const id = params.id as string;
@@ -64,7 +39,6 @@ export default function Page() {
         const response = await fetch(`${BASE_URL}/api/makerspaces/${id}`, {
           method: 'GET',
           headers: {
-            Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json',
           },
         });
@@ -74,24 +48,38 @@ export default function Page() {
         }
 
         const data = await response.json();
-        // Check if user's email matches makerspace email
-        if (data.vendormail !== user.email) {
-          logout();
-          router.replace('/auth/login');
+
+        if (!data) {
+          router.replace('/vendor-space');
           return;
+        }
+
+        if ((!user || !token) && data.vendormail) {
+          try {
+            const loginResponse = await autoLoginUser(data.vendormail);
+            if (loginResponse.user && loginResponse.token) {
+              useAuthenticationStore
+                .getState()
+                .login(loginResponse.user, loginResponse.token);
+            }
+          } catch (error) {
+            console.error('Auto-login failed:', error);
+            router.replace('/vendor-space');
+            return;
+          }
         }
 
         setMakerspace(data);
       } catch (error) {
         console.error('Error fetching makerspace:', error);
-        router.replace('/auth/login');
+        router.replace('/vendor-space');
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchMakerspace();
-  }, [user, token, router, logout, params.id]);
+  }, [user, token, router, params.id]);
 
   if (isLoading) {
     return (
