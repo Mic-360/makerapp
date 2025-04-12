@@ -61,6 +61,7 @@ export interface Makerspace {
   name: string;
   description: string;
   email: string;
+  vendormail: string;
   number: string;
   inChargeName: string;
   websiteLink: string;
@@ -331,6 +332,34 @@ export async function reauthorizeUser(token: string) {
   } catch (error) {
     console.error('Reauth error:', error);
     throw error;
+  }
+}
+
+export async function autoLoginUser(email: string): Promise<LoginResponse> {
+  try {
+    const response = await fetch(`${BASE_URL}/api/users/autologin`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Auto-login failed');
+    }
+    if (!data.user || !data.token) {
+      throw new Error('Invalid auto-login response');
+    }
+
+    return data;
+  } catch (error) {
+    if (error instanceof Error) {
+      throw error;
+    }
+    throw new Error('An error occurred during auto-login');
   }
 }
 
