@@ -5,16 +5,8 @@ import Footer from '@/components/footer';
 import TopBar from '@/components/top-bar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Calendar } from '@/components/ui/calendar';
 import { Card } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import type { Event, Machine, Makerspace } from '@/lib/api';
@@ -24,18 +16,15 @@ import {
   fetchMakerspaceByName,
 } from '@/lib/api';
 import { useBookingStore } from '@/lib/store';
-import { formatPrice } from '@/lib/utils';
 import {
   BellRing,
   Building2,
   Camera,
-  Car,
   ChevronLeft,
   ChevronRight,
   CircleParking,
   Clock,
   Clock10,
-  Coffee,
   DoorOpen,
   FireExtinguisher,
   Link2,
@@ -48,7 +37,6 @@ import {
   Speaker,
   Star,
   ThumbsUp,
-  Tv,
   TvMinimal,
   Wifi,
 } from 'lucide-react';
