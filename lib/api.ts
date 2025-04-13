@@ -108,7 +108,7 @@ export interface Makerspace {
   createdAt?: Date;
 }
 
-export const BASE_URL = 'http://localhost:8080';
+export const BASE_URL = 'http://localhost:3001';
 
 export async function fetchMachinesByMakerspace(makerspaceName: string) {
   try {
