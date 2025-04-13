@@ -16,7 +16,12 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { createMakerspace, verifyMakerspaceToken } from '@/lib/api';
+import {
+  autoLoginUser,
+  createMakerspace,
+  verifyMakerspaceToken,
+} from '@/lib/api';
+import { useAuthenticationStore } from '@/lib/store';
 import { Check, Info, Plus } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -85,6 +90,8 @@ export default function SpaceSubmissionFlow() {
       images: [],
     },
   });
+
+  const { user, token } = useAuthenticationStore();
 
   useEffect(() => {
     const verifyToken = async () => {
@@ -263,10 +270,11 @@ export default function SpaceSubmissionFlow() {
       // Append text fields
       makerspaceFormData.append('type', formData.type);
       formData.purposes.forEach((purpose) =>
-        makerspaceFormData.append('usage', purpose)
+        makerspaceFormData.append('usage[]', purpose)
       );
       makerspaceFormData.append('name', formData.spaceDetails.name);
       makerspaceFormData.append('email', formData.spaceDetails.email);
+      makerspaceFormData.append('vendorEmail', formData.spaceDetails.email); // Add vendorEmail
       makerspaceFormData.append(
         'number',
         selectedCountryCode + formData.spaceDetails.contact
@@ -289,7 +297,11 @@ export default function SpaceSubmissionFlow() {
 
       // Process and append timings
       const processedTimings = {
-        monday: '',
+        monday:
+          formData.spaceDetails.timings.Monday?.from &&
+          formData.spaceDetails.timings.Monday?.to
+            ? `${formData.spaceDetails.timings.Monday.from}-${formData.spaceDetails.timings.Monday.to}`
+            : '',
         tuesday: '',
         wednesday: '',
         thursday: '',
@@ -297,10 +309,6 @@ export default function SpaceSubmissionFlow() {
         saturday: '',
         sunday: '',
       };
-      Object.entries(formData.spaceDetails.timings).forEach(([day, timing]) => {
-        const lowercaseDay = day.toLowerCase() as keyof typeof processedTimings;
-        processedTimings[lowercaseDay] = `${timing.from}-${timing.to}`;
-      });
       makerspaceFormData.append('timings', JSON.stringify(processedTimings));
 
       // Append image files
@@ -322,9 +330,9 @@ export default function SpaceSubmissionFlow() {
 
       // Redirect to the dashboard page for the created makerspace
       router.push(`/vendor-space/${response._id}/dashboard`);
+      setLoading(false);
     } catch (error: any) {
       console.log('Submission error:', error.message);
-    } finally {
       setLoading(false);
     }
   };
@@ -577,54 +585,6 @@ export default function SpaceSubmissionFlow() {
                     )}
                   </div>
                 </div>
-
-                <div className="space-y-4 mt-8">
-                  <Label className="pl-4 text-base font-normal text-gray-600">
-                    Days Open
-                  </Label>
-                  <div className="grid grid-cols-3 gap-2">
-                    {days.map((day) => (
-                      <Button
-                        variant="ghost"
-                        key={day}
-                        onClick={() => {
-                          const newDays =
-                            formData.spaceDetails.daysOpen.includes(day)
-                              ? formData.spaceDetails.daysOpen.filter(
-                                  (d) => d !== day
-                                )
-                              : [...formData.spaceDetails.daysOpen, day];
-                          setFormData({
-                            ...formData,
-                            spaceDetails: {
-                              ...formData.spaceDetails,
-                              daysOpen: newDays,
-                              timings: formData.spaceDetails.daysOpen.includes(
-                                day
-                              )
-                                ? Object.fromEntries(
-                                    Object.entries(
-                                      formData.spaceDetails.timings
-                                    ).filter(([key]) => key !== day)
-                                  )
-                                : {
-                                    ...formData.spaceDetails.timings,
-                                    [day]: { from: '', to: '' },
-                                  },
-                            },
-                          });
-                        }}
-                        className={`h-12 px-4 rounded-2xl border transition-colors ${
-                          formData.spaceDetails.daysOpen.includes(day)
-                            ? 'bg-black text-white border-black'
-                            : 'text-gray-900 border-gray-300 hover:border-gray-600'
-                        }`}
-                      >
-                        {day.slice(0, 3)}
-                      </Button>
-                    ))}
-                  </div>
-                </div>
               </div>
 
               <div className="space-y-6">
@@ -693,283 +653,141 @@ export default function SpaceSubmissionFlow() {
                   </div>
                 </div>
 
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <Label className="pl-4 text-base font-normal text-gray-600">
-                      Timings*
-                    </Label>
-                    {Object.keys(formData.spaceDetails.timings).length > 0 && (
-                      <Button
-                        type="button"
-                        variant="outline"
-                        className="h-8 px-3 rounded-xl"
-                        onClick={() => {
-                          const firstDay = Object.entries(
-                            formData.spaceDetails.timings
-                          )[0];
-                          if (firstDay) {
-                            const [_, timing] = firstDay;
-                            const newTimings =
-                              formData.spaceDetails.daysOpen.reduce(
-                                (
-                                  acc: Record<
-                                    string,
-                                    { from: string; to: string }
-                                  >,
-                                  day
-                                ) => {
-                                  if (day !== 'Sunday') {
-                                    acc[day] = { ...timing };
-                                  }
-                                  return acc;
-                                },
-                                {}
-                              );
-                            setFormData({
-                              ...formData,
-                              spaceDetails: {
-                                ...formData.spaceDetails,
-                                timings: newTimings,
+                <div className="space-y-2">
+                  <Label className="pl-4 text-base font-normal text-gray-600">
+                    Select Timings
+                  </Label>
+                  <div className="flex items-center gap-2 rounded-lg">
+                    <Select
+                      value={convertTo12Hour(
+                        formData.spaceDetails.timings.Monday?.from || ''
+                      )}
+                      onValueChange={(value) =>
+                        setFormData({
+                          ...formData,
+                          spaceDetails: {
+                            ...formData.spaceDetails,
+                            timings: {
+                              Monday: {
+                                from: convertTo24Hour(value),
+                                to:
+                                  formData.spaceDetails.timings.Monday?.to ||
+                                  '',
                               },
-                            });
-                          }
-                        }}
-                      >
-                        Assign to all
-                      </Button>
-                    )}
-                  </div>
-                  <div className="h-72 overflow-y-scroll space-y-4 scrollbar-hide">
-                    {formData.spaceDetails.daysOpen.map((day) => (
-                      <div
-                        key={day}
-                        className="flex items-center gap-2 border border-gray-400 p-4 rounded-2xl"
-                      >
-                        <span className="w-24 text-gray-600 font-medium">
-                          {day}
-                        </span>
-                        <div className="flex-1 flex items-center gap-2">
-                          {day === 'Sunday' ? (
-                            <>
-                              <Select
-                                value={
-                                  formData.spaceDetails.timings[day]?.from || ''
-                                }
-                                onValueChange={(value) => {
-                                  if (value === 'closed') {
-                                    setFormData({
-                                      ...formData,
-                                      spaceDetails: {
-                                        ...formData.spaceDetails,
-                                        timings: {
-                                          ...formData.spaceDetails.timings,
-                                          [day]: {
-                                            from: 'closed',
-                                            to: 'closed',
-                                          },
-                                        },
-                                      },
-                                    });
-                                  } else {
-                                    setFormData({
-                                      ...formData,
-                                      spaceDetails: {
-                                        ...formData.spaceDetails,
-                                        timings: {
-                                          ...formData.spaceDetails.timings,
-                                          [day]: {
-                                            ...formData.spaceDetails.timings[
-                                              day
-                                            ],
-                                            from: convertTo24Hour(value),
-                                          },
-                                        },
-                                      },
-                                    });
-                                  }
-                                }}
-                              >
-                                <SelectTrigger className="w-full h-12 rounded-xl border-gray-300">
-                                  <SelectValue placeholder="Opening time" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="closed">Closed</SelectItem>
-                                  {Array.from({ length: 12 }, (_, i) => {
-                                    const hour = (i + 1).toString();
-                                    return (
-                                      <>
-                                        <SelectItem
-                                          key={`${hour}AM`}
-                                          value={`${hour}:00 AM`}
-                                        >
-                                          {`${hour}:00 AM`}
-                                        </SelectItem>
-                                        <SelectItem
-                                          key={`${hour}PM`}
-                                          value={`${hour}:00 PM`}
-                                        >
-                                          {`${hour}:00 PM`}
-                                        </SelectItem>
-                                      </>
-                                    );
-                                  })}
-                                </SelectContent>
-                              </Select>
-                              {formData.spaceDetails.timings[day]?.from !==
-                                'closed' && (
-                                <>
-                                  <span className="text-gray-400">to</span>
-                                  <Select
-                                    value={convertTo12Hour(
-                                      formData.spaceDetails.timings[day]?.to ||
-                                        ''
-                                    )}
-                                    onValueChange={(value) =>
-                                      setFormData({
-                                        ...formData,
-                                        spaceDetails: {
-                                          ...formData.spaceDetails,
-                                          timings: {
-                                            ...formData.spaceDetails.timings,
-                                            [day]: {
-                                              ...formData.spaceDetails.timings[
-                                                day
-                                              ],
-                                              to: convertTo24Hour(value),
-                                            },
-                                          },
-                                        },
-                                      })
-                                    }
-                                  >
-                                    <SelectTrigger className="w-full h-12 rounded-xl border-gray-300">
-                                      <SelectValue placeholder="Closing time" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                      {Array.from({ length: 12 }, (_, i) => {
-                                        const hour = (i + 1).toString();
-                                        return (
-                                          <>
-                                            <SelectItem
-                                              key={`${hour}AM`}
-                                              value={`${hour}:00 AM`}
-                                            >
-                                              {`${hour}:00 AM`}
-                                            </SelectItem>
-                                            <SelectItem
-                                              key={`${hour}PM`}
-                                              value={`${hour}:00 PM`}
-                                            >
-                                              {`${hour}:00 PM`}
-                                            </SelectItem>
-                                          </>
-                                        );
-                                      })}
-                                    </SelectContent>
-                                  </Select>
-                                </>
-                              )}
-                            </>
-                          ) : (
-                            <>
-                              <Select
-                                value={convertTo12Hour(
-                                  formData.spaceDetails.timings[day]?.from || ''
-                                )}
-                                onValueChange={(value) =>
-                                  setFormData({
-                                    ...formData,
-                                    spaceDetails: {
-                                      ...formData.spaceDetails,
-                                      timings: {
-                                        ...formData.spaceDetails.timings,
-                                        [day]: {
-                                          ...formData.spaceDetails.timings[day],
-                                          from: convertTo24Hour(value),
-                                        },
-                                      },
-                                    },
-                                  })
-                                }
-                              >
-                                <SelectTrigger className="w-full h-12 rounded-xl border-gray-300">
-                                  <SelectValue placeholder="Opening time" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  {Array.from({ length: 12 }, (_, i) => {
-                                    const hour = (i + 1).toString();
-                                    return (
-                                      <>
-                                        <SelectItem
-                                          key={`${hour}AM`}
-                                          value={`${hour}:00 AM`}
-                                        >
-                                          {`${hour}:00 AM`}
-                                        </SelectItem>
-                                        <SelectItem
-                                          key={`${hour}PM`}
-                                          value={`${hour}:00 PM`}
-                                        >
-                                          {`${hour}:00 PM`}
-                                        </SelectItem>
-                                      </>
-                                    );
-                                  })}
-                                </SelectContent>
-                              </Select>
-                              <span className="text-gray-400">to</span>
-                              <Select
-                                value={convertTo12Hour(
-                                  formData.spaceDetails.timings[day]?.to || ''
-                                )}
-                                onValueChange={(value) =>
-                                  setFormData({
-                                    ...formData,
-                                    spaceDetails: {
-                                      ...formData.spaceDetails,
-                                      timings: {
-                                        ...formData.spaceDetails.timings,
-                                        [day]: {
-                                          ...formData.spaceDetails.timings[day],
-                                          to: convertTo24Hour(value),
-                                        },
-                                      },
-                                    },
-                                  })
-                                }
-                              >
-                                <SelectTrigger className="text-black w-full h-12 rounded-xl border-gray-300">
-                                  <SelectValue placeholder="Closing time" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  {Array.from({ length: 12 }, (_, i) => {
-                                    const hour = (i + 1).toString();
-                                    return (
-                                      <>
-                                        <SelectItem
-                                          key={`${hour}AM`}
-                                          value={`${hour}:00 AM`}
-                                        >
-                                          {`${hour}:00 AM`}
-                                        </SelectItem>
-                                        <SelectItem
-                                          key={`${hour}PM`}
-                                          value={`${hour}:00 PM`}
-                                        >
-                                          {`${hour}:00 PM`}
-                                        </SelectItem>
-                                      </>
-                                    );
-                                  })}
-                                </SelectContent>
-                              </Select>
-                            </>
-                          )}
-                        </div>
-                      </div>
-                    ))}
+                            },
+                          },
+                        })
+                      }
+                    >
+                      <SelectTrigger className="w-full h-12 rounded-xl border-gray-300">
+                        <SelectValue placeholder="Opening time">
+                          {formData.spaceDetails.timings.Monday?.from
+                            ? convertTo12Hour(
+                                formData.spaceDetails.timings.Monday.from
+                              )
+                            : 'Opening time'}
+                        </SelectValue>
+                      </SelectTrigger>
+                      <SelectContent>
+                        {Array.from({ length: 24 }, (_, i) => {
+                          const hour = i.toString().padStart(2, '0');
+                          const time = `${hour}:00`;
+                          return (
+                            <SelectItem
+                              key={hour}
+                              value={convertTo12Hour(time)}
+                            >
+                              {convertTo12Hour(time)}
+                            </SelectItem>
+                          );
+                        })}
+                      </SelectContent>
+                    </Select>
+                    <span className="text-gray-400">to</span>
+                    <Select
+                      value={convertTo12Hour(
+                        formData.spaceDetails.timings.Monday?.to || ''
+                      )}
+                      onValueChange={(value) =>
+                        setFormData({
+                          ...formData,
+                          spaceDetails: {
+                            ...formData.spaceDetails,
+                            timings: {
+                              Monday: {
+                                from:
+                                  formData.spaceDetails.timings.Monday?.from ||
+                                  '',
+                                to: convertTo24Hour(value),
+                              },
+                            },
+                          },
+                        })
+                      }
+                    >
+                      <SelectTrigger className="w-full h-12 rounded-xl border-gray-300">
+                        <SelectValue placeholder="Closing time">
+                          {formData.spaceDetails.timings.Monday?.to
+                            ? convertTo12Hour(
+                                formData.spaceDetails.timings.Monday.to
+                              )
+                            : 'Closing time'}
+                        </SelectValue>
+                      </SelectTrigger>
+                      <SelectContent>
+                        {Array.from({ length: 24 }, (_, i) => {
+                          const hour = i.toString().padStart(2, '0');
+                          const time = `${hour}:00`;
+                          return (
+                            <SelectItem
+                              key={hour}
+                              value={convertTo12Hour(time)}
+                            >
+                              {convertTo12Hour(time)}
+                            </SelectItem>
+                          );
+                        })}
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
+              </div>
+            </div>
+
+            <div className="space-y-2 mt-4 max-w-screen-lg">
+              <Label className="pl-4 text-base font-normal text-gray-600">
+                Days Open
+              </Label>
+              <div className="flex gap-[0.6rem]">
+                {days.map((day) => (
+                  <Button
+                    variant="ghost"
+                    key={day}
+                    onClick={() => {
+                      const newDays = formData.spaceDetails.daysOpen.includes(
+                        day
+                      )
+                        ? formData.spaceDetails.daysOpen.filter(
+                            (d) => d !== day
+                          )
+                        : [...formData.spaceDetails.daysOpen, day];
+                      setFormData({
+                        ...formData,
+                        spaceDetails: {
+                          ...formData.spaceDetails,
+                          daysOpen: newDays,
+                        },
+                      });
+                    }}
+                    className={`h-12 px-10 rounded-lg border transition-colors ${
+                      formData.spaceDetails.daysOpen.includes(day)
+                        ? 'bg-black text-white border-black'
+                        : 'text-gray-900 border-gray-300 hover:border-gray-600'
+                    }`}
+                  >
+                    {day}
+                  </Button>
+                ))}
               </div>
             </div>
           </div>

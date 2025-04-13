@@ -24,6 +24,7 @@ import { updateMakerspace } from '@/lib/api';
 import { useAuthenticationStore } from '@/lib/store';
 import { Bolt, Check, Plus } from 'lucide-react';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import type React from 'react';
 import { useEffect, useState } from 'react';
 
@@ -36,6 +37,7 @@ export default function MySpacePage({
   makerspace: initialMakerspace,
   setMakerspace,
 }: MySpacePageProps) {
+  const router = useRouter();
   const [wordCount, setWordCount] = useState(0);
   const [statusOpen, setStatusOpen] = useState(
     initialMakerspace.status === 'active'
@@ -188,6 +190,7 @@ export default function MySpacePage({
 
       // Refresh the data
       setFormData(updatedData);
+      router.push(`${window.location.pathname}/preview`);
     } catch (error) {
       console.error('Error updating makerspace:', error);
     } finally {
