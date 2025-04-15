@@ -329,7 +329,7 @@ export default function SpaceSubmissionFlow() {
       const response = await createMakerspace(token, makerspaceFormData);
 
       // Redirect to the dashboard page for the created makerspace
-      router.push(`/vendor-space/${response._id}/dashboard`);
+      router.push(`/vendor-space/${response.makerspace._id}/dashboard`);
       setLoading(false);
     } catch (error: any) {
       console.log('Submission error:', error.message);

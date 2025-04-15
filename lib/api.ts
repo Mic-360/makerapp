@@ -109,7 +109,7 @@ export interface Makerspace {
   createdAt?: Date;
 }
 
-export const BASE_URL = 'http://localhost:8080';
+export const BASE_URL = 'https://makerappbackend-1ty8.onrender.com';
 
 export async function fetchMachinesByMakerspace(makerspaceName: string) {
   try {

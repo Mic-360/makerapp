@@ -14,6 +14,10 @@ import { useEffect, useState } from 'react';
 import EventsPage from './(pages)/events';
 import MachinesPage from './(pages)/machines';
 import MySpacePage from './(pages)/my-space';
+import RevenuePage from './(pages)/revenue';
+import DashboardPage from './(pages)/dashboard';
+import MembershipsPage from '@/app/dashboard/(pages)/membership';
+import MessagesPage from './(pages)/messages';
 
 export default function Page() {
   const [activePage, setActivePage] = useState('My Space');
@@ -95,13 +99,13 @@ export default function Page() {
 
   const navItems = [
     '',
-    // 'Dashboard',
+    'Dashboard',
     'Machines',
     'Events',
-    // 'Memberships',
+    'Memberships',
     'My Space',
-    // 'Revenue',
-    // 'Messages',
+    'Revenue',
+    'Messages',
     '',
   ];
 
@@ -109,8 +113,8 @@ export default function Page() {
 
   const renderPage = () => {
     switch (activePage) {
-      // case 'Dashboard':
-      //   return <DashboardPage />;
+      case 'Dashboard':
+        return <DashboardPage />;
       case 'Machines':
         return (
           <MachinesPage makerspace={makerspace} setMakerspace={setMakerspace} />
@@ -119,16 +123,16 @@ export default function Page() {
         return (
           <EventsPage makerspace={makerspace} setMakerspace={setMakerspace} />
         );
-      // case 'Memberships':
-      //   return <MembershipsPage />;
+      case 'Memberships':
+        return <MembershipsPage />;
       case 'My Space':
         return (
           <MySpacePage makerspace={makerspace} setMakerspace={setMakerspace} />
         );
-      // case 'Revenue':
-      //   return <RevenuePage />;
-      // case 'Messages':
-      //   return <MessagesPage />;
+      case 'Revenue':
+        return <RevenuePage />;
+      case 'Messages':
+        return <MessagesPage />;
       default:
         return (
           <MySpacePage makerspace={makerspace} setMakerspace={setMakerspace} />
