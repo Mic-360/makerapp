@@ -46,7 +46,6 @@ import {
   Edit,
   Filter,
   ImageIcon,
-  ImagePlus,
   Plus,
   PlusCircle,
   SlidersHorizontal,
@@ -147,6 +146,24 @@ const MachinesPage = ({
     const formData = new FormData(e.currentTarget);
 
     try {
+      // Create time object
+      const time = {
+        start: formData.get('startTime')?.toString() || '',
+        end: formData.get('endTime')?.toString() || '',
+      };
+      formData.set('time', JSON.stringify(time));
+
+      // Convert price to number
+      const price = Number(formData.get('price'));
+      if (isNaN(price)) {
+        throw new Error('Invalid price value');
+      }
+      formData.set('price', price.toString());
+
+      // Set brand and model from form data
+      formData.set('brand', formData.get('brandName')?.toString() || '');
+      formData.set('model', formData.get('modelNumber')?.toString() || '');
+
       // Parse and add inCharge array
       const inCharge = [];
       for (let i = 1; i <= 2; i++) {
@@ -157,6 +174,22 @@ const MachinesPage = ({
         }
       }
       formData.set('inCharge', JSON.stringify(inCharge));
+
+      // Set description and instructions
+      formData.set(
+        'description',
+        formData.get('description')?.toString() || ''
+      );
+      formData.set(
+        'instruction',
+        formData.get('specialInstructions')?.toString() || ''
+      );
+
+      // Set makerSpace from the parent component
+      formData.set('makerSpace', initialMakerspace.name);
+
+      // Set initial status as inactive
+      formData.set('status', 'inactive');
 
       // Add images if selected
       if (selectedImages) {
@@ -189,6 +222,24 @@ const MachinesPage = ({
     const formData = new FormData(e.currentTarget);
 
     try {
+      // Create time object
+      const time = {
+        start: formData.get('startTime')?.toString() || '',
+        end: formData.get('endTime')?.toString() || '',
+      };
+      formData.set('time', JSON.stringify(time));
+
+      // Convert price to number
+      const price = Number(formData.get('price'));
+      if (isNaN(price)) {
+        throw new Error('Invalid price value');
+      }
+      formData.set('price', price.toString());
+
+      // Set brand and model from form data
+      formData.set('brand', formData.get('brandName')?.toString() || '');
+      formData.set('model', formData.get('modelNumber')?.toString() || '');
+
       // Parse and add inCharge array
       const inCharge = [];
       for (let i = 1; i <= 2; i++) {
@@ -199,6 +250,19 @@ const MachinesPage = ({
         }
       }
       formData.set('inCharge', JSON.stringify(inCharge));
+
+      // Set description and instructions
+      formData.set(
+        'description',
+        formData.get('description')?.toString() || ''
+      );
+      formData.set(
+        'instruction',
+        formData.get('specialInstructions')?.toString() || ''
+      );
+
+      // Set makerSpace from the parent component
+      formData.set('makerSpace', initialMakerspace.name);
 
       // Add images if selected
       if (selectedImages) {
@@ -269,8 +333,8 @@ const MachinesPage = ({
     })
     .filter((machine) => {
       if (activeTab === 'active') return machine.status === 'active';
-      if (activeTab === 'draft') return machine.status === 'draft';
-      if (activeTab === 'trash') return machine.status === 'inactive';
+      if (activeTab === 'draft') return machine.status === 'inactive';
+      if (activeTab === 'trash') return machine.status === 'removed';
       return false;
     });
 
@@ -325,7 +389,7 @@ const MachinesPage = ({
               {machine.category}
             </div>
             <div className="col-span-2 flex items-center">
-              {`${machine.time.start} - ${machine.time.end}`}
+              {machine.time.start} - {machine.time.end}
             </div>
             <div className="col-span-1 flex items-center gap-2">
               <Switch
@@ -484,8 +548,8 @@ const MachinesPage = ({
 
           <div className="space-y-2">
             <Label className="pl-3">Add Images of the machine</Label>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {[0, 1, 2, 3].map((index) => (
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              {[0, 1, 2].map((index) => (
                 <Label
                   key={index}
                   className={`
@@ -502,6 +566,18 @@ const MachinesPage = ({
                     onChange={(e) => {
                       const files = e.target.files;
                       if (files && files[0]) {
+                        // Validate file size
+                        if (files[0].size > 10 * 1024 * 1024) {
+                          setError('File too large. Maximum size is 10MB.');
+                          return;
+                        }
+
+                        // Validate file type
+                        if (!files[0].type.startsWith('image/')) {
+                          setError('Only image files are allowed!');
+                          return;
+                        }
+
                         const newImages = new DataTransfer();
                         // Keep existing files
                         if (selectedImages) {
@@ -512,6 +588,7 @@ const MachinesPage = ({
                         // Add new file at index
                         newImages.items.add(files[0]);
                         setSelectedImages(newImages.files);
+                        setError(null);
                       }
                     }}
                   />
@@ -519,7 +596,19 @@ const MachinesPage = ({
                     <>
                       <Image
                         src={URL.createObjectURL(selectedImages[index])}
-                        alt={`Event image ${index + 1}`}
+                        alt={`Machine image ${index + 1}`}
+                        fill
+                        className="object-cover"
+                      />
+                      <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                        <p className="text-white text-sm">Click to change</p>
+                      </div>
+                    </>
+                  ) : currentMachine?.imageLinks?.[index] ? (
+                    <>
+                      <Image
+                        src={currentMachine.imageLinks[index]}
+                        alt={`Machine image ${index + 1}`}
                         fill
                         className="object-cover"
                       />
@@ -533,6 +622,9 @@ const MachinesPage = ({
                 </Label>
               ))}
             </div>
+            <p className="text-xs text-gray-500 mt-1">
+              Each image must be less than 10MB.
+            </p>
           </div>
 
           <div className="space-y-2">
@@ -638,7 +730,7 @@ const MachinesPage = ({
               <Check className="h-16 w-16 text-green-600" />
             </div>
             <p className="max-w-64 text-center">
-              Congratulations, your event has been submitted for review.
+              Congratulations, your machine has been submitted for review.
             </p>
           </div>
         </Card>
@@ -951,16 +1043,87 @@ const MachinesPage = ({
 
               <div className="space-y-2">
                 <Label>Machine Images</Label>
-                <div className="grid grid-cols-4 gap-2">
-                  {[1, 2, 3, 4].map((i) => (
-                    <div
-                      key={i}
-                      className="border rounded-md aspect-square flex items-center justify-center cursor-pointer hover:bg-gray-50"
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  {[0, 1, 2, 3, 4, 5].map((index) => (
+                    <Label
+                      key={index}
+                      className={`
+                              aspect-[16/9] rounded-2xl border-2 border-dashed
+                              ${selectedImages?.[index] ? 'border-none p-0' : 'border-gray-400 p-4'}
+                              flex items-center justify-center cursor-pointer
+                              hover:border-gray-300 transition-colors overflow-hidden relative group
+                            `}
                     >
-                      <ImagePlus className="h-6 w-6 text-gray-400" />
-                    </div>
+                      <Input
+                        type="file"
+                        className="hidden"
+                        accept="image/*"
+                        onChange={(e) => {
+                          const files = e.target.files;
+                          if (files && files[0]) {
+                            // Validate file size
+                            if (files[0].size > 10 * 1024 * 1024) {
+                              setError('File too large. Maximum size is 10MB.');
+                              return;
+                            }
+
+                            // Validate file type
+                            if (!files[0].type.startsWith('image/')) {
+                              setError('Only image files are allowed!');
+                              return;
+                            }
+
+                            const newImages = new DataTransfer();
+                            // Keep existing files
+                            if (selectedImages) {
+                              Array.from(selectedImages).forEach((f, i) => {
+                                if (i !== index) newImages.items.add(f);
+                              });
+                            }
+                            // Add new file at index
+                            newImages.items.add(files[0]);
+                            setSelectedImages(newImages.files);
+                            setError(null);
+                          }
+                        }}
+                      />
+                      {selectedImages?.[index] ? (
+                        <>
+                          <Image
+                            src={URL.createObjectURL(selectedImages[index])}
+                            alt={`Machine image ${index + 1}`}
+                            fill
+                            className="object-cover"
+                          />
+                          <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                            <p className="text-white text-sm">
+                              Click to change
+                            </p>
+                          </div>
+                        </>
+                      ) : currentMachine?.imageLinks?.[index] ? (
+                        <>
+                          <Image
+                            src={currentMachine.imageLinks[index]}
+                            alt={`Machine image ${index + 1}`}
+                            fill
+                            className="object-cover"
+                          />
+                          <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                            <p className="text-white text-sm">
+                              Click to change
+                            </p>
+                          </div>
+                        </>
+                      ) : (
+                        <Plus className="w-8 h-8 text-gray-300" />
+                      )}
+                    </Label>
                   ))}
                 </div>
+                <p className="text-xs text-gray-500 mt-1">
+                  Upload up to 6 images. Each image must be less than 10MB.
+                </p>
               </div>
 
               <div className="space-y-2">
