@@ -1,5 +1,6 @@
 'use client';
 
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { fetchMachinesByMakerspaces, fetchMakerspaces } from '@/lib/api';
 import { cities } from '@/lib/constants';
@@ -21,8 +22,6 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { Tooltip, TooltipProvider } from './ui/tooltip';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 export default function TopBar({
   theme = 'dark',
@@ -39,7 +38,7 @@ export default function TopBar({
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { selectedCity, setSelectedCity } = useCityStore();
   const { setMachines, setEvents } = useCityDataStore();
-  const { user, token, logout } = useAuthenticationStore();
+  const { user, token, logout, activeMakerspaceId } = useAuthenticationStore();
   const [searchTerm, setSearchTerm] = useState('');
   const [isScrolled, setIsScrolled] = useState(false);
   const isDark = isScrolled ? false : theme === 'dark';
@@ -279,7 +278,11 @@ export default function TopBar({
           {user ? (
             <div className="hidden md:flex items-center gap-3">
               <Link
-                href="/profile"
+                href={
+                  activeMakerspaceId
+                    ? `/vendor-space/${activeMakerspaceId}/dashboard`
+                    : '/vendor-space'
+                }
                 className="flex items-center gap-2 hover:opacity-80 transition-opacity"
               >
                 <Avatar className="h-8 w-8">

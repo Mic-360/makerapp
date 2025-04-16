@@ -16,11 +16,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import {
-  autoLoginUser,
-  createMakerspace,
-  verifyMakerspaceToken,
-} from '@/lib/api';
+import { createMakerspace, verifyMakerspaceToken } from '@/lib/api';
 import { useAuthenticationStore } from '@/lib/store';
 import { Check, Info, Plus } from 'lucide-react';
 import Image from 'next/image';
@@ -328,8 +324,9 @@ export default function SpaceSubmissionFlow() {
 
       const response = await createMakerspace(token, makerspaceFormData);
 
-      // Redirect to the dashboard page for the created makerspace
-      router.push(`/vendor-space/${response.makerspace._id}/dashboard`);
+      // Save makerspace ID and redirect to dashboard
+      useAuthenticationStore.getState().setActiveMakerspaceId(response._id);
+      router.push(`/vendor-space/${response._id}/dashboard`);
       setLoading(false);
     } catch (error: any) {
       console.log('Submission error:', error.message);

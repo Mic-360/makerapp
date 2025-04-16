@@ -161,8 +161,10 @@ interface User {
 interface AuthenticationState extends AuthState {
   user: User | null;
   token: string | null;
+  activeMakerspaceId: string | null;
   setUser: (user: User | null) => void;
   setToken: (token: string | null) => void;
+  setActiveMakerspaceId: (id: string | null) => void;
   login: (user: User, token: string) => void;
   logout: () => void;
   reauth: () => Promise<void>;
@@ -189,11 +191,22 @@ export const useAuthenticationStore = create<AuthenticationState>((set) => ({
   isValidPhone: false,
   otpTimer: 45,
   isLoading: true,
+  activeMakerspaceId: null,
   ...loadAuthState(),
   setLoginIdentifier: (identifier) => set({ loginIdentifier: identifier }),
   setIsValidEmail: (isValid) => set({ isValidEmail: isValid }),
   setIsValidPhone: (isValid) => set({ isValidPhone: isValid }),
   setOtpTimer: (timer) => set({ otpTimer: timer }),
+  setActiveMakerspaceId: (id) => {
+    set({ activeMakerspaceId: id });
+    if (typeof window !== 'undefined') {
+      if (id) {
+        localStorage.setItem('activeMakerspaceId', id);
+      } else {
+        localStorage.removeItem('activeMakerspaceId');
+      }
+    }
+  },
   setUser: (user) => {
     set({ user });
     if (typeof window !== 'undefined') {
