@@ -346,7 +346,7 @@ export default function SpaceSubmissionFlow() {
             <h1 className="text-[36px] font-bold text-[#1C1C1C] text-center max-w-3xl mb-16 font-nhaasTxPro">
               Are you an independent lab or with an institution?
             </h1>
-            <div className="flex flex-col md:flex-row gap-6 w-full max-w-3xl">
+            <div className="flex flex-col md:flex-row gap-6 w-full max-w-3xl justify-center">
               {[
                 {
                   type: 'independent',
@@ -369,7 +369,7 @@ export default function SpaceSubmissionFlow() {
                       type: option.type as 'independent' | 'institution',
                     })
                   }
-                  className={`flex-1 p-8 rounded-[27px] border text-left transition-all relative ${
+                  className={`p-8 rounded-[27px] border text-left transition-all relative ${
                     formData.type === option.type
                       ? 'border-[#1C1C1C] border-[1.8px]'
                       : 'border-[#D6D6D6] hover:border-gray-300'
@@ -386,10 +386,16 @@ export default function SpaceSubmissionFlow() {
                       <div className="h-3 w-3 rounded-full bg-[#30C77B]" />
                     )}
                   </div>
-                  <h2 className="text-[28px] font-medium text-[#323232] mb-4 whitespace-pre-line leading-[1.14]">
+                  <h2
+                    className={`text-[28px] ${
+                      formData.type === option.type
+                        ? 'font-bold'
+                        : 'font-medium'
+                    } text-[#323232] mb-4 whitespace-pre-line leading-[1.14]`}
+                  >
                     {option.title}
                   </h2>
-                  <p className="text-[16px] text-[#626262] leading-[1.375]">
+                  <p className="text-[16px] text-[#626262] leading-[1.375] max-w-52">
                     {option.description}
                   </p>
                 </button>
@@ -446,10 +452,16 @@ export default function SpaceSubmissionFlow() {
                       option.type as 'rent' | 'host'
                     ) && <div className="h-3 w-3 rounded-full bg-[#30C77B]" />}
                   </div>
-                  <h2 className="text-[28px] font-medium text-[#323232] mb-4 whitespace-pre-line leading-[1.18]">
+                  <h2
+                    className={`text-[28px] ${
+                      formData.purposes.includes(option.type as 'rent' | 'host')
+                        ? 'font-bold'
+                        : 'font-medium'
+                    } text-[#323232] mb-4 whitespace-pre-line leading-[1.18]`}
+                  >
                     {option.title}
                   </h2>
-                  <p className="text-[16px] text-[#626262] leading-[1.44]">
+                  <p className="text-[16px] text-[#626262] leading-[1.44] max-w-52">
                     {option.description}
                   </p>
                 </button>
@@ -652,7 +664,7 @@ export default function SpaceSubmissionFlow() {
                   </div>
                 </div>
 
-                <div className="space-y-2">
+                <div className="space-y-2 max-w-52">
                   <Label className="pl-4 text-[14px] font-medium text-[#323232] font-nhaasTxPro">
                     Select Timings
                   </Label>
@@ -678,13 +690,13 @@ export default function SpaceSubmissionFlow() {
                         })
                       }
                     >
-                      <SelectTrigger className="w-full h-12 rounded-xl border-[1.5px] border-[#D6D6D6] text-[18px] leading-[1.22] font-nhaasTxPro">
-                        <SelectValue placeholder="Opening time">
+                      <SelectTrigger className="w-full h-12 px-8 rounded-xl border-[1.5px] border-[#D6D6D6] text-[16px] leading-[1.22] font-nhaasTxPro">
+                        <SelectValue placeholder="00:00 AM">
                           {formData.spaceDetails.timings.Monday?.from
                             ? convertTo12Hour(
                                 formData.spaceDetails.timings.Monday.from
                               )
-                            : 'Opening time'}
+                            : '00:00'}
                         </SelectValue>
                       </SelectTrigger>
                       <SelectContent>
@@ -726,13 +738,13 @@ export default function SpaceSubmissionFlow() {
                         })
                       }
                     >
-                      <SelectTrigger className="w-full h-12 rounded-xl border-[1.5px] border-[#D6D6D6] text-[18px] leading-[1.22] font-nhaasTxPro">
-                        <SelectValue placeholder="Closing time">
+                      <SelectTrigger className="w-full h-12 px-8 rounded-xl border-[1.5px] border-[#D6D6D6] text-[16px] leading-[1.22] font-nhaasTxPro">
+                        <SelectValue placeholder="00:00 PM">
                           {formData.spaceDetails.timings.Monday?.to
                             ? convertTo12Hour(
                                 formData.spaceDetails.timings.Monday.to
                               )
-                            : 'Closing time'}
+                            : '00:00'}
                         </SelectValue>
                       </SelectTrigger>
                       <SelectContent>
@@ -755,8 +767,8 @@ export default function SpaceSubmissionFlow() {
               </div>
             </div>
 
-            <div className="space-y-2 mt-8 max-w-screen-lg">
-              <Label className="pl-4 text-[14px] font-medium text-[#323232] font-nhaasTxPro">
+            <div className="space-y-2 mt-2">
+              <Label className="pl-4 text-[14px] font-medium text-[#323232]">
                 Days Open
               </Label>
               <div className="flex gap-[0.6rem]">
@@ -780,7 +792,7 @@ export default function SpaceSubmissionFlow() {
                         },
                       });
                     }}
-                    className={`h-12 px-8 rounded-[10px] border transition-colors font-nhaasTxPro text-[14px] font-medium ${
+                    className={`h-12 px-10 rounded-[10px] border transition-colors font-nhaasTxPro text-[14px] font-medium ${
                       formData.spaceDetails.daysOpen.includes(day)
                         ? 'bg-[#2A2A2A] text-white border-[#2A2A2A]'
                         : 'text-[#323232] border-[#D9D9D9] hover:border-[#323232]'
@@ -1038,7 +1050,7 @@ export default function SpaceSubmissionFlow() {
             </h1>
             <p className="text-[16px] text-[#888888] text-center mb-16 font-nhaasTxPro leading-[1.22]">
               Add images of your space
-            </p>{' '}
+            </p>
             <div className="space-y-12">
               <div className="space-y-4">
                 <div className="flex items-center gap-2">
@@ -1106,25 +1118,11 @@ export default function SpaceSubmissionFlow() {
               </div>
 
               <div className="flex justify-center gap-24">
-                <div className="flex flex-col items-center text-center space-y-4">
+                <div className="flex gap-2 items-center text-center">
                   <div className="flex items-center justify-center gap-2">
                     <Label className="text-[14px] font-semibold text-[#1C1C1C] font-haasGrotDisp">
                       Upload logo of your space*
                     </Label>
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger>
-                          <div className="w-4 h-4 rounded-full border border-[#9B9B9B] border-opacity-80 flex items-center justify-center">
-                            <span className="text-[12px] text-[#9B9B9B] font-medium">
-                              i
-                            </span>
-                          </div>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>Upload your space logo</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
                   </div>
                   <label
                     className={`
@@ -1160,7 +1158,7 @@ export default function SpaceSubmissionFlow() {
                   </label>
                 </div>
 
-                <div className="flex flex-col items-center text-center space-y-4">
+                <div className="flex gap-2 items-center text-center">
                   <Label className="text-[14px] font-bold text-[#1C1C1C] font-nhaasTxPro leading-[1.26]">
                     Upload organisation&apos;s logo (Optional)
                   </Label>
@@ -1208,7 +1206,7 @@ export default function SpaceSubmissionFlow() {
   };
 
   const renderFooter = () => (
-    <footer className="w-full p-6 gap-20 flex justify-center items-center">
+    <footer className="w-full p-4 md:p-6 flex flex-col md:flex-row gap-4 md:gap-20 justify-center items-center">
       <Button
         className="rounded-2xl px-8 border-gray-300 border"
         variant="outline"

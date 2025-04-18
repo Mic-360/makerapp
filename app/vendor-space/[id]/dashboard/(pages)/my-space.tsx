@@ -199,7 +199,7 @@ export default function MySpacePage({
   };
 
   return (
-    <div className="container mx-auto space-y-4 pt-2">
+    <div className="container mx-auto space-y-6 pt-4 pb-10">
       {/* Header Section */}
       <div className="flex items-center justify-end gap-x-8">
         <div className="text-orange-500 font-semibold text-lg">
@@ -216,7 +216,7 @@ export default function MySpacePage({
         </div>
         <div className="relative">
           <Select defaultValue="monthly">
-            <SelectTrigger className="border-blue-800 text-blue-800 rounded-md w-[110px] text-sm">
+            <SelectTrigger className="border-orange-500 text-black rounded-md w-[110px] text-sm">
               <SelectValue placeholder="Monthly" />
             </SelectTrigger>
             <SelectContent>
@@ -236,19 +236,26 @@ export default function MySpacePage({
         </div>
       </div>
 
-      <Accordion type="single" collapsible className="w-full space-y-4">
-        <AccordionItem value="item-1" className="border-0">
-          <div className="border-t border-gray-200">
-            <AccordionTrigger className="px-4 py-4 flex font-medium hover:no-underline">
-              <span className="flex items-center text-xl font-bold">
+      <Accordion type="single" collapsible className="w-full px-2">
+        {/* Basic Details Section */}
+        <AccordionItem
+          value="item-1"
+          className="overflow-hidden"
+        >
+          <div className="border-t py-2 border-gray-200">
+            <AccordionTrigger className="px-4 py-4 flex font-medium hover:no-underline bg-white">
+              <span className="flex items-center text-xl font-bold text-[#2C4ABE]">
                 1. Basic Details
               </span>
             </AccordionTrigger>
           </div>
-          <AccordionContent className="px-4 py-6">
-            <div className="space-y-4">
+          <AccordionContent className="px-6 py-6 bg-white">
+            <div className="space-y-5">
               <div>
-                <Label htmlFor="spaceName" className="pl-3 text-sm">
+                <Label
+                  htmlFor="spaceName"
+                  className="pl-3 text-sm text-gray-600"
+                >
                   Name of the space*
                 </Label>
                 <Input
@@ -256,18 +263,40 @@ export default function MySpacePage({
                   value={formData.name || ''}
                   onChange={(e) => handleInputChange('name', e.target.value)}
                   placeholder="SQA FAB LAB"
-                  className="mt-1 rounded-2xl h-12"
+                  className="mt-1.5 rounded-2xl h-12 border-gray-300"
                 />
               </div>
+
               <div>
-                <Label htmlFor="spaceDescription" className="pl-3 text-sm">
+                <Label
+                  htmlFor="websiteLink"
+                  className="pl-3 text-sm text-gray-600"
+                >
+                  Your Lab's Website*
+                </Label>
+                <Input
+                  id="websiteLink"
+                  value={formData.websiteLink || ''}
+                  onChange={(e) =>
+                    handleInputChange('websiteLink', e.target.value)
+                  }
+                  placeholder="Add a website link of your Space"
+                  className="mt-1.5 rounded-2xl h-12 border-gray-300"
+                />
+              </div>
+
+              <div>
+                <Label
+                  htmlFor="spaceDescription"
+                  className="pl-3 text-sm text-gray-600"
+                >
                   Space Description*
                 </Label>
                 <Textarea
                   id="spaceDescription"
                   value={formData.description || ''}
                   onChange={handleDescriptionChange}
-                  className="mt-1 min-h-[120px] rounded-2xl resize-none"
+                  className="mt-1.5 min-h-[120px] rounded-2xl resize-none border-gray-300"
                 />
                 <div className="text-right text-xs text-gray-500 mt-1">
                   {wordCount}/2000 words
@@ -277,24 +306,31 @@ export default function MySpacePage({
           </AccordionContent>
         </AccordionItem>
 
-        <AccordionItem value="item-2" className="border-0">
-          <div className="border-t border-gray-200">
-            <AccordionTrigger className="px-4 py-4 flex text-gray-800 font-medium hover:no-underline">
-              <span className="flex items-center text-xl font-bold">
+        {/* Space Details Section */}
+        <AccordionItem
+          value="item-2"
+          className="overflow-hidden"
+        >
+          <div className="border-t py-2 border-gray-200">
+            <AccordionTrigger className="px-4 py-4 flex font-medium hover:no-underline bg-white">
+              <span className="flex items-center text-xl font-bold text-[#2C4ABE]">
                 2. Space Details
               </span>
             </AccordionTrigger>
           </div>
-          <AccordionContent className="px-4 py-6">
-            <div className="space-y-4">
+          <AccordionContent className="px-6 py-6 bg-white">
+            <div className="space-y-5">
               <div>
-                <Label htmlFor="townCity" className="pl-3 text-sm">
+                <Label
+                  htmlFor="townCity"
+                  className="pl-3 text-sm font-semibold text-gray-600"
+                >
                   Town/City*
                 </Label>
-                <div className="relative mt-1">
+                <div className="relative mt-1.5">
                   <Input
                     id="townCity"
-                    className="rounded-2xl pr-10 h-12"
+                    className="rounded-2xl h-12 pr-10 border-gray-300"
                     value={formData.city || ''}
                     onChange={(e) => handleInputChange('city', e.target.value)}
                   />
@@ -304,14 +340,72 @@ export default function MySpacePage({
                 </div>
               </div>
 
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label
+                    htmlFor="state"
+                    className="pl-3 text-sm font-semibold text-gray-600"
+                  >
+                    State*
+                  </Label>
+                  <div className="relative mt-1.5">
+                    <Input
+                      id="state"
+                      className="rounded-2xl h-12 pr-10 border-gray-300"
+                      value={formData.state || ''}
+                      onChange={(e) =>
+                        handleInputChange('state', e.target.value)
+                      }
+                    />
+                    <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                      <Check className="h-5 w-5 text-green-500" />
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <Label
+                    htmlFor="zipCode"
+                    className="pl-3 text-sm font-semibold text-gray-600"
+                  >
+                    Zip Code*
+                  </Label>
+                  <Input
+                    id="zipCode"
+                    className="mt-1.5 rounded-2xl h-12 border-gray-300"
+                    value={formData.zipcode || ''}
+                    onChange={(e) =>
+                      handleInputChange('zipcode', e.target.value)
+                    }
+                  />
+                </div>
+              </div>
+
               <div>
-                <Label htmlFor="completeAddress" className="pl-3 text-sm">
+                <Label
+                  htmlFor="country"
+                  className="pl-3 text-sm font-semibold text-gray-600"
+                >
+                  Country*
+                </Label>
+                <Input
+                  id="country"
+                  className="mt-1.5 rounded-2xl h-12 border-gray-300"
+                  value={formData.country || ''}
+                  onChange={(e) => handleInputChange('country', e.target.value)}
+                />
+              </div>
+
+              <div>
+                <Label
+                  htmlFor="completeAddress"
+                  className="pl-3 text-sm font-semibold text-gray-600"
+                >
                   Complete Address*
                 </Label>
-                <div className="relative mt-1">
+                <div className="relative mt-1.5">
                   <Textarea
                     id="completeAddress"
-                    className="mt-1 min-h-[100px] rounded-2xl"
+                    className="min-h-[100px] rounded-2xl border-gray-300"
                     value={formData.address || ''}
                     onChange={(e) =>
                       handleInputChange('address', e.target.value)
@@ -324,14 +418,17 @@ export default function MySpacePage({
               </div>
 
               <div>
-                <Label htmlFor="organizationName" className="pl-3 text-sm">
+                <Label
+                  htmlFor="organizationName"
+                  className="pl-3 text-sm font-semibold text-gray-600"
+                >
                   Name of the organization*
                 </Label>
-                <div className="relative mt-1">
+                <div className="relative mt-1.5">
                   <Input
                     id="organizationName"
                     placeholder="Enter name of your university/institute/org/space"
-                    className="rounded-2xl pr-10 h-12"
+                    className="rounded-2xl h-12 pr-10 border-gray-300"
                     value={formData.organizationName || ''}
                     onChange={(e) =>
                       handleInputChange('organizationName', e.target.value)
@@ -343,61 +440,18 @@ export default function MySpacePage({
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="state" className="pl-3 text-sm">
-                    State*
-                  </Label>
-                  <div className="relative mt-1">
-                    <Input
-                      id="state"
-                      className="rounded-2xl pr-10 h-12"
-                      value={formData.state || ''}
-                      onChange={(e) =>
-                        handleInputChange('state', e.target.value)
-                      }
-                    />
-                    <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                      <Check className="h-5 w-5 text-green-500" />
-                    </div>
-                  </div>
-                </div>
-                <div>
-                  <Label htmlFor="zipCode" className="pl-3 text-sm">
-                    Zip Code*
-                  </Label>
-                  <Input
-                    id="zipCode"
-                    className="mt-1 rounded-2xl h-12"
-                    value={formData.zipcode || ''}
-                    onChange={(e) =>
-                      handleInputChange('zipcode', e.target.value)
-                    }
-                  />
-                </div>
-              </div>
-
               <div>
-                <Label htmlFor="country" className="pl-3 text-sm">
-                  Country*
-                </Label>
-                <Input
-                  id="country"
-                  className="mt-1 rounded-2xl h-12"
-                  value={formData.country || ''}
-                  onChange={(e) => handleInputChange('country', e.target.value)}
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="orgEmail" className="pl-3 text-sm">
+                <Label
+                  htmlFor="orgEmail"
+                  className="pl-3 text-sm font-semibold text-gray-600"
+                >
                   Email of the organization*
                 </Label>
-                <div className="relative mt-1">
+                <div className="relative mt-1.5">
                   <Input
                     id="orgEmail"
                     placeholder="Enter email id"
-                    className="rounded-2xl pr-10 h-12"
+                    className="rounded-2xl h-12 pr-10 border-gray-300"
                     value={formData.organizationEmail || ''}
                     onChange={(e) =>
                       handleInputChange('organizationEmail', e.target.value)
@@ -410,15 +464,149 @@ export default function MySpacePage({
               </div>
 
               <div>
-                <Label className="pl-3 text-sm font-medium">
+                <Label className="pl-3 text-sm font-semibold text-gray-600">
+                  Days and Timing
+                </Label>
+                <div className="mt-3 space-y-4">
+                  <div className="grid grid-cols-7 gap-2">
+                    <div className="text-center">
+                      <div className="border border-gray-200 rounded-lg py-2 text-base">
+                        Monday
+                      </div>
+                    </div>
+                    <div className="text-center">
+                      <div className="border border-gray-200 rounded-lg py-2 text-base">
+                        Tuesday
+                      </div>
+                    </div>
+                    <div className="text-center">
+                      <div className="border border-gray-200 rounded-lg py-2 text-base">
+                        Wednesday
+                      </div>
+                    </div>
+                    <div className="text-center">
+                      <div className="border border-gray-200 rounded-lg py-2 text-base">
+                        Thursday
+                      </div>
+                    </div>
+                    <div className="text-center">
+                      <div className="border border-gray-200 rounded-lg py-2 text-base">
+                        Friday
+                      </div>
+                    </div>
+                    <div className="text-center">
+                      <div className="border border-gray-200 rounded-lg py-2 text-base">
+                        Saturday
+                      </div>
+                    </div>
+                    <div className="text-center">
+                      <div className="border border-gray-200 rounded-lg py-2 text-base">
+                        Sunday
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label className="pl-3 text-sm text-gray-500">
+                        Days Open
+                      </Label>
+                    </div>
+                    <div>
+                      <Label className="pl-3 text-sm text-gray-500">Time</Label>
+                    </div>
+                  </div>
+
+                  {[
+                    'monday',
+                    'tuesday',
+                    'wednesday',
+                    'thursday',
+                    'friday',
+                    'saturday',
+                    'sunday',
+                  ].map((day) => (
+                    <div
+                      key={day}
+                      className="grid grid-cols-2 gap-4 items-center"
+                    >
+                      <div className="capitalize text-base font-medium">
+                        {day}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Input
+                          className="rounded-2xl h-12 border-gray-300 text-center"
+                          placeholder="10:00 AM"
+                          value={(
+                            formData.timings?.[
+                              day as keyof Makerspace['timings']
+                            ] || ''
+                          )
+                            .split('-')[0]
+                            ?.trim()}
+                          onChange={(e) => {
+                            const currentTiming =
+                              formData.timings?.[
+                                day as keyof Makerspace['timings']
+                              ] || '';
+                            const endTime =
+                              currentTiming.split('-')[1]?.trim() || '6:00 PM';
+                            const newTiming = `${e.target.value} - ${endTime}`;
+                            const updatedTimings = {
+                              ...formData.timings,
+                              [day]: newTiming,
+                            };
+                            handleInputChange('timings', updatedTimings);
+                          }}
+                        />
+                        <span className="text-gray-500">to</span>
+                        <Input
+                          className="rounded-2xl h-12 border-gray-300 text-center"
+                          placeholder="6:00 PM"
+                          value={(
+                            formData.timings?.[
+                              day as keyof Makerspace['timings']
+                            ] || ''
+                          )
+                            .split('-')[1]
+                            ?.trim()}
+                          onChange={(e) => {
+                            const currentTiming =
+                              formData.timings?.[
+                                day as keyof Makerspace['timings']
+                              ] || '';
+                            const startTime =
+                              currentTiming.split('-')[0]?.trim() || '10:00 AM';
+                            const newTiming = `${startTime} - ${e.target.value}`;
+                            const updatedTimings = {
+                              ...formData.timings,
+                              [day]: newTiming,
+                            };
+                            handleInputChange('timings', updatedTimings);
+                          }}
+                        />
+                      </div>
+                    </div>
+                  ))}
+
+                  <div className="text-right">
+                    <Button variant="link" className="text-gray-500">
+                      Apply All
+                    </Button>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <Label className="pl-3 text-sm font-semibold text-gray-600">
                   Available Rooms and Seats
                 </Label>
                 {formData.seating?.map((seat, index) => (
-                  <div key={index} className="grid grid-cols-3 gap-4 mt-2">
+                  <div key={index} className="grid grid-cols-3 gap-4 mt-3">
                     <div>
                       <Input
                         placeholder="Category"
-                        className="rounded-2xl h-12"
+                        className="rounded-2xl h-12 border-gray-300"
                         value={seat.category || ''}
                         onChange={(e) => {
                           const updatedSeating = [...(formData.seating || [])];
@@ -430,7 +618,7 @@ export default function MySpacePage({
                     <div>
                       <Input
                         placeholder="Room Name/Number"
-                        className="rounded-2xl h-12"
+                        className="rounded-2xl h-12 border-gray-300"
                         value={seat.room || ''}
                         onChange={(e) => {
                           const updatedSeating = [...(formData.seating || [])];
@@ -443,7 +631,7 @@ export default function MySpacePage({
                       <Input
                         placeholder="No. of Seats"
                         type="number"
-                        className="rounded-2xl h-12"
+                        className="rounded-2xl h-12 border-gray-300"
                         value={seat.seats || ''}
                         onChange={(e) => {
                           const updatedSeating = [...(formData.seating || [])];
@@ -459,7 +647,7 @@ export default function MySpacePage({
                 <Button
                   variant="outline"
                   size="sm"
-                  className="mt-2 rounded-2xl"
+                  className="mt-3 rounded-2xl text-gray-500"
                   onClick={() => {
                     const updatedSeating = [...(formData.seating || [])];
                     updatedSeating.push({
@@ -475,14 +663,14 @@ export default function MySpacePage({
               </div>
 
               <div>
-                <Label className="pl-3 text-sm font-medium">
+                <Label className="pl-3 text-sm font-semibold text-gray-600">
                   Upload Images of your space*
                 </Label>
                 <div className="grid grid-cols-4 gap-4 mt-2">
                   {[...Array(4)].map((_, i) => (
                     <div
                       key={i}
-                      className="aspect-square border border-dashed rounded-2xl flex flex-col items-center justify-center bg-gray-50 cursor-pointer overflow-hidden relative"
+                      className="aspect-square border border-dashed border-gray-300 rounded-2xl flex flex-col items-center justify-center bg-gray-50 cursor-pointer overflow-hidden relative"
                       onClick={() =>
                         document.getElementById(`spaceImage_${i}`)?.click()
                       }
@@ -496,7 +684,7 @@ export default function MySpacePage({
                           className="object-cover w-full h-full"
                         />
                       ) : (
-                        <span className="text-sm text-gray-500">Select</span>
+                        <Plus className="h-6 w-6 text-gray-400" />
                       )}
                       <input
                         type="file"
@@ -526,12 +714,12 @@ export default function MySpacePage({
               </div>
 
               <div className="grid grid-cols-2 gap-8 mt-6 place-items-center">
-                <div className="flex items-center gap-4">
-                  <span className="text-sm text-center">
+                <div className="flex flex-col items-center gap-2">
+                  <span className="text-sm font-semibold text-center">
                     Upload logo of your space*
                   </span>
                   <div
-                    className="w-28 h-28 rounded-full bg-gray-100 flex items-center justify-center mb-2 overflow-hidden cursor-pointer"
+                    className="w-28 h-28 rounded-full bg-gray-100 border border-gray-300 flex items-center justify-center overflow-hidden cursor-pointer"
                     onClick={() =>
                       document.getElementById('spaceLogo_input')?.click()
                     }
@@ -571,12 +759,12 @@ export default function MySpacePage({
                     />
                   </div>
                 </div>
-                <div className="flex items-center gap-4">
-                  <span className="text-sm text-center">
+                <div className="flex flex-col items-center gap-2">
+                  <span className="text-sm font-semibold text-center">
                     Upload organization logo (Optional)
                   </span>
                   <div
-                    className="w-28 h-28 rounded-full bg-gray-100 flex items-center justify-center mb-2 overflow-hidden cursor-pointer"
+                    className="w-28 h-28 rounded-full bg-gray-100 border border-gray-300 flex items-center justify-center overflow-hidden cursor-pointer"
                     onClick={() =>
                       document.getElementById('orgLogo_input')?.click()
                     }
@@ -621,111 +809,104 @@ export default function MySpacePage({
           </AccordionContent>
         </AccordionItem>
 
-        <AccordionItem value="item-3" className="border-0">
-          <div className="border-t border-gray-200">
-            <AccordionTrigger className="px-4 py-4 flex text-gray-800 font-medium hover:no-underline">
-              <span className="flex items-center text-xl font-bold">
+        {/* Lab Mentors Section */}
+        <AccordionItem
+          value="item-3"
+          className="overflow-hidden"
+        >
+          <div className="border-t py-2 border-gray-200">
+            <AccordionTrigger className="px-4 py-4 flex font-medium hover:no-underline bg-white">
+              <span className="flex items-center text-xl font-bold text-[#2C4ABE]">
                 3. Lab Mentors
               </span>
             </AccordionTrigger>
           </div>
-          <AccordionContent className="px-4 py-6">
-            <div className="space-y-4">
-              {formData.mentors?.map((mentor, index) => {
-                const mentorId = `mentor_${index}_${mentor.name?.toLowerCase().replace(/\s+/g, '_') || 'new'}_${Date.now()}`;
-                return (
-                  <div key={index} className="space-y-4">
-                    <div className="grid grid-cols-3 gap-4 items-center">
-                      <div>
-                        <Input
-                          placeholder="Name"
-                          className="rounded-2xl h-12"
-                          value={mentor.name}
-                          onChange={(e) => {
-                            const updatedMentors = [
-                              ...(formData.mentors || []),
-                            ];
-                            updatedMentors[index].name = e.target.value;
-                            handleInputChange('mentors', updatedMentors);
-                          }}
+          <AccordionContent className="px-6 py-6 bg-white">
+            <div className="space-y-5">
+              <Label className="pl-3 text-base font-semibold text-gray-600">
+                Name of the Lab Facilitator
+              </Label>
+
+              {formData.mentors?.map((mentor, index) => (
+                <div key={index} className="space-y-4">
+                  <div className="flex items-center gap-5">
+                    <div
+                      className="rounded-full h-20 w-20 bg-gray-100 border border-gray-300 overflow-hidden cursor-pointer flex items-center justify-center"
+                      onClick={() => {
+                        const input = document.createElement('input');
+                        input.type = 'file';
+                        input.accept = 'image/*';
+                        input.onchange = (e) => {
+                          const file = (e.target as HTMLInputElement)
+                            .files?.[0];
+                          if (file) {
+                            const reader = new FileReader();
+                            reader.onloadend = () => {
+                              const updatedMentors = [
+                                ...(formData.mentors || []),
+                              ];
+                              updatedMentors[index].image =
+                                reader.result as string;
+                              handleInputChange('mentors', updatedMentors);
+                            };
+                            reader.readAsDataURL(file);
+                          }
+                        };
+                        input.click();
+                      }}
+                    >
+                      {mentor.image ? (
+                        <Image
+                          src={mentor.image}
+                          alt={`${mentor.name}'s photo`}
+                          width={80}
+                          height={80}
+                          className="object-cover w-full h-full"
                         />
-                      </div>
-                      <div>
-                        <Input
-                          placeholder="Designation"
-                          className="rounded-2xl h-12"
-                          value={mentor.designation}
-                          onChange={(e) => {
-                            const updatedMentors = [
-                              ...(formData.mentors || []),
-                            ];
-                            updatedMentors[index].designation = e.target.value;
-                            handleInputChange('mentors', updatedMentors);
-                          }}
-                        />
-                      </div>
-                      <div>
-                        <Input
-                          placeholder="LinkedIn Profile"
-                          className="rounded-2xl h-12"
-                          value={mentor.linkedin}
-                          onChange={(e) => {
-                            const updatedMentors = [
-                              ...(formData.mentors || []),
-                            ];
-                            updatedMentors[index].linkedin = e.target.value;
-                            handleInputChange('mentors', updatedMentors);
-                          }}
-                        />
-                      </div>
+                      ) : (
+                        <Plus className="h-6 w-6 text-gray-400" />
+                      )}
                     </div>
-                    <div className="flex items-center">
-                      <div
-                        className="rounded-full h-20 w-20 bg-gray-200 overflow-hidden cursor-pointer"
-                        onClick={() => {
-                          const input = document.createElement('input');
-                          input.type = 'file';
-                          input.accept = 'image/*';
-                          input.onchange = (e) => {
-                            const file = (e.target as HTMLInputElement)
-                              .files?.[0];
-                            if (file) {
-                              const reader = new FileReader();
-                              reader.onloadend = () => {
-                                const updatedMentors = [
-                                  ...(formData.mentors || []),
-                                ];
-                                updatedMentors[index].image =
-                                  reader.result as string;
-                                handleInputChange('mentors', updatedMentors);
-                              };
-                              reader.readAsDataURL(file);
-                            }
-                          };
-                          input.click();
+                    <div className="flex-1 grid grid-cols-3 gap-4">
+                      <Input
+                        placeholder="Name"
+                        className="rounded-2xl h-12 border-gray-300"
+                        value={mentor.name || ''}
+                        onChange={(e) => {
+                          const updatedMentors = [...(formData.mentors || [])];
+                          updatedMentors[index].name = e.target.value;
+                          handleInputChange('mentors', updatedMentors);
                         }}
-                      >
-                        {mentor.image ? (
-                          <Image
-                            src={mentor.image}
-                            alt={`${mentor.name}'s photo`}
-                            width={80}
-                            height={80}
-                            className="object-cover w-full h-full"
-                          />
-                        ) : (
-                          <Plus className="h-4 w-4 m-auto mt-8" />
-                        )}
-                      </div>
+                      />
+                      <Input
+                        placeholder="Designation"
+                        className="rounded-2xl h-12 border-gray-300"
+                        value={mentor.designation || ''}
+                        onChange={(e) => {
+                          const updatedMentors = [...(formData.mentors || [])];
+                          updatedMentors[index].designation = e.target.value;
+                          handleInputChange('mentors', updatedMentors);
+                        }}
+                      />
+                      <Input
+                        placeholder="LinkedIn Profile"
+                        className="rounded-2xl h-12 border-gray-300"
+                        value={mentor.linkedin || ''}
+                        onChange={(e) => {
+                          const updatedMentors = [...(formData.mentors || [])];
+                          updatedMentors[index].linkedin = e.target.value;
+                          handleInputChange('mentors', updatedMentors);
+                        }}
+                      />
                     </div>
                   </div>
-                );
-              })}
+                </div>
+              ))}
 
               <Button
                 variant="outline"
                 size="sm"
-                className="rounded-2xl"
+                className="mt-3 rounded-2xl text-gray-500"
                 onClick={() => {
                   const updatedMentors = [...(formData.mentors || [])];
                   updatedMentors.push({
@@ -743,17 +924,21 @@ export default function MySpacePage({
           </AccordionContent>
         </AccordionItem>
 
-        <AccordionItem value="item-4" className="border-0">
-          <div className="border-t border-gray-200">
-            <AccordionTrigger className="px-4 py-4 flex text-gray-800 font-medium hover:no-underline">
-              <span className="flex items-center text-xl font-bold">
+        {/* Amenities Section */}
+        <AccordionItem
+          value="item-4"
+          className="overflow-hidden"
+        >
+          <div className="border-t py-2 border-gray-200">
+            <AccordionTrigger className="px-4 py-4 flex font-medium hover:no-underline bg-white">
+              <span className="flex items-center text-xl font-bold text-[#2C4ABE]">
                 4. Amenities
               </span>
             </AccordionTrigger>
           </div>
-          <AccordionContent className="px-4 py-6">
+          <AccordionContent className="px-6 py-6 bg-white">
             <div>
-              <Label className="text-sm font-medium">
+              <Label className="text-base font-semibold text-gray-600">
                 Select amenities available in your space
               </Label>
               <div className="grid grid-cols-3 gap-x-8 gap-y-4 mt-4">
@@ -777,6 +962,7 @@ export default function MySpacePage({
                   <div key={amenity} className="flex items-center space-x-2">
                     <Checkbox
                       id={`amenity-${amenity}`}
+                      className="data-[state=checked]:bg-black data-[state=checked]:border-black"
                       checked={(formData.amenities || []).includes(amenity)}
                       onCheckedChange={(checked) => {
                         const currentAmenities = new Set(
@@ -795,7 +981,7 @@ export default function MySpacePage({
                     />
                     <Label
                       htmlFor={`amenity-${amenity}`}
-                      className="text-sm font-normal"
+                      className="text-base font-normal text-gray-800"
                     >
                       {amenity}
                     </Label>
@@ -806,18 +992,22 @@ export default function MySpacePage({
           </AccordionContent>
         </AccordionItem>
 
-        <AccordionItem value="item-5" className="border-0">
-          <div className="border-t border-gray-200">
-            <AccordionTrigger className="px-4 py-4 flex text-gray-800 font-medium hover:no-underline">
-              <span className="flex items-center text-xl font-bold">
+        {/* Basic Instructions Section */}
+        <AccordionItem
+          value="item-5"
+          className="overflow-hidden"
+        >
+          <div className="border-t py-2 border-gray-200">
+            <AccordionTrigger className="px-4 py-4 flex font-medium hover:no-underline bg-white">
+              <span className="flex items-center text-xl font-bold text-[#2C4ABE]">
                 5. Basic Instructions
               </span>
             </AccordionTrigger>
           </div>
-          <AccordionContent className="px-4 py-6">
+          <AccordionContent className="px-6 py-6 bg-white">
             <div>
-              <Label className="text-sm font-medium">
-                Select some basic instructions for your space
+              <Label className="text-base font-semibold text-gray-600">
+                Add some basic instructions for your space
               </Label>
               <div className="grid grid-cols-3 gap-x-8 gap-y-4 mt-4">
                 {[
@@ -828,15 +1018,21 @@ export default function MySpacePage({
                   'Book meeting rooms in advance',
                   'Adhere to community guidelines',
                   'Report any issues to the management',
+                  'Make sure to wear your Personal Protective Equipment whenever necessary',
+                  'Code of Conduct',
+                  'Workshop Rules',
+                  'House Rules',
+                  'Lab Etiquette',
+                  'Operational Safety Instructions',
                 ].map((instruction) => (
                   <div
                     key={instruction}
                     className="flex items-center space-x-2"
                   >
-                    <Bolt className="h-3 w-3 text-orange-500" />
+                    <Bolt className="h-3 w-3 text-orange-500 shrink-0" />
                     <Label
                       htmlFor={`instruction-${instruction}`}
-                      className="text-sm font-normal"
+                      className="text-sm font-normal text-gray-800"
                     >
                       {instruction}
                     </Label>
@@ -845,38 +1041,49 @@ export default function MySpacePage({
               </div>
 
               <div className="mt-6">
-                <Label htmlFor="additionalInfo" className="pl-3 text-sm">
+                <Label
+                  htmlFor="additionalInfo"
+                  className="pl-3 text-sm font-semibold text-gray-600"
+                >
                   Additional Information
                 </Label>
                 <Textarea
                   id="additionalInfo"
-                  className="mt-1 min-h-[100px] rounded-2xl"
+                  className="mt-1.5 min-h-[100px] rounded-2xl border-gray-300"
+                  value={formData.additionalInformation || ''}
+                  onChange={(e) =>
+                    handleInputChange('additionalInformation', e.target.value)
+                  }
                 />
               </div>
             </div>
           </AccordionContent>
         </AccordionItem>
 
-        <AccordionItem value="item-6" className="border-0">
-          <div className="border-t border-gray-200">
-            <AccordionTrigger className="px-4 py-4 flex text-gray-800 font-medium hover:no-underline">
-              <span className="flex items-center text-xl font-bold">
+        {/* How to reach your space Section */}
+        <AccordionItem
+          value="item-6"
+          className="overflow-hidden"
+        >
+          <div className="border-t py-2 border-gray-200">
+            <AccordionTrigger className="px-4 py-4 flex font-medium hover:no-underline bg-white">
+              <span className="flex items-center text-xl font-bold text-[#2C4ABE]">
                 6. How to reach your space
               </span>
             </AccordionTrigger>
           </div>
-          <AccordionContent className="px-4 py-6">
-            <div className="space-y-4">
+          <AccordionContent className="px-6 py-6 bg-white">
+            <div className="space-y-5">
               <div>
                 <Label
                   htmlFor="locationAddress"
-                  className="pl-3 text-sm font-medium"
+                  className="pl-3 text-sm font-semibold text-gray-600"
                 >
                   Complete Address
                 </Label>
                 <Textarea
                   id="locationAddress"
-                  className="mt-1 min-h-[100px] rounded-2xl"
+                  className="mt-1.5 min-h-[100px] rounded-2xl border-gray-300"
                   value={formData.address || ''}
                   onChange={(e) => handleInputChange('address', e.target.value)}
                 />
@@ -886,13 +1093,13 @@ export default function MySpacePage({
                 <div key={transport} className="mb-4">
                   <Label
                     htmlFor={`transport-${transport}`}
-                    className="pl-3 text-sm capitalize"
+                    className="pl-3 text-sm font-semibold text-gray-600 capitalize"
                   >
                     Nearest {transport}
                   </Label>
                   <Input
                     id={`transport-${transport}`}
-                    className="mt-1 rounded-2xl h-12"
+                    className="mt-1.5 rounded-2xl h-12 border-gray-300"
                     value={
                       formData.howToReach?.[
                         transport as keyof Makerspace['howToReach']
@@ -910,7 +1117,7 @@ export default function MySpacePage({
               ))}
 
               <div>
-                <Label className="pl-3 text-sm font-medium">
+                <Label className="pl-3 text-sm font-semibold text-gray-600">
                   Mark exact location on Map
                 </Label>
                 <div className="mt-2 bg-amber-50 rounded-2xl overflow-hidden">
@@ -932,7 +1139,7 @@ export default function MySpacePage({
 
       <div className="mt-8 flex justify-center">
         <Button
-          className="rounded-full px-8 py-6 bg-black text-white text-base"
+          className="rounded-full px-12 py-6 bg-black hover:bg-neutral-800 text-white text-lg font-bold"
           onClick={handleSubmit}
           disabled={isLoading}
         >
