@@ -136,46 +136,56 @@ export default function Page() {
               <h2 className="text-[54px] font-bold text-start col-span-2 pl-8 leading-[1.259]">
                 Take a closer look →
               </h2>
-              {[
+                {[
                 {
                   title: 'Event Listings',
                   description:
-                    'List your events, workshops to attract more attendees, boost visibility, and foster community engagement.',
-                },
-                {
-                  title: '24/7 Customer Support',
-                  description:
-                    'Get assistance anytime with round-the-clock customer support to resolve any issues or answer questions.',
-                },
-                {
-                  title: 'Location-Based Search',
-                  description:
-                    'Powerful location-based search feature for easy navigation of the users.',
+                  'List your events and workshops to attract more attendees, boost visibility, and foster community engagement.',
                 },
                 {
                   title: 'Reservation Screening',
                   description:
-                    'Benefit from an advanced screening process that ensures reliable and serious bookings.',
+                  'Benefit from an advanced screening process that ensures reliable and serious bookings.',
+                },
+                {
+                  title: 'Feedback and Rating System',
+                  description:
+                  'Provide and receive ratings and reviews to ensure quality experiences for both parties.',
                 },
                 {
                   title: 'Machine Inventory',
                   description:
-                    'List your machines and equipment easy reservation and maximise utilisation of the makerspace.',
+                  'List your machines and equipment for easy reservation and maximise utilisation of the makerspace.',
+                },
+                {
+                  title: 'Integrated Payment Options',
+                  description:
+                  'Enjoy secure and convenient payment methods integrated directly into the app for seamless transactions.',
                 },
                 {
                   title: 'Maker Identity Verification',
                   description:
-                    'Ensure a safe and trustworthy community with thorough identity checks for all users.',
+                  'Ensure a safe and trustworthy community with thorough identity checks for all users.',
+                },
+                {
+                  title: '24/7 Customer Support',
+                  description:
+                  'Get assistance anytime with round-the-clock customer support to resolve any issues or answer questions.',
+                },
+                {
+                  title: 'Location-Based Search',
+                  description:
+                  'Powerful location-based search feature for easy navigation of the users.',
                 },
                 {
                   title: 'Insurance Coverage',
                   description:
-                    'Protect your machines with comprehensive insurance coverage for peace of mind.',
+                  'Protect your machines with comprehensive insurance coverage for peace of mind.',
                 },
-              ].map((feature, index) => (
+                ].map((feature, index) => (
                 <div
                   key={index}
-                  className="w-full h-44 flex flex-col justify-center rounded-xl bg-white p-4 hover:border-4 border-2 border-[#30C77B] shadow-[0px_7px_14px_0px_rgba(0,0,0,0.25)]"
+                  className="w-full h-44 flex flex-col justify-center rounded-xl bg-white p-4 border-2 border-[#30C77B] shadow-[0px_7px_14px_0px_rgba(0,0,0,0.25)]"
                 >
                   <h3 className="mb-2 text-[26px] font-medium leading-[1.192] text-[#323232]">
                     {feature.title}

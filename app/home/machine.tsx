@@ -43,7 +43,7 @@ export default function Machine() {
   return (
     <main className="container mx-auto px-4 sm:px-6 lg:px-8">
       <section>
-        <div className="flex items-center justify-end gap-x-2 pb-4 p-1">
+        {/* <div className="flex items-center justify-end gap-x-2 pb-4 p-1">
           <Popover>
             <PopoverTrigger asChild>
               <Button
@@ -89,7 +89,7 @@ export default function Machine() {
               Filter
             </Button>
           )}
-        </div>
+        </div> */}
         <div className="grid grid-cols-12 gap-4">
           {isFilterOpen && (
             <aside className="col-span-3">
