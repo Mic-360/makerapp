@@ -81,59 +81,52 @@ export default function TopBar({
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const MobileMenu = () => (
-    <div
-      className={`absolute top-full right-4 w-56 bg-white shadow-lg rounded-xl ${
-        isDark ? 'text-black' : 'text-black'
-      }`}
-    >
-      <div className="p-4 space-y-4">
-        <Link href="/vendor-space" className="block">
-          <Button
-            variant="outline"
-            className="w-full py-2 px-4 rounded-xl font-semibold border border-gray-300"
-          >
-            List your Machines
-          </Button>
-        </Link>
-        <div className="flex items-center justify-between px-3">
-          {user ? (
-            <>
-              <div className="flex gap-x-2 items-center">
-                <Link href="/profile" className="font-medium text-md">
-                  {user.name.split(' ')[0]}
-                </Link>
-                {user.image && (
-                  <Image
-                    src={user.image}
-                    alt="Profile"
-                    width={30}
-                    height={30}
-                    className="rounded-full border-2 border-black"
-                  />
-                )}
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={handleLogout}
-                  className="ml-2"
-                >
-                  <LogOut className="h-4 w-4" />
-                </Button>
-              </div>
-            </>
-          ) : (
-            <Link
-              href="/auth/login"
-              className="block text-center py-2 font-medium"
+  const MobileMenu = () => {
+    return (
+      <div
+        className={`absolute top-full right-4 w-56 bg-white shadow-lg rounded-xl ${
+          isDark ? 'text-black' : 'text-black'
+        }`}
+      >
+        <div className="p-4 space-y-4">
+          <Link href="/vendor-space" className="block">
+            <Button
+              variant="outline"
+              className="w-full py-2 px-4 rounded-xl font-semibold border border-gray-300"
             >
-              Login | Sign Up
-            </Link>
-          )}
+              List your Machines
+            </Button>
+          </Link>
+          <div className="flex items-center justify-between px-3">
+            {user ? (
+              <>
+                <div className="flex gap-x-2 items-center">
+                  <Link href="/profile" className="font-medium text-md">
+                    {user.name?.split(' ')[0]}
+                  </Link>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={handleLogout}
+                    className="ml-2"
+                  >
+                    <LogOut className="h-4 w-4" />
+                  </Button>
+                </div>
+              </>
+            ) : (
+              <Link
+                href="/auth/login"
+                className="block text-center py-2 font-medium"
+              >
+                Login | Sign Up
+              </Link>
+            )}
+          </div>
         </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   return (
     <header
@@ -245,7 +238,7 @@ export default function TopBar({
                 <Avatar className="h-8 w-8">
                   <AvatarImage src="/user.png" alt="@maker" />
                   <AvatarFallback className="bg-green-400 text-sm">
-                    {user.name.split(' ')[0].charAt(0).toUpperCase()}
+                    {user.name?.split(' ')[0].charAt(0).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
               </Link>
