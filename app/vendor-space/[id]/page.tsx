@@ -329,8 +329,8 @@ export default function SpaceSubmissionFlow() {
       // Save makerspace ID and redirect to dashboard
       useAuthenticationStore
         .getState()
-        .setActiveMakerspaceId(response.makerspace_id);
-      router.push(`/vendor-space/${response.makerspace_id}/dashboard`);
+        .setActiveMakerspaceId(response.makerspace._id);
+      router.push(`/vendor-space/${response.makerspace._id}/dashboard`);
       setLoading(false);
     } catch (error: any) {
       console.log('Submission error:', error.message);
