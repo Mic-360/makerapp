@@ -213,12 +213,13 @@ interface User {
   _id: string;
   email: string;
   password: string;
-  name: string;
-  number: string;
-  usertype: string[];
-  industry: string[];
-  purpose: string[];
-  role: string;
+  name?: string;
+  number?: string;
+  usertype?: string[];
+  industry?: string[];
+  purpose?: string[];
+  role?: string;
+  makerspaceId: string;
   createdAt?: Date;
 }
 

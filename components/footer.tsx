@@ -86,14 +86,17 @@ export default function Footer() {
                     url: 'https://www.linkedin.com/company/karkhanahub/',
                   },
                 ].map((social) => (
-                  <Link
+                  <SocialIcon
                     key={social.name}
-                    href={social.url}
-                    className="text-gray-600 hover:text-gray-900"
-                  >
-                    <span className="sr-only">{social.name}</span>
-                    <SocialIcon url={new URL(social.url).origin} />
-                  </Link>
+                    url={new URL(social.url).origin}
+                  />
+                  // <Link
+                  //   key={social.name}
+                  //   href={social.url}
+                  //   className="text-gray-600 hover:text-gray-900"
+                  // >
+                  //   <span className="sr-only">{social.name}</span>
+                  // </Link>
                 ))}
               </div>
             </div>

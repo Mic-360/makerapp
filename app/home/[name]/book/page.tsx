@@ -42,7 +42,7 @@ import {
 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useState } from 'react';
 
 interface Review {
@@ -78,9 +78,10 @@ const mockReviews: Review[] = [
   },
 ];
 
-export default function LabSpacePage({ params }: { params: { name: string } }) {
+export default function LabSpacePage() {
   const router = useRouter();
   const bookingStore = useBookingStore();
+  const params = useParams();
   const urlSearchParams = useSearchParams();
   const [machines, setMachines] = useState<Machine[]>([]);
   const [events, setEvents] = useState<Event[]>([]);
@@ -102,21 +103,6 @@ export default function LabSpacePage({ params }: { params: { name: string } }) {
     string | null
   >(null);
 
-  const months = [
-    'Jan',
-    'Feb',
-    'Mar',
-    'Apr',
-    'May',
-    'Jun',
-    'Jul',
-    'Aug',
-    'Sep',
-    'Oct',
-    'Nov',
-    'Dec',
-  ];
-
   const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
   const timeSlots = ['10:00 am', '12:00 pm'];
@@ -131,7 +117,10 @@ export default function LabSpacePage({ params }: { params: { name: string } }) {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const decodedName = decodeURIComponent(params.name);
+        const decodedName =
+          typeof params.name === 'string'
+            ? decodeURIComponent(params.name)
+            : '';
         const [makerspaceData, machinesData, eventsData] = await Promise.all([
           fetchMakerspaceByName(decodedName),
           fetchMachinesByMakerspace(decodedName),
@@ -221,10 +210,7 @@ export default function LabSpacePage({ params }: { params: { name: string } }) {
               },
               imageUrl: machine.imageLinks?.[0] || '/assetlist.png',
               location: machine.location,
-              timeSlot: {
-                start: machine.time.start,
-                end: machine.time.end,
-              },
+              timeSlot: { start: machine.time.start, end: machine.time.end },
               inCharge: machine.inCharge || [],
               makerSpace: machine.makerSpace,
             },
@@ -254,14 +240,8 @@ export default function LabSpacePage({ params }: { params: { name: string } }) {
               },
               imageUrl: event.imageLinks?.[0] || '/placeholder-2.png',
               location: event.location,
-              timeSlot: {
-                start: event.time.start,
-                end: event.time.end,
-              },
-              date: {
-                start: event.date.start,
-                end: event.date.end,
-              },
+              timeSlot: { start: event.time.start, end: event.time.end },
+              date: { start: event.date.start, end: event.date.end },
               experts: event.experts,
               makerSpace: event.makerSpace,
             },
@@ -344,18 +324,10 @@ export default function LabSpacePage({ params }: { params: { name: string } }) {
     if (!makerspace?.howToReach) return null;
 
     const transportModes = [
-      {
-        key: 'airport',
-      },
-      {
-        key: 'railway',
-      },
-      {
-        key: 'metro',
-      },
-      {
-        key: 'bus',
-      },
+      { key: 'airport' },
+      { key: 'railway' },
+      { key: 'metro' },
+      { key: 'bus' },
     ];
 
     return (
