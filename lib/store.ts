@@ -152,10 +152,16 @@ export const useCityDataStore = create<CityDataState>((set) => ({
 
 interface User {
   _id: string;
-  name: string;
   email: string;
-  image?: string;
-  phone?: string;
+  password: string;
+  name?: string;
+  number?: string;
+  usertype?: string[];
+  industry?: string[];
+  purpose?: string[];
+  role?: string;
+  makerspaceId: string;
+  createdAt?: Date;
 }
 
 interface AuthenticationState extends AuthState {
@@ -232,6 +238,7 @@ export const useAuthenticationStore = create<AuthenticationState>((set) => ({
     if (typeof window !== 'undefined') {
       localStorage.setItem('user', JSON.stringify(user));
       localStorage.setItem('token', token);
+      localStorage.setItem('activeMakerspaceId', user.makerspaceId);
     }
   },
   logout: () => {
@@ -239,6 +246,7 @@ export const useAuthenticationStore = create<AuthenticationState>((set) => ({
     if (typeof window !== 'undefined') {
       localStorage.removeItem('user');
       localStorage.removeItem('token');
+      localStorage.removeItem('activeMakerspaceId');
     }
   },
   reauth: async () => {
